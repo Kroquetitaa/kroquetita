@@ -10,6 +10,7 @@ import {
   pochitaCoin,
   pochitaShouts,
   talkers,
+  teamSpot,
   type Talker,
   type TalkerId,
 } from '../data/folk'
@@ -41,6 +42,24 @@ const LEAVE_RANGE = 3.6
 
 type Kit = TalkerId | 'intern'
 
+/** Aspecto de los compañeros del equipo: pelo, complemento y lo que llevan en la mano */
+interface MateLook {
+  hair: string
+  style: 'short' | 'side' | 'tall'
+  extra: 'none' | 'glasses' | 'headset' | 'cap'
+  held: 'none' | 'tablet' | 'laptop' | 'mug'
+}
+const MATES: Partial<Record<Kit, MateLook>> = {
+  alex: { hair: '#2a1b12', style: 'side', extra: 'none', held: 'tablet' },
+  dani: { hair: '#6b4a2b', style: 'short', extra: 'glasses', held: 'laptop' },
+  josete: { hair: '#1c1c22', style: 'tall', extra: 'none', held: 'mug' },
+  cristian: { hair: '#3b2416', style: 'short', extra: 'headset', held: 'none' },
+  pablo: { hair: '#8a5a2b', style: 'side', extra: 'cap', held: 'mug' },
+}
+
+/** Distancia de cada personaje al jugador: entre los que están al alcance, se habla con el más cercano */
+const reach: Partial<Record<TalkerId, number>> = {}
+
 /** ¿Hay algún obstáculo a ras de suelo en ese punto? */
 function blocked(x: number, z: number, margin = 0.45) {
   for (const c of world.colliders) {
@@ -60,6 +79,8 @@ interface PuppetParts {
 function Puppet({ kit, color, accent, parts }: { kit: Kit; color: string; accent: string; parts: PuppetParts }) {
   const neon = useMemo(() => createNeonMaterial(accent, 1.5), [accent])
   const cloth = useMemo(() => new THREE.MeshStandardMaterial({ color, roughness: 0.65 }), [color])
+  const mate = MATES[kit]
+  const hair = useMemo(() => (mate ? new THREE.MeshStandardMaterial({ color: mate.hair, roughness: 0.9 }) : null), [mate])
   return (
     <group ref={parts.root}>
       <mesh position-y={0.5} material={cloth} castShadow>
@@ -211,6 +232,55 @@ function Puppet({ kit, color, accent, parts }: { kit: Kit; color: string; accent
               </mesh>
             </>
           )}
+          {mate && hair && (
+            <>
+              {/* Pelo: corto, con flequillo de lado o con tupé */}
+              <mesh position={[0, mate.style === 'tall' ? 0.25 : 0.22, -0.02]} material={hair}>
+                <boxGeometry args={[0.48, mate.style === 'tall' ? 0.16 : 0.1, 0.46]} />
+              </mesh>
+              {mate.style === 'side' && (
+                <mesh position={[0.12, 0.17, 0.19]} rotation-z={-0.25} material={hair}>
+                  <boxGeometry args={[0.26, 0.08, 0.06]} />
+                </mesh>
+              )}
+              {mate.style === 'tall' && (
+                <mesh position={[0, 0.35, 0.1]} rotation-x={0.3} material={hair}>
+                  <boxGeometry args={[0.3, 0.1, 0.2]} />
+                </mesh>
+              )}
+              <mesh position={[0, 0.04, -0.215]} material={hair}>
+                <boxGeometry args={[0.46, 0.3, 0.04]} />
+              </mesh>
+              {mate.extra === 'glasses' &&
+                [-0.1, 0.1].map((x) => (
+                  <mesh key={x} position={[x, 0.03, 0.21]} material={neon}>
+                    <ringGeometry args={[0.055, 0.075, 4, 1, Math.PI / 4]} />
+                  </mesh>
+                ))}
+              {mate.extra === 'headset' && (
+                <>
+                  <mesh position={[0, 0.3, 0]} material={DARK}>
+                    <boxGeometry args={[0.52, 0.04, 0.08]} />
+                  </mesh>
+                  {[-0.25, 0.25].map((x) => (
+                    <mesh key={x} position={[x, 0.04, 0]} material={neon}>
+                      <boxGeometry args={[0.06, 0.2, 0.18]} />
+                    </mesh>
+                  ))}
+                </>
+              )}
+              {mate.extra === 'cap' && (
+                <>
+                  <mesh position={[0, 0.25, 0]} material={cloth}>
+                    <boxGeometry args={[0.5, 0.1, 0.46]} />
+                  </mesh>
+                  <mesh position={[0, 0.21, 0.3]} material={cloth}>
+                    <boxGeometry args={[0.42, 0.03, 0.2]} />
+                  </mesh>
+                </>
+              )}
+            </>
+          )}
         </Detail>
       </group>
       <Detail>
@@ -299,6 +369,31 @@ function Puppet({ kit, color, accent, parts }: { kit: Kit; color: string; accent
                 <meshStandardMaterial color="#19e6ff" emissive="#19e6ff" emissiveIntensity={0.6} roughness={0.3} />
               </mesh>
             </>
+          )}
+          {mate?.held === 'tablet' && (
+            <group position={[0.27, -0.2, 0.14]} rotation-x={-0.55}>
+              <mesh material={DARK}>
+                <boxGeometry args={[0.22, 0.3, 0.02]} />
+              </mesh>
+              <mesh position-z={0.012} material={neon}>
+                <planeGeometry args={[0.18, 0.25]} />
+              </mesh>
+            </group>
+          )}
+          {mate?.held === 'laptop' && (
+            <group position={[0, -0.16, 0.2]} rotation-x={-0.9}>
+              <mesh material={STEEL}>
+                <boxGeometry args={[0.36, 0.26, 0.02]} />
+              </mesh>
+              <mesh position-z={-0.012} rotation-y={Math.PI} material={neon}>
+                <planeGeometry args={[0.1, 0.1]} />
+              </mesh>
+            </group>
+          )}
+          {mate?.held === 'mug' && (
+            <mesh position={[0.3, -0.22, 0.12]} material={PAPER}>
+              <cylinderGeometry args={[0.06, 0.05, 0.12, 12]} />
+            </mesh>
           )}
         </group>
         {/* Detalle luminoso en el pecho */}
@@ -409,8 +504,11 @@ function TalkerNPC({ talker }: { talker: Talker }) {
     const dist = Math.hypot(dx, dz)
     const reachable = game.mode === 'play' && Math.abs(body.pos[1]) < 1.2
     // El más cercano dentro del radio es con quien se habla.
+    reach[talker.id] = dist
     if (reachable && dist < TALK_RANGE) {
-      if (game.near !== talker.id && !game.talk) game.setNear(talker.id)
+      const rival = game.near === null ? Infinity : (reach[game.near as TalkerId] ?? Infinity)
+      // Si ya hay otro al alcance, solo se le quita el sitio estando claramente más cerca.
+      if (game.near !== talker.id && !game.talk && dist < rival - 0.2) game.setNear(talker.id)
     } else if (game.near === talker.id) game.setNear(null)
     if (game.talk?.id === talker.id && (!reachable || dist > LEAVE_RANGE)) game.setTalk(null)
     if (shouter && game.mode === 'play' && !game.talk) {
@@ -655,10 +753,44 @@ function QuestWatch() {
   return null
 }
 
+/** Rótulo del corrillo del equipo: va pintado en el suelo, delante de ellos, para no taparlos. */
+function TeamSign() {
+  const lang = useLang()
+  const neon = useMemo(() => createNeonMaterial('#3df2b0', 1.6), [])
+  const holder = useRef<THREE.Group>(null)
+  useFrame(() => {
+    if (holder.current) holder.current.scale.setScalar(Math.max(0.001, introProgress(3.2, 0.8)))
+  })
+  return (
+    <group ref={holder} position={[teamSpot[0], 0.03, teamSpot[1]]}>
+      <Detail>
+        {[-0.62, 0.62].map((z) => (
+          <mesh key={z} position={[0, 0, z]} rotation-x={-Math.PI / 2} material={neon}>
+            <planeGeometry args={[6.4, 0.05]} />
+          </mesh>
+        ))}
+        <Text
+          rotation-x={-Math.PI / 2}
+          font={fontBold}
+          fontSize={0.72}
+          letterSpacing={0.14}
+          color="#bdfde6"
+          anchorX="center"
+          anchorY="middle"
+          material-toneMapped={false}
+        >
+          {lang === 'es' ? 'EL EQUIPO' : 'THE TEAM'}
+        </Text>
+      </Detail>
+    </group>
+  )
+}
+
 export function Folk() {
   return (
     <>
       <QuestWatch />
+      <TeamSign />
       {talkers.map((talker) => (
         <TalkerNPC key={talker.id} talker={talker} />
       ))}

@@ -1,3 +1,4 @@
+import { useGame } from '../store'
 import { world } from '../world/layout'
 import { createBody } from './physics'
 
@@ -6,6 +7,16 @@ export const body = createBody(world.spawn)
 
 export function respawn() {
   Object.assign(body, createBody(world.spawn))
+}
+
+/** Viaje rápido: coloca al jugador en un punto, parado. La partida en curso deja de valer para los récords. */
+export function warp(x: number, y: number, z: number) {
+  body.pos[0] = x
+  body.pos[1] = y
+  body.pos[2] = z
+  body.vel[0] = body.vel[1] = body.vel[2] = 0
+  body.ballistic = 0
+  useGame.getState().assist()
 }
 
 /** Momento (performance.now) del último aterrizaje del jugador. */

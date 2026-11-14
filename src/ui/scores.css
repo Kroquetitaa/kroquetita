@@ -1,0 +1,420 @@
+/* ---------- Tabla de récords ---------- */
+
+/* Fondo: tapa el juego (que está en pausa) y, al tocarlo, cierra el panel */
+.scores {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+  background: rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+  animation: scores-fade 0.25s ease both;
+}
+
+.scores__panel {
+  display: flex;
+  flex-direction: column;
+  width: min(440px, 100%);
+  max-height: min(660px, 100%);
+  border: 1px solid rgba(255, 201, 51, 0.4);
+  border-radius: 16px;
+  background: rgba(10, 9, 6, 0.92);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 60px rgba(255, 201, 51, 0.14);
+  outline: none;
+  overflow: hidden;
+  animation: scores-in 0.3s ease both;
+}
+
+.scores__panel:focus-visible {
+  border-color: rgba(255, 201, 51, 0.8);
+}
+
+/* Cabecera */
+
+.scores header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 12px 12px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.scores h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #ffe9a8, #ffc933, #ff8a3c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.scores header p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+.scores header button {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0 0 2px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.25s,
+    border-color 0.25s;
+}
+
+.scores header button:hover,
+.scores header button:focus-visible {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.16);
+  outline: none;
+}
+
+/* Lista: es lo único que se desplaza */
+
+.scores__list {
+  flex: 1 1 auto;
+  min-height: 72px;
+  padding: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.scores__list:focus-visible {
+  outline: 1px solid rgba(255, 201, 51, 0.6);
+  outline-offset: -3px;
+  border-radius: 10px;
+}
+
+.scores ol {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scores li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 36px;
+  padding: 5px 12px 5px 6px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.scores li:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.scores li.is-mine {
+  border-color: rgba(255, 201, 51, 0.65);
+  background: rgba(255, 201, 51, 0.14);
+}
+
+.scores__rank {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 4px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Podio: oro, plata y bronce */
+.scores li:nth-child(1) .scores__rank {
+  background: radial-gradient(circle at 35% 30%, #fff3b8, #ffc933 55%, #b77a00);
+  color: #2b1d00;
+}
+
+.scores li:nth-child(2) .scores__rank {
+  background: radial-gradient(circle at 35% 30%, #fff, #c9d1d9 55%, #7d8791);
+  color: #1b2026;
+}
+
+.scores li:nth-child(3) .scores__rank {
+  background: radial-gradient(circle at 35% 30%, #ffd9b8, #d98a4e 55%, #8a4a1c);
+  color: #2b1400;
+}
+
+.scores__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.scores__time {
+  flex: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: #ffe9a8;
+}
+
+.scores li.scores__gap {
+  justify-content: center;
+  min-height: 18px;
+  padding: 0;
+  background: none;
+  letter-spacing: 0.3em;
+  color: var(--muted);
+}
+
+/* Cargando, vacío y error */
+
+.scores__note {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 28px 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--muted);
+}
+
+.scores__note p {
+  margin: 0;
+}
+
+/* Pie: la marca de esta partida y el formulario */
+
+.scores footer {
+  flex: none;
+  padding: 12px 18px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.scores__run {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.scores__run b {
+  margin-left: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #ffc933;
+}
+
+.scores__info {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.scores__info.is-warning {
+  padding: 8px 10px;
+  border-left: 2px solid #ff8a3c;
+  border-radius: 0 8px 8px 0;
+  background: rgba(255, 138, 60, 0.1);
+}
+
+.scores__info.is-done {
+  font-weight: 500;
+  color: #ffe9a8;
+}
+
+.scores form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px 10px;
+}
+
+.scores label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.scores label span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.scores input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font: inherit;
+  /* 16 px: por debajo, iOS amplía la página al enfocar el campo */
+  font-size: 16px;
+  user-select: text;
+  -webkit-user-select: text;
+  transition: border-color 0.25s;
+}
+
+.scores input:focus-visible {
+  border-color: #ffc933;
+  outline: none;
+}
+
+.scores input[aria-invalid='true'] {
+  border-color: #ff6b5e;
+}
+
+.scores__button {
+  height: 40px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 201, 51, 0.7);
+  border-radius: 999px;
+  background: rgba(255, 201, 51, 0.16);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+
+.scores__button:hover,
+.scores__button:focus-visible {
+  background: rgba(255, 201, 51, 0.32);
+  outline: none;
+}
+
+.scores__button:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 201, 51, 0.45);
+}
+
+.scores__button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.scores__button.is-quiet {
+  height: 34px;
+  border-color: var(--line);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.scores__button.is-quiet:hover,
+.scores__button.is-quiet:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.scores__hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.scores__hint.is-error {
+  color: #ff9d92;
+}
+
+@keyframes scores-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes scores-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+
+/* Móvil y pantallas bajas: el panel ocupa casi toda la pantalla */
+@media (max-width: 720px), (max-height: 520px) {
+  .scores {
+    padding: 8px;
+  }
+
+  .scores__panel {
+    width: min(520px, 100%);
+    height: 100%;
+    max-height: none;
+  }
+}
+
+/* Muy estrecho: el botón de enviar pasa debajo del campo */
+@media (max-width: 420px) {
+  .scores form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scores__button {
+    width: 100%;
+  }
+
+  .scores__button.is-quiet {
+    width: auto;
+  }
+}
+
+/* Apaisado y bajo (móvil girado): menos aire para que quepan la lista y el formulario */
+@media (max-height: 520px) {
+  .scores header {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .scores header p {
+    display: none;
+  }
+
+  .scores footer {
+    padding-top: 8px;
+    padding-bottom: 10px;
+  }
+
+  .scores__run {
+    margin-bottom: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scores,
+  .scores__panel {
+    animation: none;
+  }
+}

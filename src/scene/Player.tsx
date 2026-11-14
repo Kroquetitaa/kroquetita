@@ -328,8 +328,10 @@ export function Player() {
         setBubble({ text: tr(AFTER_MEETING), shownAt: now })
       }
       a.inMeeting = meeting
-      const x = meeting ? 0 : input.stickX || input.x
-      const z = meeting ? 0 : input.stickZ || input.z
+      // Con un panel abierto (mapa, modo foto, minijuego) las teclas son del panel.
+      const frozen = meeting || game.panel !== null
+      const x = frozen ? 0 : input.stickX || input.x
+      const z = frozen ? 0 : input.stickZ || input.z
       const boost = now < game.boostUntil ? 1.7 : 1
       const physics = {
         colliders: world.colliders,
@@ -346,7 +348,7 @@ export function Player() {
             x,
             z,
             run: input.run || Math.hypot(input.stickX, input.stickZ) > 0.85,
-            jump: input.jumpQueued && !meeting,
+            jump: input.jumpQueued && !frozen,
             boost,
           },
           dt / 2,

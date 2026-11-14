@@ -2195,3 +2195,97 @@ body {
   font-weight: 600;
   color: var(--accent);
 }
+
+/* ---------- Menú de la barra (mapa, modo foto, récords, terminal, calidad) ---------- */
+
+.menu {
+  position: absolute;
+  right: 0;
+  bottom: 56px;
+  display: grid;
+  gap: 2px;
+  min-width: 250px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(8, 10, 14, 0.88);
+  backdrop-filter: blur(14px);
+  pointer-events: auto;
+  animation: menu-in 0.18s ease-out;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.toolbar .menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  height: auto;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  backdrop-filter: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.toolbar .menu button:hover,
+.toolbar .menu button:focus-visible {
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+}
+
+.menu kbd {
+  min-width: 22px;
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 11px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.menu i {
+  font-style: normal;
+  font-size: 12px;
+  color: #19e6ff;
+}
+
+@media (pointer: coarse) {
+  .menu kbd {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu {
+    animation: none;
+  }
+}
+
+/* ---------- Modo 8 bits: el lienzo se pinta diminuto y se amplía sin suavizar ---------- */
+
+.stage.is-retro canvas {
+  image-rendering: pixelated;
+  filter: contrast(1.12) saturate(1.35);
+}
+
+.stage.is-retro::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0 3px, rgba(0, 0, 0, 0.22) 3px 4px);
+  pointer-events: none;
+}

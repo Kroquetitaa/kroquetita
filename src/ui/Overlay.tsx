@@ -6,11 +6,17 @@ import { education } from '../data/education'
 import { isAudioRunning, setMuted, sfx, unlockAudio } from '../game/audio'
 import { setMusicIntensity } from '../game/music'
 import { input, isTyping } from '../game/input'
+import { install, useCanInstall } from '../game/install'
 import { interact, scriptOf, talkerById } from '../game/talk'
 import { MEDALS, QUEST_TEXT, ui, useLang, useUI } from '../i18n'
-import { ACHIEVEMENTS, BOSS_HP, QUESTS, useGame } from '../store'
+import { track } from '../net/track'
+import { ACHIEVEMENTS, BOSS_HP, QUESTS, useGame, type Quality } from '../store'
 import { world } from '../world/layout'
+import { Minimap } from './Minimap'
+import { PhotoPanel } from './PhotoPanel'
+import { Scores } from './Scores'
 import { Terminal } from './Terminal'
+import { TrainGame } from './TrainGame'
 
 const Icon = {
   camera: (
@@ -54,6 +60,86 @@ const Icon = {
       <path d="M6 6l12 12M18 6L6 18" />
     </svg>
   ),
+  map: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 6.5l5-2 6 2 5-2v13l-5 2-6-2-5 2z" />
+      <path d="M9 4.5v13M15 6.5v13" />
+    </svg>
+  ),
+  more: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 12h.01M12 12h.01M19 12h.01" strokeWidth="3" />
+    </svg>
+  ),
+}
+
+const QUALITY_CYCLE: Quality[] = ['auto', 'high', 'low']
+
+/** Menú de la barra: lo que no cabe como botón (mapa, modo foto, récords, terminal, calidad…). */
+function MoreMenu({ playing, onClose }: { playing: boolean; onClose: () => void }) {
+  const t = useUI()
+  const quality = useGame((s) => s.quality)
+  const canInstall = useCanInstall()
+  const { setPanel, setTerminal, setQuality, restart } = useGame.getState()
+  const pick = (action: () => void) => () => {
+    action()
+    onClose()
+  }
+  // Se cierra al pulsar fuera (el botón que lo abre está en la propia barra y ya lo alterna).
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      if (!(e.target instanceof Element) || !e.target.closest('.toolbar')) onClose()
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'Escape') return
+      // Que el Esc cierre solo el menú, no la partida.
+      e.stopPropagation()
+      onClose()
+    }
+    window.addEventListener('pointerdown', onDown)
+    window.addEventListener('keydown', onKey, true)
+    return () => {
+      window.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('keydown', onKey, true)
+    }
+  }, [onClose])
+  return (
+    <div className="menu" role="menu" aria-label={t.moreOptions}>
+      {playing && (
+        <>
+          <button type="button" role="menuitem" onClick={pick(() => setPanel('map'))}>
+            {t.menuMap} <kbd>M</kbd>
+          </button>
+          <button type="button" role="menuitem" onClick={pick(() => setPanel('photo'))}>
+            {t.menuPhoto} <kbd>P</kbd>
+          </button>
+        </>
+      )}
+      <button type="button" role="menuitem" onClick={pick(() => setPanel('scores'))}>
+        {t.menuScores} <kbd>L</kbd>
+      </button>
+      <button type="button" role="menuitem" onClick={pick(() => setTerminal(true))}>
+        {t.menuTerminal} <kbd>T</kbd>
+      </button>
+      {playing && (
+        <button type="button" role="menuitem" onClick={pick(restart)}>
+          {t.menuRestart} <kbd>R</kbd>
+        </button>
+      )}
+      <button
+        type="button"
+        role="menuitem"
+        onClick={() => setQuality(QUALITY_CYCLE[(QUALITY_CYCLE.indexOf(quality) + 1) % QUALITY_CYCLE.length])}
+      >
+        {t.menuQuality} <i>{t.qualityNames[quality]}</i>
+      </button>
+      {canInstall && (
+        <button type="button" role="menuitem" onClick={pick(() => void install())}>
+          {t.menuInstall}
+        </button>
+      )}
+    </div>
+  )
 }
 
 const GLYPHS = '01<>/{}[]#$%&*+=?ABCDEFKQRSXZ'
@@ -663,6 +749,12 @@ export function Overlay() {
   const best = useGame((s) => s.best)
   const record = useGame((s) => s.record)
   const [showMedals, setShowMedals] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
+  const panel = useGame((s) => s.panel)
+  const station = useGame((s) => s.station)
+  const near = useGame((s) => s.near)
+  const talking = useGame((s) => s.talk !== null)
+  const retro = useGame((s) => s.retro)
   const party = useGame((s) => s.party)
   const crash = useGame((s) => s.crash)
   const bugs = useGame((s) => s.bugs)
@@ -687,7 +779,7 @@ export function Overlay() {
   const caffeinated = performance.now() < boostUntil
   const collected = useGame((s) => s.collected.length)
   const total = useGame((s) => s.total)
-  const { play, tour, exit, toggleCamera, toggleMuted, setTerminal, restart } = useGame.getState()
+  const { play, tour, exit, toggleCamera, toggleMuted, setPanel } = useGame.getState()
 
   const playing = mode === 'play'
   const touring = mode === 'tour'
@@ -749,12 +841,35 @@ export function Overlay() {
     }
   }, [])
 
+  // El modo 8 bits se activa desde el terminal: se avisa aquí.
+  const retroSeen = useRef(retro)
+  useEffect(() => {
+    if (retroSeen.current === retro) return
+    retroSeen.current = retro
+    setToast(retro ? ui().retroOn : ui().retroOff)
+    const timer = window.setTimeout(() => setToast(''), 3800)
+    return () => window.clearTimeout(timer)
+  }, [retro])
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || isTyping(e)) return
       const game = useGame.getState()
+      // Con un panel abierto (mapa, modo foto, minijuego, récords) las teclas son suyas: solo se atiende a cerrarlo.
+      if (game.panel) {
+        if (e.code === 'Escape' || (e.code === 'KeyM' && game.panel === 'map')) {
+          e.preventDefault()
+          game.setPanel(null)
+        }
+        return
+      }
+      if (e.code === 'KeyL') {
+        game.setPanel('scores')
+        return
+      }
       if (e.code === 'KeyT') {
         e.preventDefault()
+        if (!game.terminal) track('terminal')
         game.setTerminal(!game.terminal)
         return
       }
@@ -774,7 +889,13 @@ export function Overlay() {
         if (e.code === 'ArrowLeft') game.setStage(game.stage - 1, true)
         return
       }
-      if (e.code === 'KeyE' || e.code === 'KeyF') interact()
+      if (e.code === 'KeyE' || e.code === 'KeyF') {
+        // Si no hay nadie con quien hablar pero sí una máquina al alcance, se usa la máquina.
+        if (game.station && !game.near && !game.talk) game.setPanel(game.station)
+        else interact()
+      }
+      if (e.code === 'KeyM') game.setPanel('map')
+      if (e.code === 'KeyP') game.setPanel('photo')
       if (e.code === 'Escape') game.exit()
       if (e.code === 'KeyC') game.toggleCamera()
       if (e.code === 'KeyR') game.restart()
@@ -793,7 +914,7 @@ export function Overlay() {
   }
 
   return (
-    <div className="overlay">
+    <div className={panel === 'photo' ? 'overlay is-photo' : 'overlay'}>
       <div className={`curtain ${ready ? 'is-open' : ''}`} />
 
       <Brand />
@@ -845,8 +966,11 @@ export function Overlay() {
             </p>
           )}
           <div className="win__actions">
-            <button type="button" onClick={restart}>
+            <button type="button" onClick={() => useGame.getState().restart()}>
               {t.playAgain}
+            </button>
+            <button type="button" onClick={() => setPanel('scores')}>
+              {t.menuScores}
             </button>
             <button type="button" className="is-quiet" onClick={() => setDismissed(true)}>
               {t.keepExploring}
@@ -878,6 +1002,16 @@ export function Overlay() {
       )}
 
       <Dialogue />
+      {playing && station && !near && !talking && !panel && (
+        <button type="button" className="pill pill--action talk-prompt" onClick={() => setPanel(station)}>
+          {!touch && <kbd>E</kbd>}
+          <span>{t.trainPrompt}</span>
+        </button>
+      )}
+      <Minimap />
+      <PhotoPanel />
+      <TrainGame />
+      <Scores />
       <BossBar />
       <StudyCard />
       <ConceptCard />
@@ -947,8 +1081,15 @@ export function Overlay() {
             >
               {Icon.camera}
             </button>
-            <button type="button" onClick={restart} title={t.restart} aria-label={t.restartLabel}>
-              {Icon.restart}
+            <button
+              type="button"
+              className={panel === 'map' ? 'is-on' : ''}
+              onClick={() => setPanel(panel === 'map' ? null : 'map')}
+              title={t.map}
+              aria-label={t.mapLabel}
+              aria-pressed={panel === 'map'}
+            >
+              {Icon.map}
             </button>
           </>
         )}
@@ -956,15 +1097,17 @@ export function Overlay() {
         {ready && (
           <button
             type="button"
-            className={terminal ? 'is-on' : ''}
-            onClick={() => setTerminal(!terminal)}
-            title={t.terminal}
-            aria-label={t.terminalLabel}
-            aria-pressed={terminal}
+            className={showMenu || terminal ? 'is-on' : ''}
+            onClick={() => setShowMenu((open) => !open)}
+            title={t.moreOptions}
+            aria-label={t.moreOptions}
+            aria-haspopup="menu"
+            aria-expanded={showMenu}
           >
-            {Icon.terminal}
+            {Icon.more}
           </button>
         )}
+        {showMenu && <MoreMenu playing={playing} onClose={() => setShowMenu(false)} />}
         {ready && (
           <button
             type="button"

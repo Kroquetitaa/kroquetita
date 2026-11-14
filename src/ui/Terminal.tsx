@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { durationOf, periodOf, profile, stages, type Lang, type Stage } from '../data/career'
 import { education } from '../data/education'
 import { sfx } from '../game/audio'
-import { body } from '../game/state'
+import { SEASON_NAMES, SEASONS, currentSeason, setSeason, type Season } from '../game/season'
+import { warp } from '../game/state'
 import { MEDALS, useLang, useUI } from '../i18n'
-import { ACHIEVEMENTS, useGame } from '../store'
+import { fetchStats } from '../net/api'
+import { track } from '../net/track'
+import { ACHIEVEMENTS, useGame, type Quality } from '../store'
 import { world } from '../world/layout'
 
 /**
@@ -54,6 +57,10 @@ const HELP: Record<Lang, Array<[string, string]>> = {
     ['time dawn|night|auto', 'cambia la hora'],
     ['lang es|en', 'idioma'],
     ['medals', 'logros conseguidos'],
+    ['map · photo · top', 'mapa, modo foto, tabla de récords'],
+    ['stats', 'visitas de la web (anónimas)'],
+    ['quality auto|high|low', 'calidad gráfica'],
+    ['season xmas|halloween|…', 'decoración de temporada'],
     ['clear', 'limpia la pantalla'],
   ],
   en: [
@@ -70,6 +77,10 @@ const HELP: Record<Lang, Array<[string, string]>> = {
     ['time dawn|night|auto', 'change the time of day'],
     ['lang es|en', 'language'],
     ['medals', 'achievements so far'],
+    ['map · photo · top', 'map, photo mode, leaderboard'],
+    ['stats', 'site visits (anonymous)'],
+    ['quality auto|high|low', 'graphics quality'],
+    ['season xmas|halloween|…', 'seasonal decoration'],
     ['clear', 'clear the screen'],
   ],
 }
@@ -83,6 +94,9 @@ const describe = (stage: Stage, lang: Lang): Line[] => [
 ]
 
 /** Ejecuta un comando y devuelve lo que hay que imprimir (o 'clear'). */
+/** Para los comandos que responden más tarde (consultas al servidor): añade líneas a la pantalla. */
+let print: (lines: Line[]) => void = () => {}
+
 function run(input: string, lang: Lang): Line[] | 'clear' {
   const es = lang === 'es'
   const game = useGame.getState()
@@ -134,11 +148,7 @@ function run(input: string, lang: Lang): Line[] | 'clear' {
       const block = world.blocks[index]
       // Se aterriza en el centro de la azotea, lejos de los muelles.
       game.play()
-      body.pos[0] = block.x
-      body.pos[1] = block.height + 0.4
-      body.pos[2] = block.z + 0.15
-      body.vel[0] = body.vel[1] = body.vel[2] = 0
-      body.ballistic = 0
+      warp(block.x, block.height + 0.4, block.z + 0.15)
       game.setStage(index, true)
       sfx.portal()
       return [out(es ? `Teletransportado a ${block.stage.title}.` : `Teleported to ${block.stage.title}.`, 'ok')]
@@ -206,6 +216,116 @@ function run(input: string, lang: Lang): Line[] | 'clear' {
           ? out(`[x] ${MEDALS[id].title[lang]}`, 'ok')
           : out(`[ ] ${MEDALS[id].hint[lang]}`, 'dim'),
       )
+    case 'map':
+    case 'mapa':
+      game.play()
+      game.setPanel('map')
+      game.setTerminal(false)
+      return [out(es ? 'Mapa abierto.' : 'Map open.', 'ok')]
+    case 'photo':
+    case 'foto':
+      game.play()
+      game.setPanel('photo')
+      game.setTerminal(false)
+      return [out(es ? 'Modo foto.' : 'Photo mode.', 'ok')]
+    case 'top':
+    case 'scores':
+    case 'records':
+    case 'ranking':
+      game.setPanel('scores')
+      game.setTerminal(false)
+      return [out(es ? 'Tabla de récords abierta.' : 'Leaderboard open.', 'ok')]
+    case 'stats':
+    case 'visitas': {
+      // La respuesta llega del servidor: se pinta cuando esté.
+      void fetchStats(30).then((result) => {
+        if (!result.ok) {
+          print([out(es ? 'stats: el servidor no responde.' : 'stats: the server is not answering.', 'error')])
+          return
+        }
+        const total = result.data.total
+        const rows: Array<[string, string]> = es
+          ? [
+              ['visit', 'Visitas'],
+              ['play', 'Han jugado'],
+              ['tour', 'Han visto el recorrido'],
+              ['time:2m', 'Se quedan más de 2 min'],
+              ['coins', 'Todas las monedas'],
+              ['summit', 'Llegan a la cima'],
+              ['zone:library', 'Visitan la biblioteca'],
+              ['zone:lab', 'Visitan la sala de conceptos'],
+              ['zone:arcade', 'Visitan la sala de romper'],
+              ['zone:team', 'Visitan al equipo'],
+              ['panel:train', 'Entrenan un modelo'],
+              ['photo', 'Fotos descargadas'],
+              ['score', 'Marcas enviadas'],
+            ]
+          : [
+              ['visit', 'Visits'],
+              ['play', 'Played'],
+              ['tour', 'Watched the tour'],
+              ['time:2m', 'Stayed over 2 min'],
+              ['coins', 'All coins'],
+              ['summit', 'Reached the summit'],
+              ['zone:library', 'Visited the library'],
+              ['zone:lab', 'Visited the concepts room'],
+              ['zone:arcade', 'Visited the break room'],
+              ['zone:team', 'Visited the team'],
+              ['panel:train', 'Trained a model'],
+              ['photo', 'Photos downloaded'],
+              ['score', 'Times submitted'],
+            ]
+        const today = result.data.days[result.data.days.length - 1]
+        print([
+          out(es ? 'Desde el principio (sin cookies ni datos personales):' : 'All time (no cookies, no personal data):', 'dim'),
+          ...rows.map(([key, label]) => out(`${label.padEnd(30)} ${total[key] ?? 0}`)),
+          out(
+            es
+              ? `Hoy: ${today?.events.visit ?? 0} visitas, ${today?.events.play ?? 0} partidas.`
+              : `Today: ${today?.events.visit ?? 0} visits, ${today?.events.play ?? 0} games.`,
+            'ok',
+          ),
+        ])
+      })
+      return [out(es ? 'Consultando…' : 'Fetching…', 'dim')]
+    }
+    case 'quality':
+    case 'calidad': {
+      const names: Record<string, Quality> = { auto: 'auto', high: 'high', alta: 'high', low: 'low', baja: 'low' }
+      const value = names[args.toLowerCase()]
+      if (!value) return [out(`quality auto | high | low  (${game.quality})`, 'error')]
+      game.setQuality(value)
+      return [out(es ? `Calidad gráfica: ${value}.` : `Graphics quality: ${value}.`, 'ok')]
+    }
+    case 'season':
+    case 'temporada': {
+      const value = args.toLowerCase()
+      const aliases: Record<string, Season> = { navidad: 'xmas', christmas: 'xmas', nochevieja: 'newyear', ninguna: 'none' }
+      const season = aliases[value] ?? (SEASONS as string[]).find((id) => id === value)
+      if (value === 'auto') {
+        setSeason('auto')
+        return [out(es ? `Temporada según la fecha: ${SEASON_NAMES[currentSeason()][lang]}.` : `Season by date: ${SEASON_NAMES[currentSeason()][lang]}.`, 'ok')]
+      }
+      if (!season) return [out(`season ${SEASONS.join(' | ')} | auto`, 'error')]
+      setSeason(season as Season)
+      track(`secret:season`)
+      return [out(`${es ? 'Temporada' : 'Season'}: ${SEASON_NAMES[season as Season][lang]}.`, 'ok')]
+    }
+    case 'croqueta':
+    case 'croquetas':
+    case 'croquette':
+    case 'kroquetita':
+      // La lluvia vive con la escena 3D: se pide aparte para no meter el motor en el paquete de la portada.
+      void import('../scene/CroquetaRain').then((scene) => scene.rainCroquetas())
+      track('secret:croqueta')
+      sfx.secret()
+      game.setTerminal(false)
+      return [out(es ? 'Parte meteorológico: lluvia de croquetas.' : 'Weather report: croquettes, heavy at times.', 'ok')]
+    case 'retro':
+    case '8bit':
+    case '8bits':
+      game.toggleRetro()
+      return [out(useGame.getState().retro ? (es ? 'Modo 8 bits. Insert coin.' : '8-bit mode. Insert coin.') : es ? 'De vuelta al siglo XXI.' : 'Back to the 21st century.', 'ok')]
     case 'coins':
     case 'monedas':
       return [out(`${game.collected.length} / ${game.total}`)]
@@ -266,6 +386,13 @@ export function Terminal() {
   useEffect(() => {
     if (screen.current) screen.current.scrollTop = screen.current.scrollHeight
   }, [lines, open])
+
+  useEffect(() => {
+    print = (extra) => setLines((prev) => [...prev, ...extra].slice(-120))
+    return () => {
+      print = () => {}
+    }
+  }, [])
 
   const submit = (command: string) => {
     const result = run(command, lang)

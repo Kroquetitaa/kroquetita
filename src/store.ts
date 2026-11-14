@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { stages, type Lang } from './data/career'
 import { concepts } from './data/concepts'
 import { education } from './data/education'
+import { track } from './net/track'
 import { isCrawler, langOfPath } from './seo/sync'
 import { world } from './world/layout'
 
@@ -29,9 +30,20 @@ export const ACHIEVEMENTS = [
   'graduate',
   'wrecker',
   'curious',
+  'teammates',
+  'trainer',
+  'photographer',
+  'retro',
 ] as const
 export type Achievement = (typeof ACHIEVEMENTS)[number]
 export type CameraMode = 'wide' | 'chase'
+
+/** Paneles a pantalla completa: solo hay uno abierto a la vez y, mientras, el jugador no se mueve */
+export type Panel = 'map' | 'photo' | 'train' | 'scores'
+/** Calidad gráfica: 'auto' baja sola si el equipo no llega */
+export type Quality = 'auto' | 'high' | 'low'
+/** Compañeros de trabajo que hay en la plaza (los cinco dan una medalla) */
+export const TEAMMATES = ['alex', 'dani', 'josete', 'cristian', 'pablo'] as const
 
 /** Encargos que piden los personajes (los textos están en i18n) */
 export const QUESTS = ['recruiter', 'guide', 'qa', 'sysadmin', 'intern', 'librarian'] as const
@@ -61,6 +73,17 @@ export const SPEEDRUN_GOAL = 120
 const LANG_KEY = 'kroquetita:lang'
 const MEDALS_KEY = 'kroquetita:medals'
 const BEST_KEY = 'kroquetita:best'
+const QUALITY_KEY = 'kroquetita:quality'
+
+function initialQuality(): Quality {
+  try {
+    const saved = localStorage.getItem(QUALITY_KEY)
+    if (saved === 'high' || saved === 'low') return saved
+  } catch {
+    // Sin almacenamiento: automática.
+  }
+  return 'auto'
+}
 
 /** Mejor tiempo guardado de la contrarreloj, en segundos. */
 function initialBest(): number | null {
@@ -109,6 +132,15 @@ interface GameState {
   runTime: number | null
   best: number | null
   record: boolean
+  /** En esta partida se han usado ayudas (viaje rápido, terminal, modo fiesta): no vale para la tabla de récords */
+  assisted: boolean
+  /** Panel abierto (mapa, modo foto, minijuego, récords) */
+  panel: Panel | null
+  /** Máquina del escenario que hay al alcance (tecla E), o null */
+  station: 'train' | null
+  /** Modo 8 bits y calidad gráfica elegida */
+  retro: boolean
+  quality: Quality
   /** Jefe final: aparece al llegar a la cima y se le vence saltándole encima */
   boss: 'none' | 'active' | 'defeated'
   bossHp: number
@@ -168,6 +200,12 @@ interface GameState {
   /** Cambia en cada reinicio para recolocar al jugador */
   runId: number
   setReady: () => void
+  setPanel: (panel: Panel | null) => void
+  setStation: (station: GameState['station']) => void
+  toggleRetro: () => void
+  setQuality: (quality: Quality) => void
+  /** Marca la partida en curso como hecha con ayudas */
+  assist: () => void
   setProgress: (value: number) => void
   setStudy: (index: number | null) => void
   setConcept: (index: number | null) => void
@@ -213,6 +251,11 @@ export const useGame = create<GameState>((set, get) => ({
   runTime: null,
   best: initialBest(),
   record: false,
+  assisted: false,
+  panel: null,
+  station: null,
+  retro: false,
+  quality: initialQuality(),
   boss: 'none',
   bossHp: BOSS_HP,
   study: null,
@@ -251,6 +294,29 @@ export const useGame = create<GameState>((set, get) => ({
   crash: null,
   runId: 0,
   setReady: () => set({ ready: true, progress: 1 }),
+  setPanel: (panel) => {
+    if (get().panel === panel) return
+    set({ panel, talk: null })
+    if (panel) track(`panel:${panel}`)
+  },
+  setStation: (station) => set((s) => (s.station === station ? s : { station })),
+  toggleRetro: () => {
+    if (!get().retro) {
+      get().unlock('retro')
+      track('retro')
+    }
+    set((s) => ({ retro: !s.retro }))
+  },
+  setQuality: (quality) => {
+    try {
+      if (quality === 'auto') localStorage.removeItem(QUALITY_KEY)
+      else localStorage.setItem(QUALITY_KEY, quality)
+    } catch {
+      // No pasa nada si no se puede guardar.
+    }
+    set({ quality })
+  },
+  assist: () => set((s) => (s.assisted || s.runTime !== null ? s : { assisted: true })),
   setProgress: (value) => set((s) => (value > s.progress ? { progress: Math.min(1, value) } : s)),
   setStudy: (study) => {
     if (get().study === study) return
@@ -265,9 +331,11 @@ export const useGame = create<GameState>((set, get) => ({
     set({ concept })
     if (concept === null || get().seenConcepts.includes(concept)) return
     set((s) => ({ seenConcepts: [...s.seenConcepts, concept] }))
+    track(`concept:${concepts[concept]?.id ?? concept}`)
     if (get().seenConcepts.length >= concepts.length) get().unlock('curious')
   },
   smash: (id) => {
+    if (!get().smashed.includes(id)) track(`smash:${id}`)
     set((s) => ({
       smashCount: s.smashCount + 1,
       smashed: s.smashed.includes(id) ? s.smashed : [...s.smashed, id],
@@ -281,6 +349,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (bossHp > 1) set({ bossHp: bossHp - 1 })
     else {
       set({ bossHp: 0, boss: 'defeated' })
+      track('boss')
       get().unlock('boss')
     }
   },
@@ -307,14 +376,25 @@ export const useGame = create<GameState>((set, get) => ({
     if (get().visited.length >= world.blocks.length) get().completeQuest('guide')
   },
   reachSummit: () => {
-    if (!get().summitReached) set({ summitReached: true })
+    if (!get().summitReached) {
+      set({ summitReached: true })
+      track('summit')
+    }
     get().unlock('summit')
     get().completeQuest('recruiter')
     get().spawnBoss()
   },
-  play: () => set((s) => (s.ready ? { mode: 'play' } : s)),
-  tour: () => set((s) => (s.ready ? { mode: 'tour', stage: 0, stageHold: 0, talk: null, near: null } : s)),
-  exit: () => set({ mode: 'intro', talk: null, near: null }),
+  play: () => {
+    if (!get().ready) return
+    set({ mode: 'play' })
+    track('play')
+  },
+  tour: () => {
+    if (!get().ready) return
+    set({ mode: 'tour', stage: 0, stageHold: 0, talk: null, near: null, panel: null })
+    track('tour')
+  },
+  exit: () => set({ mode: 'intro', talk: null, near: null, panel: null, station: null }),
   toggleCamera: () => set((s) => ({ camera: s.camera === 'wide' ? 'chase' : 'wide' })),
   toggleMuted: () => set((s) => ({ muted: !s.muted })),
   setLang: (lang) => {
@@ -330,7 +410,12 @@ export const useGame = create<GameState>((set, get) => ({
   setTerminal: (terminal) => set({ terminal }),
   setNear: (near) => set({ near }),
   setTalk: (talk) => set({ talk }),
-  markTalked: (id) => set((s) => (s.talked.includes(id) ? s : { talked: [...s.talked, id] })),
+  markTalked: (id) => {
+    if (get().talked.includes(id)) return
+    set((s) => ({ talked: [...s.talked, id] }))
+    track(`talk:${id}`)
+    if (TEAMMATES.every((mate) => get().talked.includes(mate))) get().unlock('teammates')
+  },
   unlock: (id) =>
     set((s) => {
       if (s.medals.includes(id)) return s
@@ -340,12 +425,15 @@ export const useGame = create<GameState>((set, get) => ({
       } catch {
         // No pasa nada si no se puede guardar.
       }
+      track(`medal:${id}`)
       return { medals, lastMedal: { id, at: performance.now() } }
     }),
   setAccent: (index, color) =>
     set((s) => (s.accents[index] === color ? s : { accents: s.accents.map((c, i) => (i === index ? color : c)) })),
   toggleParty: () => {
     if (!get().party) get().unlock('party')
+    // Con gravedad lunar las monedas se cogen antes: esa partida no cuenta para la tabla.
+    get().assist()
     set((s) => ({ party: !s.party }))
   },
   setCrash: (crash) => {
@@ -380,6 +468,10 @@ export const useGame = create<GameState>((set, get) => ({
     const runStart = before.runStart ?? now
     const done = collected.length === before.total
     set({ collected, runStart, wonAt: done ? now : before.wonAt })
+    if (collected.length === 1) {
+      track('coin')
+      if (before.party) set({ assisted: true })
+    }
     if (!done) return
     const runTime = (now - runStart) / 1000
     const record = before.best === null || runTime < before.best
@@ -391,6 +483,7 @@ export const useGame = create<GameState>((set, get) => ({
         // No pasa nada si no se puede guardar.
       }
     }
+    track('coins')
     get().unlock('coins')
     if (runTime <= SPEEDRUN_GOAL) get().unlock('speedrun')
   },
@@ -403,6 +496,7 @@ export const useGame = create<GameState>((set, get) => ({
       runStart: null,
       runTime: null,
       record: false,
+      assisted: false,
       boss: 'none',
       bossHp: BOSS_HP,
       runId: s.runId + 1,

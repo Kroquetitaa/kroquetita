@@ -1,0 +1,549 @@
+/* ---------- Mapa pequeño ---------- */
+
+/* Arriba a la derecha, bajo el selector de idioma: la única esquina libre mientras se juega */
+.minimap {
+  --accent: rgba(255, 255, 255, 0.45);
+  position: absolute;
+  top: calc(var(--gutter) + 44px);
+  right: var(--gutter);
+  display: grid;
+  gap: 5px;
+  padding: 5px 5px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(8, 10, 15, 0.62);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.25s,
+    background 0.25s,
+    box-shadow 0.25s;
+  animation: minimap-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.minimap:hover,
+.minimap:focus-visible {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(8, 10, 15, 0.78);
+  box-shadow: 0 0 26px rgba(25, 230, 255, 0.2);
+  outline: none;
+}
+
+.minimap:focus-visible {
+  outline: 2px solid #19e6ff;
+  outline-offset: 2px;
+}
+
+.minimap canvas {
+  display: block;
+  width: 204px;
+  height: 120px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.minimap__caption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.minimap__caption i {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  transition: background 0.3s;
+}
+
+.minimap__caption span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.minimap__caption kbd,
+.worldmap__keys kbd {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.16);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0;
+  color: #fff;
+}
+
+/* En vertical la barra de botones sube a esa esquina: el mapa baja a la que deja libre */
+@media (orientation: portrait) {
+  .minimap {
+    top: auto;
+    bottom: var(--gutter);
+  }
+}
+
+@keyframes minimap-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* ---------- Mapa grande ---------- */
+
+.worldmap {
+  /* Lo que ocupan la cabecera, los márgenes y la nota: el dibujo y la lista se quedan con el resto del alto */
+  --chrome: 124px;
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  place-items: center;
+  padding: var(--gutter);
+  background: rgba(2, 4, 8, 0.58);
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+  animation: worldmap-fade 0.25s ease both;
+}
+
+.worldmap__panel {
+  display: flex;
+  flex-direction: column;
+  width: min(1120px, 100%);
+  max-height: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  background: rgba(8, 10, 15, 0.9);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 70px rgba(25, 230, 255, 0.12);
+  outline: none;
+  animation: worldmap-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.worldmap__head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 12px 10px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.worldmap__head h2 {
+  margin: 0 auto 0 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.worldmap__head h2 span {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.worldmap__keys {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 11.5px;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.worldmap__keys span + kbd {
+  margin-left: 8px;
+}
+
+.worldmap__close {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0 0 2px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.worldmap__close:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.worldmap__close:focus-visible {
+  outline: 2px solid #19e6ff;
+  outline-offset: 2px;
+}
+
+/* El dibujo a la izquierda y la lista de zonas a su lado */
+.worldmap__body {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1fr) clamp(240px, 30vw, 340px);
+  align-items: center;
+  gap: 12px;
+  min-height: 0;
+  padding: 14px 13px 14px 16px;
+  overflow-y: auto;
+}
+
+.worldmap__chart {
+  position: relative;
+  width: 100%;
+  min-height: 120px;
+  max-height: calc(100vh - 2 * var(--gutter) - var(--chrome));
+  max-height: calc(100dvh - 2 * var(--gutter) - var(--chrome));
+  /* Las proporciones del mundo: 125 de ancho por 70,4 de fondo */
+  aspect-ratio: 125 / 70.4;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(25, 230, 255, 0.07), transparent 70%),
+    rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+}
+
+.worldmap__chart canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: manipulation;
+}
+
+/* Leyenda, en la esquina del dibujo en la que no hay nada */
+.worldmap__legend {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.worldmap__legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.worldmap__legend i {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.worldmap__legend .is-you i {
+  background: #fff;
+  box-shadow: 0 0 8px 2px rgba(120, 235, 255, 0.7);
+}
+
+.worldmap__legend .is-folk i {
+  border: 1.5px solid #fff;
+  background: #ff4d8d;
+}
+
+.worldmap__legend .is-coins i {
+  width: 5px;
+  height: 5px;
+  margin: 0 1px;
+  background: #ffc933;
+}
+
+.worldmap__zones {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  max-height: calc(100vh - 2 * var(--gutter) - var(--chrome));
+  max-height: calc(100dvh - 2 * var(--gutter) - var(--chrome));
+  margin: 0;
+  /* Hueco para que el aro del foco no se recorte al hacer scroll */
+  padding: 3px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+/* Arriba, el número, el nombre y el avance; debajo, la pista a todo lo ancho */
+.worldmap__zone {
+  --accent: #19e6ff;
+  --done: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 3px 10px;
+  width: 100%;
+  padding: 8px 11px 9px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.worldmap__zone:hover,
+.worldmap__zone.is-active {
+  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.worldmap__zone:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* La zona en la que está el jugador */
+.worldmap__zone.is-here {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: inset 0 0 22px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+/* Avance de la zona: un filo en la base del botón */
+.worldmap__zone::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: calc(var(--done) * 100%);
+  height: 2px;
+  background: var(--accent);
+  opacity: 0.85;
+}
+
+/* El número del atajo, igual que en el dibujo */
+.worldmap__zone kbd {
+  display: grid;
+  grid-row: 1 / span 2;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #05070b;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.worldmap__zone strong {
+  display: flex;
+  grid-column: 2;
+  grid-row: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 7px;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.worldmap__zone em {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--accent);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.worldmap__zone small {
+  grid-column: 2 / -1;
+  grid-row: 2;
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.worldmap__progress {
+  display: flex;
+  grid-column: 3;
+  grid-row: 1;
+  align-items: baseline;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.worldmap__progress b {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.worldmap__progress i {
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.worldmap__progress.is-done b {
+  color: var(--accent);
+}
+
+/* Aviso de la contrarreloj */
+.worldmap__note {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 9px 18px 11px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.worldmap__note::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffc933;
+  box-shadow: 0 0 8px rgba(255, 201, 51, 0.8);
+}
+
+@keyframes worldmap-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes worldmap-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Sin teclado no hay atajos que anunciar */
+@media (pointer: coarse), (max-width: 720px) {
+  .worldmap__keys {
+    display: none;
+  }
+}
+
+/* Vertical o muy estrecho: el dibujo arriba y la lista debajo, con scroll */
+@media (orientation: portrait), (max-width: 560px) {
+  /* En columna: el dibujo no encoge y la lista se queda con el alto que sobre */
+  .worldmap__body {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px 9px 9px;
+    overflow: hidden;
+  }
+
+  /* Alineado con los botones, que dejan 3px para el aro del foco */
+  .worldmap__chart {
+    flex: none;
+    width: calc(100% - 6px);
+    max-height: 42vh;
+    max-height: 42dvh;
+    margin: 0 3px;
+  }
+
+  .worldmap__zones {
+    flex: 1 1 auto;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    min-height: 0;
+    max-height: none;
+  }
+
+  .worldmap__note {
+    padding: 8px 14px 10px;
+  }
+}
+
+/* Poca altura (móvil apaisado): todo más prieto para que el dibujo no se quede en nada */
+@media (max-height: 520px) and (orientation: landscape) and (min-width: 561px) {
+  .worldmap {
+    --chrome: 104px;
+    padding: calc(var(--gutter) / 2) var(--gutter);
+  }
+
+  .worldmap__head {
+    padding: 6px 10px 6px 16px;
+  }
+
+  .worldmap__body {
+    padding: 10px 9px 10px 12px;
+  }
+
+  .worldmap__chart,
+  .worldmap__zones {
+    max-height: calc(100vh - var(--gutter) - var(--chrome));
+    max-height: calc(100dvh - var(--gutter) - var(--chrome));
+  }
+
+  .worldmap__note {
+    padding: 6px 16px 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .minimap,
+  .worldmap,
+  .worldmap__panel {
+    animation: none;
+  }
+
+  .minimap,
+  .minimap__caption i,
+  .worldmap__close,
+  .worldmap__zone {
+    transition: none;
+  }
+}
