@@ -3,9 +3,11 @@ import { useFrame } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
 import * as THREE from 'three'
 import fontBold from '@fontsource/poppins/files/poppins-latin-600-normal.woff?url'
+import type { Localized } from '../data/career'
 import { sfx } from '../game/audio'
 import { playerSay } from '../game/events'
 import { body, shake } from '../game/state'
+import { currentLang, tr, useLang } from '../i18n'
 import { useGame } from '../store'
 import { world } from '../world/layout'
 import { introProgress } from './intro'
@@ -23,6 +25,24 @@ import { Bubble } from './Player'
 
 const FLAT = -Math.PI / 2
 const smooth = (t: number) => t * t * (3 - 2 * t)
+
+/**
+ * Rótulos y frases de los objetos, en los dos idiomas. Las frases se eligen
+ * en el momento de decirlas; los rótulos 3D se repintan al cambiar de idioma.
+ */
+const TEXTS = {
+  liftSign: { es: 'ASCENSOR', en: 'ELEVATOR' },
+  liftRide: { es: 'Ascensor arriba. Sin reuniones por el camino.', en: 'Going up. No meetings on the way.' },
+  deployDay: { es: '(en viernes)', en: '(on a Friday)' },
+  deployPress: { es: 'Deploy en viernes… ¿qué puede salir mal?', en: 'Deploying on a Friday… what could go wrong?' },
+  deployAgain: { es: 'Ya está roto. No lo rompas más.', en: "It's already broken. Stop breaking it." },
+  deployBoom: { es: 'En mi máquina funcionaba…', en: 'It worked on my machine…' },
+  deployRollback: { es: 'Rollback hecho. Aquí no ha pasado nada.', en: 'Rollback done. Nothing to see here.' },
+  portalUp: { es: 'Atajo desbloqueado.', en: 'Shortcut unlocked.' },
+  portalDown: { es: 'Y vuelta abajo.', en: 'And back down we go.' },
+  coffeeSign: { es: 'CAFÉ', en: 'COFFEE' },
+  coffeeSip: { es: 'Café. Ahora programo a 2x.', en: 'Coffee. Now I code at 2x.' },
+} satisfies Record<string, Localized>
 
 // ---------------------------------------------------------------- Ascensor
 
@@ -50,6 +70,7 @@ function Elevator() {
   const neon = useMemo(() => createNeonMaterial('#19e6ff', 1.3), [])
   const glow = useMemo(() => createGlowMaterial('#19e6ff', 0.9), [])
   const state = useRef({ riding: false, atTop: false })
+  const lang = useLang()
   const [x, , z] = LIFT.center
 
   useFrame(({ clock }) => {
@@ -65,7 +86,7 @@ function Elevator() {
       Math.abs(body.pos[1] - top) < 0.05 &&
       Math.abs(body.pos[0] - x) < LIFT.size[0] / 2 &&
       Math.abs(body.pos[2] - z) < LIFT.size[2] / 2
-    if (riding && !s.riding && top < LIFT.top - 1) playerSay('Ascensor arriba. Sin reuniones por el camino.')
+    if (riding && !s.riding && top < LIFT.top - 1) playerSay(tr(TEXTS.liftRide))
     s.riding = riding
     const atTop = top >= LIFT.top - 0.01
     if (atTop && !s.atTop && riding) sfx.ding()
@@ -104,7 +125,7 @@ function Elevator() {
         anchorX="center"
         material-toneMapped={false}
       >
-        ASCENSOR
+        {TEXTS.liftSign[lang]}
       </Text>
     </group>
   )
@@ -114,6 +135,11 @@ function Elevator() {
 
 const DUCK_RADIUS = 0.55
 const YELLOW = '#ffd426'
+/** Lo que protesta el pato, por orden, cada vez que lo empujas. */
+const DUCK_LINES: Localized<string[]> = {
+  es: ['¡CUAC!', '¿Y los tests?', '¡CUAC! Explícame el bug', 'Cuac. Era un punto y coma'],
+  en: ['QUACK!', 'Where are the tests?', 'QUACK! Explain the bug to me', 'Quack. It was a semicolon'],
+}
 
 /**
  * Pato de goma gigante (el de depurar): se puede empujar por todo el
@@ -166,7 +192,7 @@ function Duck() {
         s.wobble = 1
         s.count++
         sfx.quack()
-        const lines = ['¡CUAC!', '¿Y los tests?', '¡CUAC! Explícame el bug', 'Cuac. Era un punto y coma']
+        const lines = tr(DUCK_LINES)
         setQuack({ text: lines[s.count % lines.length], shownAt: now })
       }
     }
@@ -272,13 +298,31 @@ const BUTTON = world.props.button
 const SERVER = world.props.server
 const BUTTON_TOP = BUTTON.center[1] + BUTTON.size[1] / 2
 
-/** Lo que puede salir mal un viernes. Va rotando. */
-const ERRORS = [
-  { title: 'NullPointerException', detail: 'at Viernes.tarde(Produccion.java:1700)' },
-  { title: 'Segmentation fault (core dumped)', detail: 'El core era el de IA. Ups.' },
-  { title: 'undefined is not a function', detail: 'Clásico. En local iba perfecto.' },
-  { title: 'Out of memory', detail: 'El modelo se ha comido toda la RAM. Y el postre.' },
-  { title: 'Todo roto. Todo.', detail: 'git blame dice que has sido tú.' },
+/**
+ * Lo que puede salir mal un viernes. Va rotando. Los nombres de error reales
+ * se quedan en inglés en los dos idiomas, como en la vida misma.
+ */
+const ERRORS: Array<{ title: Localized; detail: Localized }> = [
+  {
+    title: { es: 'NullPointerException', en: 'NullPointerException' },
+    detail: { es: 'at Viernes.tarde(Produccion.java:1700)', en: 'at Friday.afternoon(Production.java:1700)' },
+  },
+  {
+    title: { es: 'Segmentation fault (core dumped)', en: 'Segmentation fault (core dumped)' },
+    detail: { es: 'El core era el de IA. Ups.', en: 'The core was the AI one. Oops.' },
+  },
+  {
+    title: { es: 'undefined is not a function', en: 'undefined is not a function' },
+    detail: { es: 'Clásico. En local iba perfecto.', en: 'Classic. It ran perfectly on localhost.' },
+  },
+  {
+    title: { es: 'Out of memory', en: 'Out of memory' },
+    detail: { es: 'El modelo se ha comido toda la RAM. Y el postre.', en: 'The model ate all the RAM. And dessert.' },
+  },
+  {
+    title: { es: 'Todo roto. Todo.', en: 'Everything is broken. Everything.' },
+    detail: { es: 'git blame dice que has sido tú.', en: 'git blame says it was you.' },
+  },
 ]
 
 const GRID = 3
@@ -338,6 +382,7 @@ function DeployServer() {
     [],
   )
   const state = useRef({ phase: 'idle' as Phase, since: 0, pressed: false, count: 0 })
+  const lang = useLang()
 
   useFrame(({ clock, gl, size }, delta) => {
     const s = state.current
@@ -360,8 +405,8 @@ function DeployServer() {
         s.phase = 'alarm'
         s.since = t
         sfx.alarm()
-        playerSay('Deploy en viernes… ¿qué puede salir mal?')
-      } else playerSay('Ya está roto. No lo rompas más.')
+        playerSay(tr(TEXTS.deployPress))
+      } else playerSay(tr(TEXTS.deployAgain))
     }
     s.pressed = on
     if (button.current) {
@@ -393,9 +438,12 @@ function DeployServer() {
       if (flash.current) flash.current.intensity = 900
       shake.value = 1.1
       sfx.explosion()
-      game.setCrash({ id: s.count, ...ERRORS[s.count % ERRORS.length] })
+      // El store guarda texto plano: el error se traduce en el momento de reventar.
+      const error = ERRORS[s.count % ERRORS.length]
+      const crashLang = currentLang()
+      game.setCrash({ id: s.count, title: error.title[crashLang], detail: error.detail[crashLang] })
       s.count++
-      playerSay('En mi máquina funcionaba…')
+      playerSay(tr(TEXTS.deployBoom))
     } else if (s.phase === 'down') {
       // Los trozos caen, rebotan y se quedan tirados por el suelo.
       const rest = parts.cell[1] / 2
@@ -428,7 +476,7 @@ function DeployServer() {
       if (elapsed > 1.3) {
         s.phase = 'idle'
         game.setCrash(null)
-        playerSay('Rollback hecho. Aquí no ha pasado nada.')
+        playerSay(tr(TEXTS.deployRollback))
       }
     }
 
@@ -499,7 +547,7 @@ function DeployServer() {
           anchorY="middle"
           material-toneMapped={false}
         >
-          (en viernes)
+          {TEXTS.deployDay[lang]}
         </Text>
       </group>
 
@@ -585,7 +633,7 @@ function Portals() {
       s.armed = false
       shake.value = 0.25
       sfx.portal()
-      if (Math.random() < 0.5) playerSay(i === 0 ? 'Atajo desbloqueado.' : 'Y vuelta abajo.')
+      if (Math.random() < 0.5) playerSay(tr(i === 0 ? TEXTS.portalUp : TEXTS.portalDown))
       // Uno por vez: sin esto, al llegar al otro portal volvería a entrar en él.
       break
     }
@@ -627,6 +675,7 @@ function CoffeeMachine() {
   const burst = useMemo(() => createBurstGeometry(18, 1), [])
   const neon = useMemo(() => createNeonMaterial('#ff9f1c', 1.3), [])
   const state = useRef({ ready: 0, nextSteam: 0 })
+  const lang = useLang()
   const front = COFFEE.center[2] + COFFEE.size[2] / 2
 
   useFrame(({ clock, gl, size }) => {
@@ -645,7 +694,7 @@ function CoffeeMachine() {
       s.ready = t + 12
       game.drinkCoffee(8)
       sfx.sip()
-      playerSay('Café. Ahora programo a 2x.')
+      playerSay(tr(TEXTS.coffeeSip))
     }
   })
 
@@ -677,7 +726,7 @@ function CoffeeMachine() {
           anchorY="middle"
           material-toneMapped={false}
         >
-          CAFÉ
+          {TEXTS.coffeeSign[lang]}
         </Text>
       </group>
       <points geometry={burst} material={steam} frustumCulled={false} />

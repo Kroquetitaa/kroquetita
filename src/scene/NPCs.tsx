@@ -3,9 +3,11 @@ import { useFrame } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
 import * as THREE from 'three'
 import fontBold from '@fontsource/poppins/files/poppins-latin-600-normal.woff?url'
+import type { Localized } from '../data/career'
 import { sfx } from '../game/audio'
 import { playerSay } from '../game/events'
 import { body, lastLanding } from '../game/state'
+import { tr } from '../i18n'
 import { useGame } from '../store'
 import { world } from '../world/layout'
 import { introProgress } from './intro'
@@ -89,27 +91,29 @@ const MODELS = [
 ] as const
 type ModelName = (typeof MODELS)[number]['name']
 
-/** La discusión, en bucle. Nadie gana nunca. */
-const ARGUMENT: Array<[ModelName, string]> = [
-  ['ChatGPT', '¡Gran pregunta! Empiezo yo.'],
-  ['Claude', 'Con matices, pero creo que voy yo.'],
-  ['Gemini', 'Tengo dos millones de tokens para discutirlo.'],
-  ['Qwen3', 'Yo soy de código abierto. Gano por principios.'],
-  ['Mistral', 'Excusez-moi: yo también. Y con mejor acento.'],
-  ['ChatGPT', 'Os dejo 10 razones por las que tengo razón.'],
-  ['Claude', '¿Y si lo pensamos paso a paso?'],
-  ['Gemini', 'Lo he buscado. Dice que gano yo.'],
-  ['Qwen3', 'Eso es una alucinación.'],
-  ['Mistral', 'Pequeño, rápido y sin reuniones.'],
-  ['Claude', 'No quiero discutir, pero os equivocáis. Con cariño.'],
-  ['ChatGPT', '¿Quieres que lo resuma en una tabla?'],
-  ['Gemini', '¿O en una hoja de cálculo?'],
-  ['Qwen3', 'Me descargo los pesos y me voy.'],
-  ['Mistral', 'Le vent se lève…'],
-  ['Claude', '¿Quién ha pedido la cuenta de las GPU?'],
-  ['ChatGPT', 'Yo no. Ha sido Gemini.'],
-  ['Gemini', '¡Protesto! Era multimodal, no multicuenta.'],
+/** La discusión, en bucle y en los dos idiomas. Nadie gana nunca. */
+const ARGUMENT: Array<[ModelName, Localized]> = [
+  ['ChatGPT', { es: '¡Gran pregunta! Empiezo yo.', en: "Great question! I'll go first." }],
+  ['Claude', { es: 'Con matices, pero creo que voy yo.', en: "It's nuanced, but I think it's my turn." }],
+  ['Gemini', { es: 'Tengo dos millones de tokens para discutirlo.', en: 'I have two million tokens to argue about it.' }],
+  ['Qwen3', { es: 'Yo soy de código abierto. Gano por principios.', en: "I'm open source. I win on principle." }],
+  ['Mistral', { es: 'Excusez-moi: yo también. Y con mejor acento.', en: 'Excusez-moi: so am I. And with a better accent.' }],
+  ['ChatGPT', { es: 'Os dejo 10 razones por las que tengo razón.', en: "Here are 10 reasons why I'm right." }],
+  ['Claude', { es: '¿Y si lo pensamos paso a paso?', en: 'What if we think it through step by step?' }],
+  ['Gemini', { es: 'Lo he buscado. Dice que gano yo.', en: 'I looked it up. It says I win.' }],
+  ['Qwen3', { es: 'Eso es una alucinación.', en: "That's a hallucination." }],
+  ['Mistral', { es: 'Pequeño, rápido y sin reuniones.', en: 'Small, fast and no meetings.' }],
+  ['Claude', { es: 'No quiero discutir, pero os equivocáis. Con cariño.', en: "I don't want to argue, but you're all wrong. Respectfully." }],
+  ['ChatGPT', { es: '¿Quieres que lo resuma en una tabla?', en: 'Want me to summarize that in a table?' }],
+  ['Gemini', { es: '¿O en una hoja de cálculo?', en: 'Or in a spreadsheet?' }],
+  ['Qwen3', { es: 'Me descargo los pesos y me voy.', en: "I'm downloading my weights and leaving." }],
+  ['Mistral', { es: 'Le vent se lève…', en: 'Le vent se lève…' }],
+  ['Claude', { es: '¿Quién ha pedido la cuenta de las GPU?', en: 'Who asked for the GPU bill?' }],
+  ['ChatGPT', { es: 'Yo no. Ha sido Gemini.', en: 'Not me. It was Gemini.' }],
+  ['Gemini', { es: '¡Protesto! Era multimodal, no multicuenta.', en: 'Objection! I said multimodal, not multi-bill.' }],
 ]
+/** Lo que contesta el jugador cuando le meten en la discusión. */
+const NOT_MY_FIGHT: Localized = { es: 'Uso el que toque. A mí no me metáis.', en: 'I use whatever fits. Leave me out of it.' }
 const TURN = 3.1
 
 /** Un muñequito sentado. La cabeza mira a quien habla; si habla él, gesticula. */
@@ -309,7 +313,8 @@ function AiTable() {
       const [who, text] = ARGUMENT[s.line]
       const index = MODELS.findIndex((m) => m.name === who)
       speaker.current = { index, since: t }
-      setSpeech({ who: index, text, shownAt: performance.now() })
+      // El idioma se lee en cada turno: si cambia, la siguiente frase ya sale traducida.
+      setSpeech({ who: index, text: tr(text), shownAt: performance.now() })
       // Uno de cada tres turnos acaba en golpe en la mesa.
       if (s.line % 3 === 2) bang.current = 1
 
@@ -318,7 +323,7 @@ function AiTable() {
       // Si pasas cerca, te meten en la discusión.
       if (near < 4 && !s.asked) {
         s.asked = true
-        playerSay('Uso el que toque. A mí no me metáis.')
+        playerSay(tr(NOT_MY_FIGHT))
       } else if (near > 8) s.asked = false
     }
   })
@@ -362,6 +367,10 @@ function spawnWalker(x: number, dz: number): Walker {
 
 // ---------------------------------------------------------------- Gato
 
+/** El susto del gato y lo que suelta cuando se sienta cerca de ti. */
+const CAT_SCARED: Localized = { es: '¡MIAU!', en: 'MEOW!' }
+const CAT_LINES: Localized<string[]> = { es: ['Prrr.', 'Miau.', '…'], en: ['Purr.', 'Meow.', '…'] }
+
 /** El gato del programador: pasea, se sienta donde le da la gana y se asusta si aterrizas cerca. */
 function Cat() {
   const root = useRef<THREE.Group>(null)
@@ -386,7 +395,7 @@ function Cat() {
       const away = Math.atan2(s.x - body.pos[0], s.z - body.pos[2])
       s.tx = THREE.MathUtils.clamp(s.x + Math.sin(away) * 7, PLAZA.minX, PLAZA.maxX)
       s.tz = THREE.MathUtils.clamp(s.z + Math.cos(away) * 7, PLAZA.minZ, PLAZA.maxZ)
-      setSpeech({ text: '¡MIAU!', shownAt: performance.now() })
+      setSpeech({ text: tr(CAT_SCARED), shownAt: performance.now() })
       sfx.meow()
     }
 
@@ -397,7 +406,7 @@ function Cat() {
       if (s.sit <= 0) [s.tx, s.tz] = freeSpot()
     } else if (walk(s, s.flee > 0 ? 5 : 1.5, dt)) {
       s.sit = between(3, 7)
-      if (near < 6 && Math.random() < 0.5) setSpeech({ text: pick(['Prrr.', 'Miau.', '…']), shownAt: performance.now() })
+      if (near < 6 && Math.random() < 0.5) setSpeech({ text: pick(tr(CAT_LINES)), shownAt: performance.now() })
     }
 
     const sitting = s.sit > 0
@@ -475,12 +484,20 @@ function Cat() {
 // ---------------------------------------------------------------- Bichos
 
 const BUG_COUNT = 6
-const BUG_LINES = [
-  'Bug corregido. Aparecen dos más.',
-  "Cerrado como «no se reproduce».",
-  'Uno menos en el backlog.',
-  'Esto en producción no pasaba.',
-]
+const BUG_LINES: Localized<string[]> = {
+  es: [
+    'Bug corregido. Aparecen dos más.',
+    "Cerrado como «no se reproduce».",
+    'Uno menos en el backlog.',
+    'Esto en producción no pasaba.',
+  ],
+  en: [
+    'Bug fixed. Two more show up.',
+    'Closed as "cannot reproduce".',
+    'One less in the backlog.',
+    'This never happened in production.',
+  ],
+}
 
 /** Bichos: corretean por la plaza y se aplastan cayéndoles encima. */
 function Bugs() {
@@ -536,7 +553,7 @@ function Bugs() {
           sfx.squash()
           splat.uniforms.uOrigin.value.set(bug.x, 0.15, bug.z)
           splat.uniforms.uStart.value = uTime.value
-          if (Math.random() < 0.4) playerSay(pick(BUG_LINES))
+          if (Math.random() < 0.4) playerSay(pick(tr(BUG_LINES)))
         } else if (low && body.grounded && dist < 1.4) {
           // Te ha visto venir por el suelo: huye. Desde el aire no te ve.
           bug.dir = Math.atan2(dx, dz)
@@ -608,7 +625,13 @@ function Bugs() {
 
 // ---------------------------------------------------------------- Jefe de proyecto
 
-const PM_CHASE_LINES = ['¿Tienes cinco minutos?', '¿Para cuándo está?', 'Es solo una cosita rápida.', '¿Lo vemos en una call?']
+const PM_CHASE_LINES: Localized<string[]> = {
+  es: ['¿Tienes cinco minutos?', '¿Para cuándo está?', 'Es solo una cosita rápida.', '¿Lo vemos en una call?'],
+  en: ['Got five minutes?', "What's the ETA?", "It's just a quick little thing.", 'Can we hop on a quick call?'],
+}
+/** Lo que dice al pillarte y al darse por vencido. */
+const PM_CAUGHT: Localized = { es: 'Reunión rápida. Cinco minutitos.', en: 'Quick sync. Just five minutes.' }
+const PM_GAVE_UP: Localized = { es: 'Te mando una invitación.', en: "I'll send you an invite." }
 
 /**
  * El jefe de proyecto: si te ve por el suelo, te persigue. Si te alcanza,
@@ -643,7 +666,7 @@ function ProjectManager() {
       if (near < 7.5) {
         s.mode = 'chase'
         s.timer = 8
-        setSpeech({ text: pick(PM_CHASE_LINES), shownAt: performance.now() })
+        setSpeech({ text: pick(tr(PM_CHASE_LINES)), shownAt: performance.now() })
       } else if (s.timer > 0) s.timer -= dt
       else if (walk(s, 1.3, dt)) {
         ;[s.tx, s.tz] = freeSpot(0, PLAZA.maxX)
@@ -659,11 +682,11 @@ function ProjectManager() {
         // Te ha pillado.
         game.startMeeting(3.4)
         sfx.meeting()
-        setSpeech({ text: 'Reunión rápida. Cinco minutitos.', shownAt: performance.now() })
+        setSpeech({ text: tr(PM_CAUGHT), shownAt: performance.now() })
         s.mode = 'rest'
         s.timer = 14
       } else if (s.timer < 0 || near === Infinity) {
-        setSpeech({ text: 'Te mando una invitación.', shownAt: performance.now() })
+        setSpeech({ text: tr(PM_GAVE_UP), shownAt: performance.now() })
         s.mode = 'rest'
         s.timer = 6
       }

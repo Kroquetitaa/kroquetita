@@ -6,6 +6,7 @@ import { body } from '../game/state'
 import { useGame } from '../store'
 import { world } from '../world/layout'
 import { Blocks } from './Blocks'
+import { Detail } from './Detail'
 import { introProgress } from './intro'
 import {
   createBeamMaterial,
@@ -18,6 +19,8 @@ import { NPCs } from './NPCs'
 import { Props } from './Props'
 import { Scenery } from './Scenery'
 import { Sky } from './Sky'
+import { Timeline } from './Timeline'
+import { Workstation } from './Workstation'
 
 const FLAT = -Math.PI / 2
 
@@ -158,6 +161,10 @@ export function World() {
       <Floor />
       <Sky />
       <Blocks />
+      <Detail>
+        <Timeline />
+        <Workstation />
+      </Detail>
       <Scenery />
       <Props />
       <NPCs />

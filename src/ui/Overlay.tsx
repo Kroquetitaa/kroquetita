@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { profile, stages } from '../data/career'
+import { durationOf, linesOf, periodOf, profile, stages, type Lang } from '../data/career'
 import { isAudioRunning, setMuted, sfx, unlockAudio } from '../game/audio'
-import { setMusicIntensity } from '../game/music'
+import { setMusicIntensity, setMusicStyle } from '../game/music'
 import { input } from '../game/input'
+import { ui, useLang, useUI } from '../i18n'
 import { useGame } from '../store'
 
 const Icon = {
@@ -28,6 +29,13 @@ const Icon = {
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M4 10v4h3l4 3.5v-11L7 10z" />
       <path d="M15.5 9.5l5 5M20.5 9.5l-5 5" />
+    </svg>
+  ),
+  music: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M9 17V6l10-2v11" />
+      <circle cx="6.5" cy="17" r="2.5" />
+      <circle cx="16.5" cy="15" r="2.5" />
     </svg>
   ),
   exit: (
@@ -93,6 +101,9 @@ function Brand() {
 function StagePanel({ hidden }: { hidden: boolean }) {
   const index = useGame((s) => s.stage)
   const setStage = useGame((s) => s.setStage)
+  const accent = useGame((s) => s.accents[s.stage])
+  const lang = useLang()
+  const t = useUI()
   const stage = stages[index]
 
   useEffect(() => {
@@ -107,21 +118,38 @@ function StagePanel({ hidden }: { hidden: boolean }) {
   return (
     <section
       className={`career ${hidden ? 'is-hidden' : ''}`}
-      style={{ '--accent': stage.color } as React.CSSProperties}
+      style={{ '--accent': accent } as React.CSSProperties}
       aria-hidden={hidden}
-      aria-label="Trayectoria"
+      aria-label={t.career}
     >
       <div className="career__body" key={index}>
         {stage.logo && <img src={stage.logo} alt="" />}
         <div>
-          {stage.part && <p className="career__part">{stage.part}</p>}
+          {stage.part && <p className="career__part">{stage.part[lang]}</p>}
           <h2>{stage.title}</h2>
           <p className="career__role">{stage.role}</p>
-          <p className="career__period">{stage.period}</p>
+          <p className="career__period">
+            {periodOf(stage, lang)} · {durationOf(stage, lang)}
+          </p>
         </div>
       </div>
+      {/* Lo que guarda la caja: tecnologías y, si los hay, logros */}
+      <div className="career__more" key={`more-${index}`}>
+        <ul className="career__stack">
+          {stage.stack.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+        {linesOf(stage, lang).length > 0 && (
+          <ul className="career__lines">
+            {linesOf(stage, lang).map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )}
+      </div>
       <div className="career__nav">
-        <button type="button" onClick={() => setStage(index - 1, true)} aria-label="Etapa anterior" tabIndex={hidden ? -1 : 0}>
+        <button type="button" onClick={() => setStage(index - 1, true)} aria-label={t.previousStage} tabIndex={hidden ? -1 : 0}>
           ‹
         </button>
         <ol>
@@ -138,7 +166,7 @@ function StagePanel({ hidden }: { hidden: boolean }) {
             </li>
           ))}
         </ol>
-        <button type="button" onClick={() => setStage(index + 1, true)} aria-label="Etapa siguiente" tabIndex={hidden ? -1 : 0}>
+        <button type="button" onClick={() => setStage(index + 1, true)} aria-label={t.nextStage} tabIndex={hidden ? -1 : 0}>
           ›
         </button>
         <span>
@@ -150,15 +178,17 @@ function StagePanel({ hidden }: { hidden: boolean }) {
 }
 
 function Loader() {
+  const t = useUI()
   return (
     <div className="loader" role="status">
       <span className="loader__ring" />
-      <span className="loader__label">Compilando shaders…</span>
+      <span className="loader__label">{t.loading}</span>
     </div>
   )
 }
 
 function Hero({ hidden }: { hidden: boolean }) {
+  const lang = useLang()
   return (
     <section className={`hero ${hidden ? 'is-hidden' : ''}`} aria-hidden={hidden}>
       <h1>
@@ -167,7 +197,7 @@ function Hero({ hidden }: { hidden: boolean }) {
         ))}
       </h1>
       <p>
-        {profile.intro.map((part, i) =>
+        {profile.intro[lang].map((part, i) =>
           typeof part === 'string' ? part : <strong key={i}>{part.strong}</strong>,
         )}
       </p>
@@ -184,6 +214,7 @@ function Hero({ hidden }: { hidden: boolean }) {
 
 /** Joystick y botón de salto para pantallas táctiles. */
 function TouchControls() {
+  const t = useUI()
   const pad = useRef<HTMLDivElement>(null)
   const [knob, setKnob] = useState({ x: 0, y: 0 })
 
@@ -237,17 +268,51 @@ function TouchControls() {
           input.jumpQueued = true
         }}
       >
-        Saltar
+        {t.jump}
       </button>
     </div>
   )
 }
 
+/** Selector de idioma, arriba a la derecha. */
+function LanguageSwitch() {
+  const lang = useLang()
+  const t = useUI()
+  const setLang = useGame((s) => s.setLang)
+
+  useEffect(() => {
+    document.documentElement.lang = lang
+  }, [lang])
+
+  const options: Array<{ code: Lang; label: string; name: string }> = [
+    { code: 'es', label: 'ES', name: 'Español' },
+    { code: 'en', label: 'EN', name: 'English' },
+  ]
+  return (
+    <div className="lang" role="group" aria-label={t.language}>
+      {options.map((option) => (
+        <button
+          key={option.code}
+          type="button"
+          className={lang === option.code ? 'is-active' : ''}
+          aria-pressed={lang === option.code}
+          title={option.name}
+          onClick={() => setLang(option.code)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export function Overlay() {
+  const t = useUI()
   const ready = useGame((s) => s.ready)
   const mode = useGame((s) => s.mode)
   const camera = useGame((s) => s.camera)
   const muted = useGame((s) => s.muted)
+  const music = useGame((s) => s.music)
   const party = useGame((s) => s.party)
   const crash = useGame((s) => s.crash)
   const bugs = useGame((s) => s.bugs)
@@ -265,13 +330,14 @@ export function Overlay() {
   const caffeinated = performance.now() < boostUntil
   const collected = useGame((s) => s.collected.length)
   const total = useGame((s) => s.total)
-  const { play, exit, toggleCamera, toggleMuted, restart } = useGame.getState()
+  const { play, exit, toggleCamera, toggleMuted, toggleMusic, restart } = useGame.getState()
 
   const playing = mode === 'play'
   const won = collected === total
   const [touch] = useState(() => window.matchMedia('(pointer: coarse)').matches)
 
   useEffect(() => setMuted(muted), [muted])
+  useEffect(() => setMusicStyle(music), [music])
   useEffect(() => setMusicIntensity(won ? 2 : playing ? 1 : 0), [playing, won])
 
   // El cartel de victoria se puede cerrar; vuelve a salir en la siguiente partida.
@@ -315,7 +381,7 @@ export function Overlay() {
       const game = useGame.getState()
       game.toggleParty()
       sfx.secret()
-      setToast(game.party ? 'Modo fiesta desactivado' : 'Modo fiesta: neones arcoíris y gravedad lunar')
+      setToast(game.party ? ui().partyOff : ui().partyOn)
       window.clearTimeout(timer)
       timer = window.setTimeout(() => setToast(''), 3800)
     }
@@ -330,6 +396,7 @@ export function Overlay() {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
       const game = useGame.getState()
+      if (e.code === 'KeyM') game.toggleMusic()
       if (game.mode === 'intro') {
         if (e.code === 'KeyE' || e.code === 'Enter') {
           unlockAudio()
@@ -358,6 +425,7 @@ export function Overlay() {
       <div className={`curtain ${ready ? 'is-open' : ''}`} />
 
       <Brand />
+      <LanguageSwitch />
 
       <Hero hidden={playing} />
       <StagePanel hidden={playing || !ready} />
@@ -369,36 +437,34 @@ export function Overlay() {
         <span className="coins__count">
           {collected} / {total}
         </span>
-        <span className="coins__label">{won ? '¡Todas!' : 'Monedas'}</span>
+        <span className="coins__label">{won ? t.allCoins : t.coins}</span>
         {bugs > 0 && (
-          <span className="coins__bugs" title="Bichos aplastados">
+          <span className="coins__bugs" title={t.bugs}>
             <i aria-hidden="true" />
             {bugs}
           </span>
         )}
-        {caffeinated && <span className="coins__boost">Café ×1,7</span>}
+        {caffeinated && <span className="coins__boost">{t.coffee}</span>}
       </div>
 
       {inMeeting && playing && (
         <div className="meeting" role="alert">
-          <p className="meeting__title">Reunión de seguimiento</p>
-          <p>Podía haber sido un email.</p>
+          <p className="meeting__title">{t.meetingTitle}</p>
+          <p>{t.meetingText}</p>
           <span className="meeting__bar" />
         </div>
       )}
 
       {won && playing && !dismissed && (
         <div className="win" role="status">
-          <p className="win__title">¡Recorrido completado!</p>
-          <p className="win__text">
-            {total} de {total} monedas: has subido por toda mi trayectoria.
-          </p>
+          <p className="win__title">{t.winTitle}</p>
+          <p className="win__text">{t.winText(total)}</p>
           <div className="win__actions">
             <button type="button" onClick={restart}>
-              Jugar otra vez
+              {t.playAgain}
             </button>
             <button type="button" className="is-quiet" onClick={() => setDismissed(true)}>
-              Seguir explorando
+              {t.keepExploring}
             </button>
           </div>
         </div>
@@ -412,16 +478,15 @@ export function Overlay() {
               <span />
               <span />
               <span />
-              <p>produccion — bash</p>
+              <p>{t.crashTitle}</p>
             </div>
             <pre>
-              <span>$ ./deploy.sh --prod --viernes</span>
-              <span>&gt; Subiendo cambios ............ OK</span>
-              <span>&gt; Ejecutando migraciones ...... OK</span>
-              <span>&gt; Reiniciando servicios ....... </span>
+              {t.crashLines.map((line) => (
+                <span key={line}>{line}</span>
+              ))}
               <span className="crash__error">[X] ERROR 500 · {crash.title}</span>
               <span className="crash__detail">    {crash.detail}</span>
-              <span className="crash__rollback">&gt; Rollback automático en marcha…</span>
+              <span className="crash__rollback">{t.crashRollback}</span>
             </pre>
           </div>
         </>
@@ -437,17 +502,17 @@ export function Overlay() {
         {ready && !playing && (
           <button type="button" className="pill pill--action" onClick={start}>
             <kbd>E</kbd>
-            <span>Jugar</span>
+            <span>{t.play}</span>
           </button>
         )}
         {playing && !touch && (
           <div className="pill">
             <kbd>WASD</kbd>
-            <span>Mover</span>
+            <span>{t.move}</span>
             <kbd>Shift</kbd>
-            <span>Correr</span>
-            <kbd>Espacio</kbd>
-            <span>Saltar ×2</span>
+            <span>{t.run}</span>
+            <kbd>{t.space}</kbd>
+            <span>{t.jumpTwice}</span>
           </div>
         )}
       </div>
@@ -457,29 +522,40 @@ export function Overlay() {
       <div className="toolbar">
         {playing && (
           <>
-            <button type="button" onClick={exit} title="Salir (Esc)" aria-label="Salir del juego">
+            <button type="button" onClick={exit} title={t.exit} aria-label={t.exitLabel}>
               {Icon.exit}
             </button>
             <button
               type="button"
               onClick={toggleCamera}
-              title={`Cámara: ${camera === 'wide' ? 'amplia' : 'cercana'} (C)`}
-              aria-label="Cambiar cámara"
+              title={t.camera(camera === 'wide')}
+              aria-label={t.cameraLabel}
             >
               {Icon.camera}
             </button>
-            <button type="button" onClick={restart} title="Reiniciar (R)" aria-label="Reiniciar">
+            <button type="button" onClick={restart} title={t.restart} aria-label={t.restartLabel}>
               {Icon.restart}
             </button>
           </>
         )}
-        {ready && !soundOn && <span className="toolbar__hint">Haz clic para activar la música</span>}
+        {ready && !soundOn && <span className="toolbar__hint">{t.musicHint}</span>}
+        {ready && (
+          <button
+            type="button"
+            className={music === 'house' ? 'is-on' : ''}
+            onClick={toggleMusic}
+            title={t.music(music === 'house')}
+            aria-label={t.musicLabel}
+          >
+            {Icon.music}
+          </button>
+        )}
         {ready && (
           <button
             type="button"
             onClick={toggleMuted}
-            title={muted ? 'Activar sonido' : 'Silenciar'}
-            aria-label={muted ? 'Activar sonido' : 'Silenciar'}
+            title={muted ? t.unmute : t.mute}
+            aria-label={muted ? t.unmute : t.mute}
             aria-pressed={muted}
           >
             {muted ? Icon.muted : Icon.sound}

@@ -4,14 +4,13 @@ import { Billboard, Stars, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import fontBold from '@fontsource/poppins/files/poppins-latin-600-normal.woff?url'
 import { profile } from '../data/career'
-import { world } from '../world/layout'
+import { BRAIN_SCALE, world } from '../world/layout'
 import { introProgress } from './intro'
 import { createAuroraMaterial, createNodeMaterial, createStreakMaterial, uParty } from './materials/shaders'
 
 const CORE = new THREE.Vector3(...world.core)
-const BRAIN_SCALE = 1.9
 /** Por donde entran los datos de cada etapa: la base del tronco. */
-const STEM = new THREE.Vector3(CORE.x, CORE.y - 3.2 * BRAIN_SCALE, CORE.z)
+const STEM = new THREE.Vector3(...world.stem)
 
 /** Aleatorio determinista: el cielo es idéntico en cada carga. */
 const rng = (seed: number) => () => {
@@ -54,17 +53,21 @@ function buildBrain() {
       const u = rand() * 2 - 1
       const a = rand() * Math.PI * 2
       const r = Math.sqrt(1 - u * u)
-      const outer = i < 100
+      const outer = i < 110
       const depth = outer ? 1 : 0.4 + rand() * 0.4
       const fold = 1 + 0.07 * Math.sin(a * 6 + u * 9) + (rand() - 0.5) * 0.06
       let x = Math.abs(Math.cos(a) * r) * 1.75 * fold * depth
       let y = u * 1.55 * fold * depth
       const z = Math.sin(a) * r * 2.5 * fold * depth
-      // El lóbulo frontal es algo más estrecho y la base, plana.
+      // El lóbulo frontal es algo más estrecho. La base no es plana: baja en el
+      // lóbulo temporal (centro) y sube bajo el frontal y sobre el cerebelo,
+      // que es lo que hace reconocible el perfil.
       const taper = 1 - 0.16 * Math.max(0, z / 2.5)
+      const ramp = (v: number, a: number, b: number) => Math.min(1, Math.max(0, (v - a) / (b - a)))
+      const base = -1.1 + 0.55 * ramp(z, 0.7, 1.6) + 0.35 * ramp(-z, 0.9, 1.7)
       x *= taper
-      y = Math.max(y * taper, -1.05)
-      nodes.push(new THREE.Vector3(side * (x + 0.14), y, z))
+      y = Math.max(y * taper, base)
+      nodes.push(new THREE.Vector3(side * (x + 0.2), y, z))
       surface.push(outer)
       colors.push(
         z > 0.9 ? REGIONS.frontal : z < -1.1 ? REGIONS.occipital : y < -0.1 ? REGIONS.temporal : REGIONS.parietal,
@@ -80,10 +83,10 @@ function buildBrain() {
     surface.push(false)
     colors.push(REGIONS.cerebellum)
   }
-  // Tronco: una hilera que baja desde el centro.
+  // Tronco: corto, baja desde el centro y acaba en el eje de giro.
   const stemStart = nodes.length
-  for (let i = 0; i < 9; i++) {
-    nodes.push(new THREE.Vector3((rand() - 0.5) * 0.18, -1.15 - i * 0.26, -0.75 + i * 0.07))
+  for (let i = 0; i < 5; i++) {
+    nodes.push(new THREE.Vector3((rand() - 0.5) * 0.12, -1.15 - i * 0.22, -0.6 + i * 0.15))
     surface.push(false)
     colors.push(REGIONS.stem)
   }
@@ -100,7 +103,7 @@ function buildBrain() {
       const across = node.x * other.x < 0 && i < stemStart && j < stemStart
       if (across && (Math.abs(node.x) > 0.55 || Math.abs(other.x) > 0.55)) return
       const d = node.distanceTo(other)
-      if (d < 1.25) near.push({ j, d })
+      if (d < 1.05) near.push({ j, d })
     })
     near.sort((p, q) => p.d - q.d)
     for (const { j } of near.slice(0, 3)) {
@@ -204,7 +207,8 @@ function Brain() {
     const dt = Math.min(delta, 1 / 20)
     const appear = introProgress(2.4, 2.2)
     if (group.current) {
-      group.current.rotation.y = t * 0.14
+      // De perfil (que es como se reconoce un cerebro), balanceándose a los lados.
+      group.current.rotation.y = Math.PI / 2 + Math.sin(t * 0.22) * 0.55
       group.current.scale.setScalar(Math.max(0.001, appear * BRAIN_SCALE * (1 + Math.sin(t * 1.7) * 0.015)))
     }
     material.uniforms.uPixelRatio.value = gl.getPixelRatio() * (size.height / 900) * 13
@@ -249,7 +253,7 @@ function Brain() {
         <lineBasicMaterial
           vertexColors
           transparent
-          opacity={0.42}
+          opacity={0.34}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
           toneMapped={false}
@@ -286,7 +290,7 @@ function Brain() {
   )
 }
 
-/** Flujos de datos: una curva de cada logo a la base del cerebro, con pulsos viajando por ella. */
+/** Flujos de datos: de cada logo suben puntos de luz hasta la base del cerebro (sin línea que los una). */
 function Synapses({ perCurve = 3 }: { perCurve?: number }) {
   const pulses = useRef<THREE.InstancedMesh>(null)
 
@@ -301,26 +305,6 @@ function Synapses({ perCurve = 3 }: { perCurve?: number }) {
       }),
     [],
   )
-
-  // Todas las curvas en una sola geometría de segmentos (una draw call).
-  const lines = useMemo(() => {
-    const SEGMENTS = 36
-    const positions: number[] = []
-    const colors: number[] = []
-    const color = new THREE.Color()
-    curves.forEach((curve, i) => {
-      color.set(world.blocks[i].stage.color)
-      const pts = curve.getPoints(SEGMENTS)
-      for (let k = 0; k < SEGMENTS; k++) {
-        positions.push(pts[k].x, pts[k].y, pts[k].z, pts[k + 1].x, pts[k + 1].y, pts[k + 1].z)
-        colors.push(color.r, color.g, color.b, color.r, color.g, color.b)
-      }
-    })
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-    g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
-    return g
-  }, [curves])
 
   useLayoutEffect(() => {
     const mesh = pulses.current
@@ -354,26 +338,14 @@ function Synapses({ perCurve = 3 }: { perCurve?: number }) {
   })
 
   return (
-    <>
-      <lineSegments geometry={lines} frustumCulled={false}>
-        <lineBasicMaterial
-          vertexColors
-          transparent
-          opacity={0.2}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-        />
-      </lineSegments>
-      <instancedMesh
-        ref={pulses}
-        args={[undefined, undefined, curves.length * perCurve]}
-        frustumCulled={false}
-      >
-        <sphereGeometry args={[0.11, 12, 12]} />
-        <meshBasicMaterial toneMapped={false} />
-      </instancedMesh>
-    </>
+    <instancedMesh
+      ref={pulses}
+      args={[undefined, undefined, curves.length * perCurve]}
+      frustumCulled={false}
+    >
+      <sphereGeometry args={[0.11, 12, 12]} />
+      <meshBasicMaterial toneMapped={false} />
+    </instancedMesh>
   )
 }
 

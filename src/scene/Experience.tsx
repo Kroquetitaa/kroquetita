@@ -6,6 +6,7 @@ import { ToneMappingMode } from 'postprocessing'
 import * as THREE from 'three'
 import { celebrationTime, useGame } from '../store'
 import { CameraRig } from './CameraRig'
+import { Detail, DETAIL_LAYER } from './Detail'
 import { Fireworks } from './Celebration'
 import { Coins } from './Coins'
 import { Player } from './Player'
@@ -132,6 +133,11 @@ export function Experience() {
       dpr={[1, 1.75]}
       gl={{ antialias: false, powerPreference: 'high-performance' }}
       camera={{ fov: 32, near: 0.5, far: 260 }}
+      onCreated={({ camera, raycaster }) => {
+        // La capa de detalle se ve y se puede pulsar, pero no entra en reflejos ni sombras.
+        camera.layers.enable(DETAIL_LAYER)
+        raycaster.layers.enable(DETAIL_LAYER)
+      }}
     >
       <color attach="background" args={['#020203']} />
       <fog attach="fog" args={['#020203', 30, 100]} />
@@ -140,7 +146,9 @@ export function Experience() {
       <Suspense fallback={null}>
         <Reflections />
         <World />
-        <Coins />
+        <Detail>
+          <Coins />
+        </Detail>
         <Player />
         <Fireworks />
         <Runtime />

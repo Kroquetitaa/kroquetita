@@ -3,11 +3,13 @@ import { useFrame } from '@react-three/fiber'
 import { Billboard, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import fontMedium from '@fontsource/poppins/files/poppins-latin-500-normal.woff?url'
+import type { Localized } from '../data/career'
 import { sfx } from '../game/audio'
 import { onPlayerSay } from '../game/events'
 import { input } from '../game/input'
 import { stepBody } from '../game/physics'
 import { body, lastLanding, respawn } from '../game/state'
+import { tr } from '../i18n'
 import { celebrationTime, useGame } from '../store'
 import { world } from '../world/layout'
 import { introTime } from './intro'
@@ -19,28 +21,51 @@ const GLOW = '#ff8a1e'
 const DARK = '#15131c'
 const COIN_REACH = 0.75
 
-/** Frases del personaje. El humor es de programador, claro. */
+/**
+ * Frases del personaje, en los dos idiomas. El humor es de programador, claro.
+ * Las dos listas de cada tipo van en el mismo orden y con la misma longitud.
+ */
 const QUIPS = {
-  intro: ['Pulsa E. No muerdo.'],
-  idle: [
-    'sudo hazme un café',
-    'En mi máquina funciona',
-    'git push --force y a correr',
-    'No es un bug, es una feature',
-    '¿Has probado a reiniciar?',
-    'Compilando… excusas',
-    'Esto lo arreglo con IA',
-    'console.log("aquí")',
-    'Deploy en viernes, ¿qué puede salir mal?',
-    'Quedan 99 bugs en el código…',
-  ],
-  coin: ['¡Otra para el bote!', 'Cha-ching', 'Esto cotiza', '+1 de reputación'],
-  launch: ['¡YIJAAA!', '¡Escalando en vertical!'],
-  doubleJump: ['¡Parkour!', 'Salto con doble factor'],
-  fall: ['Ay. Rollback.', 'Eso no estaba en los tests'],
-  win: ['¡Ascenso conseguido!'],
-}
+  intro: { es: ['Pulsa E. No muerdo.'], en: ["Press E. I don't bite."] },
+  idle: {
+    es: [
+      'sudo hazme un café',
+      'En mi máquina funciona',
+      'git push --force y a correr',
+      'No es un bug, es una feature',
+      '¿Has probado a reiniciar?',
+      'Compilando… excusas',
+      'Esto lo arreglo con IA',
+      'console.log("aquí")',
+      'Deploy en viernes, ¿qué puede salir mal?',
+      'Quedan 99 bugs en el código…',
+    ],
+    en: [
+      'sudo make me a coffee',
+      'Works on my machine',
+      'git push --force and run',
+      "It's not a bug, it's a feature",
+      'Have you tried turning it off and on again?',
+      'Compiling… excuses',
+      "I'll fix this with AI",
+      'console.log("here")',
+      'Deploying on a Friday, what could go wrong?',
+      '99 little bugs in the code…',
+    ],
+  },
+  coin: {
+    es: ['¡Otra para el bote!', 'Cha-ching', 'Esto cotiza', '+1 de reputación'],
+    en: ['One more for the jar!', 'Cha-ching', 'Stonks', '+1 reputation'],
+  },
+  launch: { es: ['¡YIJAAA!', '¡Escalando en vertical!'], en: ['YEE-HAW!', 'Scaling vertically!'] },
+  doubleJump: { es: ['¡Parkour!', 'Salto con doble factor'], en: ['Parkour!', 'Two-factor jump'] },
+  fall: { es: ['Ay. Rollback.', 'Eso no estaba en los tests'], en: ['Ouch. Rollback.', "That wasn't in the tests"] },
+  win: { es: ['¡Ascenso conseguido!'], en: ['Promotion unlocked!'] },
+} satisfies Record<string, Localized<string[]>>
 type QuipKind = keyof typeof QUIPS
+
+/** Lo que dice al salir de la reunión. */
+const AFTER_MEETING: Localized = { es: 'Podía haber sido un email.', en: 'This could have been an email.' }
 
 type Face = 'normal' | 'blink' | 'wow' | 'happy'
 
@@ -255,7 +280,8 @@ export function Player() {
     const a = anim.current
     const now = performance.now()
     if (!force && now < a.nextQuip) return
-    const list = QUIPS[kind]
+    // El idioma se lee al hablar: si cambia a media partida, vale para la siguiente frase.
+    const list = tr(QUIPS[kind])
     // Sin repetir la última frase del mismo tipo.
     let pick = Math.floor(Math.random() * list.length)
     if (list.length > 1 && pick === a.last[kind]) pick = (pick + 1) % list.length
@@ -299,7 +325,7 @@ export function Player() {
       if (a.inMeeting && !meeting) {
         respawn()
         say('fall', true)
-        setBubble({ text: 'Podía haber sido un email.', shownAt: now })
+        setBubble({ text: tr(AFTER_MEETING), shownAt: now })
       }
       a.inMeeting = meeting
       const x = meeting ? 0 : input.stickX || input.x
