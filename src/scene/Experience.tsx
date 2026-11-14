@@ -1,6 +1,6 @@
-import { Suspense, useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Environment, Lightformer } from '@react-three/drei'
+import { Environment, Lightformer, PerformanceMonitor } from '@react-three/drei'
 import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
 import * as THREE from 'three'
@@ -10,6 +10,7 @@ import { Detail, DETAIL_LAYER } from './Detail'
 import { Fireworks } from './Celebration'
 import { Coins } from './Coins'
 import { Player } from './Player'
+import { Weather } from './Weather'
 import { World } from './World'
 import { startIntro } from './intro'
 import { uParty, uTime } from './materials/shaders'
@@ -126,11 +127,13 @@ function Runtime() {
 }
 
 export function Experience() {
+  // En el móvil se pinta con menos densidad de píxeles; y, si el equipo no llega, se baja sobre la marcha.
+  const [maxDpr, setMaxDpr] = useState(() => (window.matchMedia('(pointer: coarse)').matches ? 1.5 : 1.75))
   return (
     <Canvas
       flat
       shadows="percentage"
-      dpr={[1, 1.75]}
+      dpr={[1, maxDpr]}
       gl={{ antialias: false, powerPreference: 'high-performance' }}
       camera={{ fov: 32, near: 0.5, far: 260 }}
       onCreated={({ camera, raycaster }) => {
@@ -141,11 +144,13 @@ export function Experience() {
     >
       <color attach="background" args={['#020203']} />
       <fog attach="fog" args={['#020203', 30, 100]} />
+      <PerformanceMonitor onDecline={() => setMaxDpr((value) => Math.max(1, value - 0.25))} />
       <CameraRig />
       <Lights />
       <Suspense fallback={null}>
         <Reflections />
         <World />
+        <Weather />
         <Detail>
           <Coins />
         </Detail>

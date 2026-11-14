@@ -19,6 +19,7 @@ import { NPCs } from './NPCs'
 import { Props } from './Props'
 import { Scenery } from './Scenery'
 import { Sky } from './Sky'
+import { TechPark } from './TechPark'
 import { Timeline } from './Timeline'
 import { Workstation } from './Workstation'
 
@@ -167,6 +168,7 @@ export function World() {
       </Detail>
       <Scenery />
       <Props />
+      <TechPark />
       <NPCs />
       <Pads />
       <PointerLight />

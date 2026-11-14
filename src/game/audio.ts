@@ -132,6 +132,10 @@ export const sfx = {
   alarm() {
     ;[0, 0.16, 0.32].forEach((delay) => tone(980, 980, 0.1, 'square', 0.06, delay))
   },
+  thunder() {
+    noise(1.5, 0.3, 900, 60)
+    tone(72, 26, 1.1, 'sine', 0.2)
+  },
   explosion() {
     noise(0.9, 0.5, 2400, 90)
     tone(130, 28, 0.8, 'sine', 0.35)

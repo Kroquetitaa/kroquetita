@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { durationOf, linesOf, periodOf, profile, stages, type Lang } from '../data/career'
 import { isAudioRunning, setMuted, sfx, unlockAudio } from '../game/audio'
-import { setMusicIntensity, setMusicStyle } from '../game/music'
-import { input } from '../game/input'
-import { ui, useLang, useUI } from '../i18n'
-import { useGame } from '../store'
+import { setMusicIntensity } from '../game/music'
+import { input, isTyping } from '../game/input'
+import { MEDALS, ui, useLang, useUI } from '../i18n'
+import { ACHIEVEMENTS, useGame } from '../store'
+import { Terminal } from './Terminal'
 
 const Icon = {
   camera: (
@@ -31,11 +32,16 @@ const Icon = {
       <path d="M15.5 9.5l5 5M20.5 9.5l-5 5" />
     </svg>
   ),
-  music: (
+  terminal: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M9 17V6l10-2v11" />
-      <circle cx="6.5" cy="17" r="2.5" />
-      <circle cx="16.5" cy="15" r="2.5" />
+      <path d="M5 8l4 4-4 4M12 16h7" />
+    </svg>
+  ),
+  medal: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8 3l4 6 4-6" />
+      <circle cx="12" cy="15" r="5" />
+      <path d="M12 13v4" />
     </svg>
   ),
   exit: (
@@ -104,20 +110,31 @@ function StagePanel({ hidden }: { hidden: boolean }) {
   const accent = useGame((s) => s.accents[s.stage])
   const lang = useLang()
   const t = useUI()
+  const touring = useGame((s) => s.mode === 'tour')
   const stage = stages[index]
 
   useEffect(() => {
     if (hidden) return
-    const timer = window.setInterval(() => {
-      const game = useGame.getState()
-      if (performance.now() > game.stageHold) game.setStage(game.stage + 1)
-    }, 3800)
+    const timer = window.setInterval(
+      () => {
+        const game = useGame.getState()
+        if (performance.now() <= game.stageHold) return
+        // El recorrido acaba en la etapa actual: vuelta a la portada, con premio.
+        if (game.mode === 'tour' && game.stage === stages.length - 1) {
+          game.unlock('tour')
+          game.exit()
+          return
+        }
+        game.setStage(game.stage + 1)
+      },
+      touring ? 5200 : 3800,
+    )
     return () => window.clearInterval(timer)
-  }, [hidden])
+  }, [hidden, touring])
 
   return (
     <section
-      className={`career ${hidden ? 'is-hidden' : ''}`}
+      className={`career ${hidden ? 'is-hidden' : ''} ${touring ? 'is-touring' : ''}`}
       style={{ '--accent': accent } as React.CSSProperties}
       aria-hidden={hidden}
       aria-label={t.career}
@@ -274,6 +291,69 @@ function TouchControls() {
   )
 }
 
+/** Aviso que salta al conseguir un logro. */
+function MedalToast() {
+  const last = useGame((s) => s.lastMedal)
+  const lang = useLang()
+  const t = useUI()
+  const [shown, setShown] = useState<typeof last>(null)
+
+  useEffect(() => {
+    if (!last) return
+    setShown(last)
+    sfx.ding()
+    const timer = window.setTimeout(() => setShown(null), 4200)
+    return () => window.clearTimeout(timer)
+  }, [last])
+
+  if (!shown) return null
+  return (
+    <div className="medal-toast" role="status" key={shown.at}>
+      <span className="medal-toast__icon">{Icon.medal}</span>
+      <p>
+        <small>{t.medalUnlocked}</small>
+        {MEDALS[shown.id].title[lang]}
+      </p>
+    </div>
+  )
+}
+
+/** Panel con todos los logros: los conseguidos y la pista de los que faltan. */
+function MedalsPanel({ onClose }: { onClose: () => void }) {
+  const medals = useGame((s) => s.medals)
+  const lang = useLang()
+  const t = useUI()
+  return (
+    <section className="medals" aria-label={t.medals}>
+      <header>
+        <h2>
+          {t.medals}{' '}
+          <span>
+            {medals.length} / {ACHIEVEMENTS.length}
+          </span>
+        </h2>
+        <button type="button" onClick={onClose} aria-label={t.close}>
+          ×
+        </button>
+      </header>
+      <ul>
+        {ACHIEVEMENTS.map((id) => {
+          const done = medals.includes(id)
+          return (
+            <li key={id} className={done ? 'is-done' : ''}>
+              <span className="medals__icon">{Icon.medal}</span>
+              <p>
+                <strong>{done ? MEDALS[id].title[lang] : '???'}</strong>
+                {MEDALS[id].hint[lang]}
+              </p>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
+
 /** Selector de idioma, arriba a la derecha. */
 function LanguageSwitch() {
   const lang = useLang()
@@ -312,7 +392,9 @@ export function Overlay() {
   const mode = useGame((s) => s.mode)
   const camera = useGame((s) => s.camera)
   const muted = useGame((s) => s.muted)
-  const music = useGame((s) => s.music)
+  const terminal = useGame((s) => s.terminal)
+  const medalCount = useGame((s) => s.medals.length)
+  const [showMedals, setShowMedals] = useState(false)
   const party = useGame((s) => s.party)
   const crash = useGame((s) => s.crash)
   const bugs = useGame((s) => s.bugs)
@@ -326,18 +408,25 @@ export function Overlay() {
     const timer = window.setTimeout(() => tick((n) => n + 1), end + 30)
     return () => window.clearTimeout(timer)
   }, [meetingUntil, boostUntil])
+  // Sobrevivir a una reunión tiene premio.
+  useEffect(() => {
+    const wait = meetingUntil - performance.now()
+    if (wait <= 0) return
+    const timer = window.setTimeout(() => useGame.getState().unlock('meeting'), wait)
+    return () => window.clearTimeout(timer)
+  }, [meetingUntil])
   const inMeeting = performance.now() < meetingUntil
   const caffeinated = performance.now() < boostUntil
   const collected = useGame((s) => s.collected.length)
   const total = useGame((s) => s.total)
-  const { play, exit, toggleCamera, toggleMuted, toggleMusic, restart } = useGame.getState()
+  const { play, tour, exit, toggleCamera, toggleMuted, setTerminal, restart } = useGame.getState()
 
   const playing = mode === 'play'
+  const touring = mode === 'tour'
   const won = collected === total
   const [touch] = useState(() => window.matchMedia('(pointer: coarse)').matches)
 
   useEffect(() => setMuted(muted), [muted])
-  useEffect(() => setMusicStyle(music), [music])
   useEffect(() => setMusicIntensity(won ? 2 : playing ? 1 : 0), [playing, won])
 
   // El cartel de victoria se puede cerrar; vuelve a salir en la siguiente partida.
@@ -374,7 +463,7 @@ export function Overlay() {
     let progress = 0
     let timer = 0
     const onKey = (e: KeyboardEvent) => {
-      if (e.repeat) return
+      if (e.repeat || isTyping(e)) return
       progress = e.code === code[progress] ? progress + 1 : e.code === code[0] ? 1 : 0
       if (progress < code.length) return
       progress = 0
@@ -394,15 +483,25 @@ export function Overlay() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
+      if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || isTyping(e)) return
       const game = useGame.getState()
-      if (e.code === 'KeyM') game.toggleMusic()
-      if (game.mode === 'intro') {
-        if (e.code === 'KeyE' || e.code === 'Enter') {
-          unlockAudio()
-          game.play()
-        }
-        // En la portada, las flechas recorren la trayectoria.
+      if (e.code === 'KeyT') {
+        e.preventDefault()
+        game.setTerminal(!game.terminal)
+        return
+      }
+      if (game.mode !== 'play') {
+        if (game.mode === 'intro') {
+          if (e.code === 'KeyE' || e.code === 'Enter') {
+            unlockAudio()
+            game.play()
+          }
+          if (e.code === 'KeyR') {
+            unlockAudio()
+            game.tour()
+          }
+        } else if (e.code === 'Escape') game.exit()
+        // En la portada y en el recorrido, las flechas pasan de etapa.
         if (e.code === 'ArrowRight') game.setStage(game.stage + 1, true)
         if (e.code === 'ArrowLeft') game.setStage(game.stage - 1, true)
         return
@@ -419,6 +518,10 @@ export function Overlay() {
     unlockAudio()
     play()
   }
+  const startTour = () => {
+    unlockAudio()
+    tour()
+  }
 
   return (
     <div className="overlay">
@@ -427,7 +530,7 @@ export function Overlay() {
       <Brand />
       <LanguageSwitch />
 
-      <Hero hidden={playing} />
+      <Hero hidden={playing || touring} />
       <StagePanel hidden={playing || !ready} />
 
       {!ready && <Loader />}
@@ -492,6 +595,10 @@ export function Overlay() {
         </>
       )}
 
+      <MedalToast />
+      {showMedals && <MedalsPanel onClose={() => setShowMedals(false)} />}
+      <Terminal />
+
       {toast && (
         <div className={`toast ${party ? 'is-party' : ''}`} role="status">
           {toast}
@@ -499,11 +606,25 @@ export function Overlay() {
       )}
 
       <div className="hints">
-        {ready && !playing && (
-          <button type="button" className="pill pill--action" onClick={start}>
-            <kbd>E</kbd>
-            <span>{t.play}</span>
-          </button>
+        {ready && mode === 'intro' && (
+          <>
+            <button type="button" className="pill pill--action" onClick={start}>
+              <kbd>E</kbd>
+              <span>{t.play}</span>
+            </button>
+            <button type="button" className="pill pill--action pill--quiet" onClick={startTour}>
+              <kbd>R</kbd>
+              <span>{t.tour}</span>
+            </button>
+          </>
+        )}
+        {touring && !touch && (
+          <div className="pill">
+            <kbd>← →</kbd>
+            <span>{t.stages}</span>
+            <kbd>Esc</kbd>
+            <span>{t.leave}</span>
+          </div>
         )}
         {playing && !touch && (
           <div className="pill">
@@ -520,6 +641,11 @@ export function Overlay() {
       {playing && touch && <TouchControls />}
 
       <div className="toolbar">
+        {touring && (
+          <button type="button" onClick={exit} title={t.exit} aria-label={t.exitLabel}>
+            {Icon.exit}
+          </button>
+        )}
         {playing && (
           <>
             <button type="button" onClick={exit} title={t.exit} aria-label={t.exitLabel}>
@@ -542,12 +668,26 @@ export function Overlay() {
         {ready && (
           <button
             type="button"
-            className={music === 'house' ? 'is-on' : ''}
-            onClick={toggleMusic}
-            title={t.music(music === 'house')}
-            aria-label={t.musicLabel}
+            className={terminal ? 'is-on' : ''}
+            onClick={() => setTerminal(!terminal)}
+            title={t.terminal}
+            aria-label={t.terminalLabel}
+            aria-pressed={terminal}
           >
-            {Icon.music}
+            {Icon.terminal}
+          </button>
+        )}
+        {ready && (
+          <button
+            type="button"
+            className={`toolbar__medals ${showMedals ? 'is-on' : ''}`}
+            onClick={() => setShowMedals((open) => !open)}
+            title={t.medals}
+            aria-label={t.medals}
+            aria-pressed={showMedals}
+          >
+            {Icon.medal}
+            {medalCount > 0 && <i>{medalCount}</i>}
           </button>
         )}
         {ready && (

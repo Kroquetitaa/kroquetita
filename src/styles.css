@@ -3,7 +3,7 @@
   --fg: #fff;
   --muted: rgba(255, 255, 255, 0.6);
   --line: rgba(255, 255, 255, 0.2);
-  --gutter: clamp(20px, 3vw, 48px);
+  --gutter: clamp(16px, 3vw, 48px);
   font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: dark;
 }
@@ -17,6 +17,15 @@ body,
 #root {
   height: 100%;
   margin: 0;
+}
+
+/* En el móvil la barra del navegador cambia la altura: se usa la visible */
+@supports (height: 100dvh) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+  }
 }
 
 body {
@@ -41,7 +50,9 @@ body {
 
 .overlay {
   position: fixed;
-  inset: 0;
+  /* Respeta el notch y la barra de gestos */
+  inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px);
   pointer-events: none;
   user-select: none;
 }
@@ -482,6 +493,7 @@ body {
 }
 
 .career__nav span {
+  white-space: nowrap;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   color: var(--muted);
@@ -923,7 +935,13 @@ body {
   position: absolute;
   left: 50%;
   bottom: calc(var(--gutter) + 4px);
+  display: flex;
+  gap: 10px;
   transform: translateX(-50%);
+}
+
+.pill--quiet {
+  animation: none;
 }
 
 .pill {
@@ -1148,5 +1166,570 @@ body {
   .brand:hover p,
   .brand.is-active p {
     letter-spacing: 0.22em;
+  }
+}
+
+/* ---------- Logros ---------- */
+
+.toolbar__medals {
+  position: relative;
+}
+
+.toolbar__medals i {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: #ffc933;
+  color: #1a1300;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+}
+
+.medal-toast {
+  position: absolute;
+  top: calc(var(--gutter) + 96px);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px 10px 12px;
+  border: 1px solid rgba(255, 201, 51, 0.7);
+  border-radius: 999px;
+  background: rgba(16, 13, 6, 0.82);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 40px rgba(255, 201, 51, 0.25);
+  white-space: nowrap;
+  transform: translateX(-50%);
+  animation:
+    win-in 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both,
+    fade-out 0.5s 3.7s ease forwards;
+}
+
+.medal-toast__icon,
+.medals__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3b8, #ffc933 55%, #b77a00);
+  color: #2b1d00;
+}
+
+.medal-toast svg,
+.medals svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.medal-toast p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.medal-toast small {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffc933;
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.medals {
+  position: absolute;
+  right: var(--gutter);
+  bottom: calc(var(--gutter) + 58px);
+  display: flex;
+  flex-direction: column;
+  width: min(360px, calc(100% - 2 * var(--gutter)));
+  max-height: min(520px, calc(100% - 2 * var(--gutter) - 120px));
+  border: 1px solid rgba(255, 201, 51, 0.4);
+  border-radius: 14px;
+  background: rgba(10, 9, 6, 0.88);
+  backdrop-filter: blur(12px);
+  pointer-events: auto;
+  animation: stage-in 0.3s ease both;
+}
+
+.medals header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.medals h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.medals h2 span {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.medals header button,
+.terminal__bar button {
+  width: 28px;
+  height: 28px;
+  padding: 0 0 2px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.medals ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.medals li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  opacity: 0.5;
+}
+
+.medals li.is-done {
+  background: rgba(255, 201, 51, 0.08);
+  opacity: 1;
+}
+
+.medals li:not(.is-done) .medals__icon {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.medals p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.medals strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* ---------- Terminal ---------- */
+
+.terminal {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--gutter) + 58px);
+  display: flex;
+  flex-direction: column;
+  width: min(640px, calc(100% - 2 * var(--gutter)));
+  height: min(360px, calc(100% - 2 * var(--gutter) - 130px));
+  border: 1px solid rgba(61, 242, 176, 0.45);
+  border-radius: 12px;
+  background: rgba(4, 8, 8, 0.9);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 60px rgba(61, 242, 176, 0.16);
+  overflow: hidden;
+  pointer-events: auto;
+  user-select: text;
+  transform: translateX(-50%);
+  animation: terminal-in 0.25s ease both;
+}
+
+@keyframes terminal-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+}
+
+.terminal__bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 8px 7px 12px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.terminal__bar > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff5f57;
+}
+
+.terminal__bar > span:nth-child(2) {
+  background: #febc2e;
+}
+
+.terminal__bar > span:nth-child(3) {
+  background: #28c840;
+}
+
+.terminal__bar p {
+  flex: 1;
+  margin: 0 0 0 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.terminal__screen {
+  flex: 1;
+  padding: 10px 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.terminal__screen p {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.terminal__screen .is-in {
+  color: #3df2b0;
+}
+
+.terminal__screen .is-ok {
+  color: #8ff7d3;
+}
+
+.terminal__screen .is-error {
+  color: #ff7a70;
+}
+
+.terminal__screen .is-dim {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.terminal__screen a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.terminal__prompt {
+  display: flex;
+  gap: 8px;
+  color: #3df2b0;
+}
+
+.terminal__prompt input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  caret-color: #3df2b0;
+  outline: none;
+}
+
+.terminal__chips {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.terminal__chips button {
+  flex: none;
+  padding: 4px 10px;
+  border: 1px solid rgba(61, 242, 176, 0.35);
+  border-radius: 999px;
+  background: rgba(61, 242, 176, 0.08);
+  color: #8ff7d3;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ---------- Móvil ---------- */
+
+/* Vertical o estrecho: todo en una columna y la barra de botones, a la derecha */
+@media (max-width: 720px), (orientation: portrait) {
+  .brand p {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    white-space: normal;
+  }
+
+  .brand__name {
+    display: block;
+    font-size: 13px;
+  }
+
+  .lang {
+    top: calc(var(--gutter) - 4px);
+  }
+
+  .lang button {
+    min-width: 36px;
+    padding: 5px 8px;
+  }
+
+  .hero {
+    top: calc(var(--gutter) + 58px);
+    max-width: calc(100% - 2 * var(--gutter) - 52px);
+  }
+
+  .hero h1 {
+    font-size: clamp(20px, 6.2vw, 30px);
+  }
+
+  .hero p {
+    font-size: 13.5px;
+  }
+
+  .career {
+    width: calc(100% - 2 * var(--gutter));
+  }
+
+  .career__more {
+    margin-top: 8px;
+  }
+
+  .career__nav {
+    margin-top: 8px;
+    padding-top: 6px;
+  }
+
+  .career__nav ol button {
+    width: 15px;
+  }
+
+  /* Botones en columna, bajo el selector de idioma */
+  .toolbar {
+    top: calc(var(--gutter) + 40px);
+    bottom: auto;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .toolbar button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .toolbar__hint {
+    display: none;
+  }
+
+  .coins {
+    top: calc(var(--gutter) + 48px);
+    padding: 7px 14px 7px 10px;
+  }
+
+  .medal-toast {
+    top: calc(var(--gutter) + 100px);
+    max-width: calc(100% - 2 * var(--gutter));
+  }
+
+  /* El terminal va arriba: así el teclado del móvil no lo tapa */
+  .terminal {
+    top: calc(var(--gutter) + 44px);
+    bottom: auto;
+    width: calc(100% - 2 * var(--gutter) - 52px);
+    left: var(--gutter);
+    height: min(300px, 42%);
+    transform: none;
+    animation-name: stage-in;
+  }
+
+  .terminal__screen {
+    font-size: 12px;
+  }
+
+  /* 16px evita que iOS haga zoom al enfocar el campo */
+  .terminal__prompt input {
+    font-size: 16px;
+  }
+
+  .medals {
+    left: var(--gutter);
+    right: var(--gutter);
+    top: calc(var(--gutter) + 44px);
+    bottom: auto;
+    width: auto;
+    max-height: calc(100% - 2 * var(--gutter) - 120px);
+  }
+
+  .win {
+    top: calc(var(--gutter) + 96px);
+  }
+
+  .crash pre {
+    padding: 12px 14px 14px;
+    font-size: 11.5px;
+  }
+
+  .toast {
+    max-width: calc(100% - 2 * var(--gutter));
+    white-space: normal;
+    text-align: center;
+  }
+
+  .touch {
+    inset: auto 0 calc(var(--gutter) + 56px) 0;
+  }
+}
+
+/* Móvil apaisado: poca altura, así que todo se compacta y la barra vuelve a ser una fila */
+@media (max-height: 520px) and (orientation: landscape) {
+  .brand p {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+  }
+
+  .hero {
+    top: calc(var(--gutter) + 30px);
+    max-width: 46%;
+    transform: none;
+  }
+
+  .hero.is-hidden {
+    transform: translateX(-24px);
+  }
+
+  .hero h1 {
+    font-size: 22px;
+  }
+
+  .hero__links {
+    display: none;
+  }
+
+  /* Los botones de jugar y recorrido van a la derecha, sobre la barra */
+  .hints {
+    left: auto;
+    right: var(--gutter);
+    bottom: calc(var(--gutter) + 48px);
+    transform: none;
+  }
+
+  .hero p {
+    display: none;
+  }
+
+  .career {
+    width: min(340px, 46%);
+    padding: 10px 12px 6px;
+  }
+
+  .career__body {
+    min-height: 0;
+  }
+
+  .career__body img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .career h2 {
+    font-size: 17px;
+  }
+
+  .career__more {
+    display: none;
+  }
+
+  .toolbar {
+    gap: 6px;
+  }
+
+  .toolbar button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .toolbar__hint {
+    display: none;
+  }
+
+  .coins {
+    top: var(--gutter);
+  }
+
+  .terminal {
+    top: var(--gutter);
+    bottom: auto;
+    height: calc(100% - 2 * var(--gutter) - 50px);
+    width: min(520px, 62%);
+  }
+
+  .terminal__prompt input {
+    font-size: 16px;
+  }
+
+  .medals {
+    top: var(--gutter);
+    bottom: calc(var(--gutter) + 50px);
+    max-height: none;
+  }
+
+  .touch {
+    inset: auto 0 calc(var(--gutter) + 46px) 0;
+  }
+
+  .touch__pad {
+    width: 96px;
+    height: 96px;
+  }
+
+  .touch__jump {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medal-toast,
+  .medals,
+  .terminal {
+    animation: none;
   }
 }

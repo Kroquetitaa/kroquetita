@@ -1,23 +1,40 @@
 import { create } from 'zustand'
 import { stages, type Lang } from './data/career'
-import type { MusicStyle } from './game/music'
 import { world } from './world/layout'
 
-export type Mode = 'intro' | 'play'
+/** 'tour': la cámara recorre sola las cajas, sin jugar */
+export type Mode = 'intro' | 'play' | 'tour'
+export type Weather = 'auto' | 'clear' | 'rain' | 'storm'
+export type Daytime = 'auto' | 'night' | 'dawn'
+
+/** Logros que se pueden desbloquear (los textos están en i18n) */
+export const ACHIEVEMENTS = [
+  'bug',
+  'exterminator',
+  'meeting',
+  'deploy',
+  'coffee',
+  'summit',
+  'coins',
+  'party',
+  'tour',
+  'hired',
+] as const
+export type Achievement = (typeof ACHIEVEMENTS)[number]
 export type CameraMode = 'wide' | 'chase'
 
 const LANG_KEY = 'kroquetita:lang'
-const MUSIC_KEY = 'kroquetita:music'
+const MEDALS_KEY = 'kroquetita:medals'
 
-/** Estilo de música guardado; por defecto, el house. */
-function initialMusic(): MusicStyle {
+/** Logros ya conseguidos en visitas anteriores. */
+function initialMedals(): Achievement[] {
   try {
-    const saved = localStorage.getItem(MUSIC_KEY)
-    if (saved === 'synthwave' || saved === 'house') return saved
+    const saved: unknown = JSON.parse(localStorage.getItem(MEDALS_KEY) ?? '[]')
+    if (Array.isArray(saved)) return ACHIEVEMENTS.filter((id) => saved.includes(id))
   } catch {
-    // Sin almacenamiento: el de por defecto.
+    // Sin almacenamiento o con datos rotos: se empieza de cero.
   }
-  return 'house'
+  return []
 }
 
 /** Idioma guardado; si no hay, el del navegador (por defecto, español). */
@@ -39,8 +56,14 @@ interface GameState {
   muted: boolean
   /** Idioma de la web */
   lang: Lang
-  /** Estilo de la banda sonora */
-  music: MusicStyle
+  /** Clima y hora: 'auto' sigue el ciclo; el terminal puede forzarlos */
+  weather: Weather
+  daytime: Daytime
+  /** Terminal de comandos abierto */
+  terminal: boolean
+  /** Logros conseguidos y el último (para el aviso en pantalla) */
+  medals: Achievement[]
+  lastMedal: { id: Achievement; at: number } | null
   /** Color de acento de cada etapa (el del logo, cuando ya se ha analizado) */
   accents: string[]
   collected: number[]
@@ -65,11 +88,16 @@ interface GameState {
   runId: number
   setReady: () => void
   play: () => void
+  /** Empieza el recorrido de cámara por las cajas */
+  tour: () => void
   exit: () => void
   toggleCamera: () => void
   toggleMuted: () => void
   setLang: (lang: Lang) => void
-  toggleMusic: () => void
+  setWeather: (weather: Weather) => void
+  setDaytime: (daytime: Daytime) => void
+  setTerminal: (open: boolean) => void
+  unlock: (id: Achievement) => void
   setAccent: (index: number, color: string) => void
   toggleParty: () => void
   setCrash: (crash: GameState['crash']) => void
@@ -82,13 +110,17 @@ interface GameState {
   restart: () => void
 }
 
-export const useGame = create<GameState>((set) => ({
+export const useGame = create<GameState>((set, get) => ({
   ready: false,
   mode: 'intro',
   camera: 'wide',
   muted: false,
   lang: initialLang(),
-  music: initialMusic(),
+  weather: 'auto',
+  daytime: 'auto',
+  terminal: false,
+  medals: initialMedals(),
+  lastMedal: null,
   accents: stages.map((stage) => stage.color),
   collected: [],
   total: world.coins.length,
@@ -103,6 +135,7 @@ export const useGame = create<GameState>((set) => ({
   runId: 0,
   setReady: () => set({ ready: true }),
   play: () => set((s) => (s.ready ? { mode: 'play' } : s)),
+  tour: () => set((s) => (s.ready ? { mode: 'tour', stage: 0, stageHold: 0 } : s)),
   exit: () => set({ mode: 'intro' }),
   toggleCamera: () => set((s) => ({ camera: s.camera === 'wide' ? 'chase' : 'wide' })),
   toggleMuted: () => set((s) => ({ muted: !s.muted })),
@@ -114,23 +147,40 @@ export const useGame = create<GameState>((set) => ({
     }
     set({ lang })
   },
-  toggleMusic: () =>
+  setWeather: (weather) => set({ weather }),
+  setDaytime: (daytime) => set({ daytime }),
+  setTerminal: (terminal) => set({ terminal }),
+  unlock: (id) =>
     set((s) => {
-      const music: MusicStyle = s.music === 'house' ? 'synthwave' : 'house'
+      if (s.medals.includes(id)) return s
+      const medals = [...s.medals, id]
       try {
-        localStorage.setItem(MUSIC_KEY, music)
+        localStorage.setItem(MEDALS_KEY, JSON.stringify(medals))
       } catch {
         // No pasa nada si no se puede guardar.
       }
-      return { music }
+      return { medals, lastMedal: { id, at: performance.now() } }
     }),
   setAccent: (index, color) =>
     set((s) => (s.accents[index] === color ? s : { accents: s.accents.map((c, i) => (i === index ? color : c)) })),
-  toggleParty: () => set((s) => ({ party: !s.party })),
-  setCrash: (crash) => set({ crash }),
-  squashBug: () => set((s) => ({ bugs: s.bugs + 1 })),
+  toggleParty: () => {
+    if (!get().party) get().unlock('party')
+    set((s) => ({ party: !s.party }))
+  },
+  setCrash: (crash) => {
+    if (crash) get().unlock('deploy')
+    set({ crash })
+  },
+  squashBug: () => {
+    set((s) => ({ bugs: s.bugs + 1 }))
+    get().unlock('bug')
+    if (get().bugs >= 5) get().unlock('exterminator')
+  },
   startMeeting: (seconds) => set({ meetingUntil: performance.now() + seconds * 1000 }),
-  drinkCoffee: (seconds) => set({ boostUntil: performance.now() + seconds * 1000 }),
+  drinkCoffee: (seconds) => {
+    get().unlock('coffee')
+    set({ boostUntil: performance.now() + seconds * 1000 })
+  },
   setStage: (index, manual) =>
     set((s) => {
       const count = world.blocks.length
@@ -139,12 +189,14 @@ export const useGame = create<GameState>((set) => ({
         stageHold: manual ? performance.now() + 14000 : s.stageHold,
       }
     }),
-  collect: (id) =>
+  collect: (id) => {
     set((s) => {
       if (s.collected.includes(id)) return s
       const collected = [...s.collected, id]
       return { collected, wonAt: collected.length === s.total ? performance.now() : s.wonAt }
-    }),
+    })
+    if (get().collected.length === get().total) get().unlock('coins')
+  },
   restart: () => set((s) => ({ collected: [], wonAt: null, bugs: 0, runId: s.runId + 1 })),
 }))
 

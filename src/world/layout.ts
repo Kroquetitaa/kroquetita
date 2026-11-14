@@ -231,6 +231,65 @@ function build() {
   const coffee: Box = { center: [x0 - 9.5, 1.1, front + 0.4], size: [1.5, 2.2, 1.2] }
   /** Puesto de trabajo, junto al café: la colisión es el tablero de la mesa */
   const desk: Box = { center: [x0 - 13.3, 0.41, front + 0.2], size: [3.1, 0.82, 1.1] }
+
+  // Parque tecnológico: lo que puebla los laterales. A la derecha, el centro
+  // de datos con su nube, el globo y los contenedores; a la izquierda, la
+  // cinta de CI/CD, la antena, la gráfica y las teclas. Todo se coloca
+  // respecto a los extremos de las cajas y deja libre la plaza.
+  const back = ROW_Z[1] - BLOCK_D / 2
+  /** Contenedor: largo, alto y fondo */
+  const crate: Vec3 = [1.85, 1, 1]
+  const yard: Vec3 = [right + 12.9, 0, back - 3.2]
+  const pile = (side: number, levels: number): Box => ({
+    center: [yard[0] + side * 1.125, (levels * crate[1]) / 2, yard[2]],
+    size: [crate[0], levels * crate[1], crate[2]],
+  })
+  const piles = [pile(-1, 3), pile(1, 2)]
+  /** El contenedor de la grúa, apoyado sobre la pila baja */
+  const hoisted: Box = {
+    center: [piles[1].center[0], piles[1].size[1] + crate[1] / 2, yard[2]],
+    size: crate,
+  }
+  const key = (x: number, width: number) => {
+    const box: Box = { center: [x, 0.15, -1.5], size: [width, 0.3, 1] }
+    // Su colisión baja al pisarla (la mueve la propia tecla).
+    return { ...box, collider: toAABB(box) }
+  }
+  const park = {
+    /** Centro de datos: la fila de armarios de servidores */
+    racks: { center: [right + 7.05, 1.3, back - 1.1], size: [6.2, 2.6, 1.2] } as Box,
+    /** Centro de la nube que flota sobre los armarios */
+    cloud: [right + 6.45, 7.6, back - 1.1] as Vec3,
+    /** Cartel del centro de datos (sin colisión: se pasa por debajo) */
+    sign: [right + 11.5, 0, back + 0.5] as Vec3,
+    /** Globo holográfico: la colisión es la base del proyector */
+    globe: { center: [right + 6.2, 0.225, 0.2], size: [1.6, 0.45, 1.6] } as Box,
+    /** Contenedores: dos pilas y el que sube y baja colgado de la grúa */
+    containers: {
+      center: yard,
+      size: crate,
+      piles,
+      hoisted: {
+        ...hoisted,
+        /** Cuánto lo levanta la grúa */
+        lift: 2.2,
+        /** Su colisión se mueve cada frame (la actualiza la propia grúa) */
+        collider: toAABB(hoisted),
+      },
+    },
+    /** Cinta transportadora de CI/CD: los paquetes viajan hacia +X */
+    belt: { center: [left - 9.5, 0.5, back - 1.1], size: [10.4, 1, 1.1] } as Box,
+    /** X de las tres puertas de la cinta: BUILD, TEST y DEPLOY */
+    gates: [left - 11.65, left - 9, left - 6.35],
+    /** Torre de antenas: la colisión llega hasta su plataforma */
+    tower: { center: [left - 14.1, 1.3, back - 3.6], size: [1.8, 2.6, 1.8] } as Box,
+    towerHeight: 9,
+    /** Tarjeta gráfica gigante, de canto */
+    gpu: { center: [left - 6.4, 0.875, -1], size: [4.6, 1.75, 0.6] } as Box,
+    /** Teclas Ctrl, C y V: se pueden pisar */
+    keys: [key(left - 13.82, 1.5), key(left - 12.22, 1), key(left - 11.08, 1)],
+  }
+
   const props = {
     elevator: {
       center: elevatorCenter,
@@ -255,6 +314,8 @@ function build() {
     duck: [3, 0, front + 5.2] as Vec3,
     /** Mesa donde discuten los modelos de IA */
     table: { center: [-6, 0.42, front + 7.4], size: [2.9, 0.84, 2.9] } as Box,
+    /** Parque tecnológico de los laterales */
+    park,
   }
 
   // Línea de tiempo en el suelo, delante de las cajas: un eje con los años y
@@ -313,6 +374,14 @@ function build() {
     toAABB(props.server),
     toAABB(props.table),
     props.elevator.collider,
+    toAABB(park.racks),
+    toAABB(park.globe),
+    ...park.containers.piles.map(toAABB),
+    park.containers.hoisted.collider,
+    toAABB(park.belt),
+    toAABB(park.tower),
+    toAABB(park.gpu),
+    ...park.keys.map((k) => k.collider),
   ]
 
   return {
@@ -335,7 +404,7 @@ function build() {
     /** Zona del suelo por la que deambulan los personajes */
     plaza: { minX: x0 - 14, maxX: -x0 + 15, minZ: front + 3.4, maxZ: front + 11 },
     /** Encuadre de la portada */
-    view: { position: [-12, 15, 56] as Vec3, look: [-5.8, 9.2, 0] as Vec3, halfWidth: 30.5 },
+    view: { position: [-10, 15.5, 62] as Vec3, look: [-4.5, 9.2, 0] as Vec3, halfWidth: 33.5 },
     bounds: { minX: x0 - 19, maxX: -x0 + 19, minZ: ROW_Z[1] - 9, maxZ: front + 13 },
   }
 }

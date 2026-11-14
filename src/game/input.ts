@@ -29,8 +29,13 @@ function refresh() {
 
 const GAME_KEYS = new Set(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
 
+/** ¿Se está escribiendo en un campo de texto (el terminal)? Entonces las teclas no son del juego. */
+export const isTyping = (e: KeyboardEvent) =>
+  e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement
+
 export function bindKeyboard(isPlaying: () => boolean) {
   const onDown = (e: KeyboardEvent) => {
+    if (isTyping(e)) return
     if (isPlaying() && GAME_KEYS.has(e.code)) e.preventDefault()
     if (e.repeat) return
     down.add(e.code)
