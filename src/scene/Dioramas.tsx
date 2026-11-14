@@ -735,8 +735,8 @@ function Cortex({ block, accent }: DioramaProps) {
   const signals = useRef<THREE.InstancedMesh>(null)
   const scratch = useMemo(() => ({ m: new THREE.Matrix4(), p: new THREE.Vector3() }), [])
 
-  // El haz sale del núcleo, rodea el logo por detrás y sube hasta la base del cerebro.
-  const { curve, tube } = useMemo(() => {
+  // Los impulsos salen del núcleo, rodean el logo por detrás y suben hasta la base del cerebro (sin línea).
+  const curve = useMemo(() => {
     const from = new THREE.Vector3(0, 0.75, -0.3)
     const to = new THREE.Vector3(
       world.stem[0] - block.x,
@@ -744,8 +744,7 @@ function Cortex({ block, accent }: DioramaProps) {
       world.stem[2] - (block.z + LID.z),
     )
     const mid = new THREE.Vector3(-0.4, Math.max(4.5, to.y * 0.55), -1.6)
-    const bezier = new THREE.QuadraticBezierCurve3(from, mid, to)
-    return { curve: bezier, tube: new THREE.TubeGeometry(bezier, 48, 0.035, 8, false) }
+    return new THREE.QuadraticBezierCurve3(from, mid, to)
   }, [block])
 
   useLayoutEffect(() => {
@@ -817,7 +816,6 @@ function Cortex({ block, accent }: DioramaProps) {
           </group>
         ))}
       </group>
-      <mesh geometry={tube} material={neon} frustumCulled={false} />
       <instancedMesh ref={signals} args={[undefined, undefined, SIGNALS]} frustumCulled={false}>
         <sphereGeometry args={[0.13, 12, 12]} />
         <meshBasicMaterial toneMapped={false} />
