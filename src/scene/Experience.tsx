@@ -8,6 +8,7 @@ import { celebrationTime, useGame } from '../store'
 import { CameraRig } from './CameraRig'
 import { Detail, DETAIL_LAYER } from './Detail'
 import { Fireworks } from './Celebration'
+import { Folk } from './Folk'
 import { Coins } from './Coins'
 import { Player } from './Player'
 import { Weather } from './Weather'
@@ -155,6 +156,7 @@ export function Experience() {
           <Coins />
         </Detail>
         <Player />
+        <Folk />
         <Fireworks />
         <Runtime />
       </Suspense>

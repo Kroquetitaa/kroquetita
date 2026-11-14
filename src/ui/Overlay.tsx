@@ -3,6 +3,7 @@ import { durationOf, linesOf, periodOf, profile, stages, type Lang } from '../da
 import { isAudioRunning, setMuted, sfx, unlockAudio } from '../game/audio'
 import { setMusicIntensity } from '../game/music'
 import { input, isTyping } from '../game/input'
+import { interact, scriptOf, talkerById } from '../game/talk'
 import { MEDALS, ui, useLang, useUI } from '../i18n'
 import { ACHIEVEMENTS, useGame } from '../store'
 import { Terminal } from './Terminal'
@@ -303,6 +304,57 @@ function TouchControls() {
   )
 }
 
+/**
+ * Hablar con los personajes: un aviso cuando hay alguien cerca y, durante la
+ * conversación, un cuadro con lo que dice. Se avanza con E o tocándolo.
+ */
+function Dialogue() {
+  const near = useGame((s) => s.near)
+  const talk = useGame((s) => s.talk)
+  const playing = useGame((s) => s.mode === 'play')
+  const lang = useLang()
+  const t = useUI()
+  const [touch] = useState(() => window.matchMedia('(pointer: coarse)').matches)
+  if (!playing) return null
+
+  if (talk) {
+    const talker = talkerById(talk.id)
+    if (!talker) return null
+    const lines = scriptOf(talker)
+    const last = talk.line >= lines.length - 1
+    return (
+      <button
+        type="button"
+        className="dialogue"
+        style={{ '--accent': talker.accent } as React.CSSProperties}
+        onClick={interact}
+        aria-live="polite"
+      >
+        <span className="dialogue__name">{talker.name[lang]}</span>
+        <span className="dialogue__text" key={talk.line}>
+          {lines[talk.line]}
+        </span>
+        <span className="dialogue__next">
+          {!touch && <kbd>E</kbd>}
+          {last ? t.talkEnd : t.talkNext}
+          <i>
+            {talk.line + 1} / {lines.length}
+          </i>
+        </span>
+      </button>
+    )
+  }
+
+  const talker = talkerById(near)
+  if (!talker) return null
+  return (
+    <button type="button" className="pill pill--action talk-prompt" onClick={interact}>
+      {!touch && <kbd>E</kbd>}
+      <span>{t.talkTo(talker.name[lang])}</span>
+    </button>
+  )
+}
+
 /** Aviso que salta al conseguir un logro. */
 function MedalToast() {
   const last = useGame((s) => s.lastMedal)
@@ -518,6 +570,7 @@ export function Overlay() {
         if (e.code === 'ArrowLeft') game.setStage(game.stage - 1, true)
         return
       }
+      if (e.code === 'KeyE' || e.code === 'KeyF') interact()
       if (e.code === 'Escape') game.exit()
       if (e.code === 'KeyC') game.toggleCamera()
       if (e.code === 'KeyR') game.restart()
@@ -607,6 +660,7 @@ export function Overlay() {
         </>
       )}
 
+      <Dialogue />
       <MedalToast />
       {showMedals && <MedalsPanel onClose={() => setShowMedals(false)} />}
       <Terminal />
