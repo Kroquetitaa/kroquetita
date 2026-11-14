@@ -48,6 +48,30 @@ function tone(
   osc.stop(start + duration + 0.02)
 }
 
+let noiseBuffer: AudioBuffer | null = null
+
+/** Ráfaga de ruido filtrado (explosiones). */
+function noise(duration: number, volume: number, from: number, to: number) {
+  if (!ctx || muted || ctx.state !== 'running') return
+  if (!noiseBuffer) {
+    noiseBuffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate)
+    const data = noiseBuffer.getChannelData(0)
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1
+  }
+  const now = ctx.currentTime
+  const source = ctx.createBufferSource()
+  source.buffer = noiseBuffer
+  const filter = ctx.createBiquadFilter()
+  filter.type = 'lowpass'
+  filter.frequency.setValueAtTime(from, now)
+  filter.frequency.exponentialRampToValueAtTime(to, now + duration)
+  const gain = ctx.createGain()
+  gain.gain.setValueAtTime(volume, now)
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+  source.connect(filter).connect(gain).connect(ctx.destination)
+  source.start(now, 0, Math.min(duration + 0.05, 0.95))
+}
+
 export const sfx = {
   coin() {
     tone(988, 988, 0.09, 'square', 0.05)
@@ -80,9 +104,15 @@ export const sfx = {
   button() {
     tone(320, 140, 0.14, 'square', 0.07)
   },
-  rocket() {
-    tone(55, 420, 2.4, 'sawtooth', 0.06)
-    tone(40, 130, 2.6, 'triangle', 0.14)
+  alarm() {
+    ;[0, 0.16, 0.32].forEach((delay) => tone(980, 980, 0.1, 'square', 0.06, delay))
+  },
+  explosion() {
+    noise(0.9, 0.5, 2400, 90)
+    tone(130, 28, 0.8, 'sine', 0.35)
+  },
+  rebuild() {
+    ;[330, 440, 554, 659].forEach((f, i) => tone(f, f, 0.14, 'triangle', 0.06, i * 0.08))
   },
   ding() {
     tone(1319, 1319, 0.5, 'sine', 0.06)

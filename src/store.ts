@@ -16,6 +16,8 @@ interface GameState {
   wonAt: number | null
   /** Modo fiesta (código Konami): neones arcoíris y gravedad lunar */
   party: boolean
+  /** Error de despliegue en pantalla (botón DEPLOY), o null */
+  crash: { id: number; title: string; detail: string } | null
   /** Cambia en cada reinicio para recolocar al jugador */
   runId: number
   setReady: () => void
@@ -24,6 +26,7 @@ interface GameState {
   toggleCamera: () => void
   toggleMuted: () => void
   toggleParty: () => void
+  setCrash: (crash: GameState['crash']) => void
   collect: (id: number) => void
   restart: () => void
 }
@@ -37,6 +40,7 @@ export const useGame = create<GameState>((set) => ({
   total: world.coins.length,
   wonAt: null,
   party: false,
+  crash: null,
   runId: 0,
   setReady: () => set({ ready: true }),
   play: () => set((s) => (s.ready ? { mode: 'play' } : s)),
@@ -44,6 +48,7 @@ export const useGame = create<GameState>((set) => ({
   toggleCamera: () => set((s) => ({ camera: s.camera === 'wide' ? 'chase' : 'wide' })),
   toggleMuted: () => set((s) => ({ muted: !s.muted })),
   toggleParty: () => set((s) => ({ party: !s.party })),
+  setCrash: (crash) => set({ crash }),
   collect: (id) =>
     set((s) => {
       if (s.collected.includes(id)) return s

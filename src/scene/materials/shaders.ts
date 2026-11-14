@@ -6,6 +6,9 @@ export const uTime = { value: 0 }
 /** 0..1: se enciende al recoger todas las monedas (neones en arcoíris). */
 export const uParty = { value: 0 }
 
+/** 0..1: alarma roja mientras producción está caída (botón DEPLOY). */
+export const uAlarm = { value: 0 }
+
 const vertex = /* glsl */ `
   varying vec2 vUv;
   void main() {
@@ -20,6 +23,7 @@ export function createNeonMaterial(color: string, intensity = 1.5) {
     uniforms: {
       uTime,
       uParty,
+      uAlarm,
       uColor: { value: new THREE.Color(color) },
       uIntensity: { value: intensity },
     },
@@ -27,6 +31,7 @@ export function createNeonMaterial(color: string, intensity = 1.5) {
     fragmentShader: /* glsl */ `
       uniform float uTime;
       uniform float uParty;
+      uniform float uAlarm;
       uniform vec3 uColor;
       uniform float uIntensity;
       varying vec2 vUv;
@@ -38,6 +43,7 @@ export function createNeonMaterial(color: string, intensity = 1.5) {
         float pulse = smoothstep(0.0, 0.1, sweep) * smoothstep(0.3, 0.1, sweep);
         float flicker = 0.93 + 0.07 * sin(uTime * 7.0 + vUv.x * 18.0);
         vec3 base = mix(uColor, rainbow(vUv.x * 0.6 - uTime * 0.35) * 1.5, uParty);
+        base = mix(base, vec3(1.0, 0.07, 0.04) * (0.5 + step(0.5, fract(uTime * 3.0))), uAlarm);
         vec3 col = base * uIntensity * flicker + vec3(1.0) * pulse * 0.7;
         gl_FragColor = vec4(col, 1.0);
       }
@@ -416,59 +422,6 @@ export function createScanMaterial(color: string, phase: number, size: [number, 
   })
 }
 
-/** Aurora lejana: cortinas de ruido que fluyen despacio tras el diorama. */
-export function createAuroraMaterial() {
-  return new THREE.ShaderMaterial({
-    uniforms: { uTime },
-    vertexShader: vertex,
-    fragmentShader: /* glsl */ `
-      uniform float uTime;
-      varying vec2 vUv;
-
-      float hash(vec2 p) {
-        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-      }
-      float noise(vec2 p) {
-        vec2 i = floor(p);
-        vec2 f = fract(p);
-        f = f * f * (3.0 - 2.0 * f);
-        return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
-                   mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-      }
-      float fbm(vec2 p) {
-        float v = 0.0;
-        float a = 0.5;
-        for (int i = 0; i < 4; i++) {
-          v += a * noise(p);
-          p *= 2.03;
-          a *= 0.5;
-        }
-        return v;
-      }
-
-      void main() {
-        float t = uTime * 0.035;
-        // Cortinas verticales deformadas por ruido.
-        float warp = fbm(vec2(vUv.x * 3.0 + t, t * 0.7));
-        float curtain = fbm(vec2(vUv.x * 7.0 + warp * 2.0 - t * 1.5, vUv.y * 1.3 + t));
-        curtain = pow(smoothstep(0.3, 0.72, curtain), 1.5);
-        float height = smoothstep(0.0, 0.25, vUv.y) * smoothstep(1.0, 0.35, vUv.y);
-        float sides = smoothstep(0.0, 0.2, vUv.x) * smoothstep(1.0, 0.8, vUv.x);
-        vec3 cold = vec3(0.1, 0.32, 1.0);
-        vec3 warm = vec3(1.0, 0.36, 0.12);
-        vec3 col = mix(cold, warm, smoothstep(0.3, 0.75, vUv.x + (warp - 0.5) * 0.4));
-        float a = curtain * height * sides * 0.5;
-        gl_FragColor = vec4(col * a, a);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    fog: false,
-    toneMapped: false,
-  })
-}
-
 /** Anillo de polvo que se abre y desvanece (al aterrizar). */
 export function createPuffMaterial() {
   return new THREE.ShaderMaterial({
@@ -565,52 +518,6 @@ export function createPadMaterial(color: string) {
   })
 }
 
-/** Rascacielos lejanos (instanciados): ventanas que se encienden y apagan. */
-export function createTowerMaterial() {
-  return new THREE.ShaderMaterial({
-    uniforms: { uTime },
-    vertexShader: /* glsl */ `
-      varying vec3 vWorld;
-      varying vec3 vFace;
-      varying float vSeed;
-      void main() {
-        vec4 world = modelMatrix * instanceMatrix * vec4(position, 1.0);
-        vWorld = world.xyz;
-        vFace = normal;
-        vSeed = fract(instanceMatrix[3].x * 0.137 + instanceMatrix[3].z * 0.731);
-        gl_Position = projectionMatrix * viewMatrix * world;
-      }
-    `,
-    fragmentShader: /* glsl */ `
-      uniform float uTime;
-      varying vec3 vWorld;
-      varying vec3 vFace;
-      varying float vSeed;
-      float hash(vec2 p) {
-        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-      }
-      void main() {
-        vec3 col = vec3(0.012, 0.014, 0.022);
-        if (abs(vFace.y) < 0.5) {
-          vec2 wall = abs(vFace.z) > 0.5 ? vWorld.xy : vWorld.zy;
-          vec2 grid = wall / vec2(1.1, 1.3);
-          vec2 cell = floor(grid);
-          vec2 f = fract(grid);
-          float window = step(0.25, f.x) * step(f.x, 0.75) * step(0.3, f.y) * step(f.y, 0.75);
-          float seed = hash(cell + vSeed * 91.0);
-          // Cada ventana cambia de estado a su ritmo.
-          float lit = step(0.72, fract(seed + floor(uTime * 0.12 + seed * 7.0) * 0.37));
-          vec3 tint = mix(vec3(0.25, 0.6, 1.0), vec3(1.0, 0.55, 0.2), step(0.8, hash(cell.yx + vSeed)));
-          col += tint * window * lit * 0.32;
-        }
-        col *= smoothstep(150.0, 60.0, length(vWorld.xz));
-        gl_FragColor = vec4(col, 1.0);
-      }
-    `,
-    toneMapped: false,
-  })
-}
-
 /** Frontal de un armario de servidores: filas de LED parpadeando. */
 export function createRackMaterial(seed: number) {
   return new THREE.ShaderMaterial({
@@ -676,30 +583,6 @@ export function createCoreMaterial() {
   })
 }
 
-/** Estela de una estrella fugaz: fina y brillante en la cabeza. */
-export function createStreakMaterial() {
-  return new THREE.ShaderMaterial({
-    uniforms: { uAlpha: { value: 0 } },
-    vertexShader: vertex,
-    fragmentShader: /* glsl */ `
-      uniform float uAlpha;
-      varying vec2 vUv;
-      void main() {
-        float along = pow(clamp(vUv.x, 0.0, 1.0), 3.0);
-        float across = smoothstep(0.5, 0.0, abs(vUv.y - 0.5));
-        float a = along * across * uAlpha;
-        gl_FragColor = vec4(vec3(0.8, 0.9, 1.0) * a * 2.5, a);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
-    side: THREE.DoubleSide,
-    blending: THREE.AdditiveBlending,
-    fog: false,
-    toneMapped: false,
-  })
-}
-
 /**
  * Superficie de la placa base: rectángulo redondeado con pistas decorativas,
  * vías y un borde serigrafiado. `rect` = [minX, minZ, maxX, maxZ] en mundo.
@@ -754,6 +637,125 @@ export function createBoardMaterial(rect: [number, number, number, number]) {
     blending: THREE.AdditiveBlending,
     polygonOffset: true,
     polygonOffsetFactor: -6,
+    toneMapped: false,
+  })
+}
+
+/** Iluminación RGB: un arcoíris que fluye a lo largo de la pieza (uv.x). */
+export function createRgbMaterial(phase = 0, speed = 0.25) {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime, uParty, uAlarm, uPhase: { value: phase }, uSpeed: { value: speed } },
+    vertexShader: vertex,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      uniform float uParty;
+      uniform float uAlarm;
+      uniform float uPhase;
+      uniform float uSpeed;
+      varying vec2 vUv;
+      void main() {
+        float hue = vUv.x + uPhase - uTime * uSpeed * (1.0 + uParty * 2.0);
+        vec3 col = 0.55 + 0.45 * cos(6.28318 * (hue + vec3(0.0, 0.33, 0.67)));
+        col = mix(col, vec3(1.0, 0.06, 0.04) * (0.4 + step(0.5, fract(uTime * 3.0))), uAlarm);
+        gl_FragColor = vec4(col * 1.9, 1.0);
+      }
+    `,
+    toneMapped: false,
+  })
+}
+
+/** Chapa de la caja: panel oscuro con rejilla hexagonal y un resplandor al fondo. */
+export function createCaseMaterial(size: [number, number]) {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime, uSize: { value: new THREE.Vector2(size[0], size[1]) } },
+    vertexShader: vertex,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      uniform vec2 uSize;
+      varying vec2 vUv;
+      // Distancia al borde de la celda hexagonal más cercana.
+      float hex(vec2 p) {
+        vec2 r = vec2(1.0, 1.732);
+        vec2 a = mod(p, r) - r * 0.5;
+        vec2 b = mod(p - r * 0.5, r) - r * 0.5;
+        vec2 g = dot(a, a) < dot(b, b) ? a : b;
+        g = abs(g);
+        return max(dot(g, vec2(0.5, 0.866)), g.x);
+      }
+      void main() {
+        vec2 p = vUv * uSize;
+        float cell = hex(p / 0.75);
+        float hole = smoothstep(0.34, 0.3, cell);
+        float rim = smoothstep(0.06, 0.0, abs(cell - 0.36));
+        // Luz ambiental de los componentes: más viva cerca del suelo.
+        float low = smoothstep(uSize.y, 0.0, p.y);
+        vec3 metal = vec3(0.022, 0.024, 0.03) * (0.6 + low);
+        vec3 leak = mix(vec3(0.05, 0.35, 0.6), vec3(0.6, 0.15, 0.5), 0.5 + 0.5 * sin(p.x * 0.08 + uTime * 0.25));
+        vec3 col = metal * (1.0 - hole * 0.75) + rim * vec3(0.03, 0.035, 0.045) + leak * hole * 0.05 * low;
+        // Juntas de panel.
+        float seam = smoothstep(0.04, 0.0, abs(fract(p.x / 11.5) - 0.5) - 0.495);
+        col += vec3(0.02) * seam;
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `,
+    toneMapped: false,
+  })
+}
+
+/** Líquido refrigerante: remolinos de color y burbujas que suben. */
+export function createCoolantMaterial() {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime, uParty, uAlarm },
+    vertexShader: vertex,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      uniform float uParty;
+      uniform float uAlarm;
+      varying vec2 vUv;
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+      }
+      void main() {
+        // Remolino: bandas diagonales que giran alrededor del cilindro.
+        float swirl = 0.5 + 0.5 * sin((vUv.x * 2.0 + vUv.y * 3.0) * 6.2831 - uTime * 1.6);
+        vec3 a = vec3(0.05, 0.75, 1.0);
+        vec3 b = vec3(0.55, 0.2, 1.0);
+        vec3 col = mix(a, b, swirl);
+        col = mix(col, 0.55 + 0.45 * cos(6.28318 * (vUv.y - uTime * 0.3 + vec3(0.0, 0.33, 0.67))), uParty);
+        col = mix(col, vec3(1.0, 0.1, 0.05), uAlarm);
+        // Burbujas: puntos que ascienden por columnas.
+        vec2 grid = vec2(vUv.x * 14.0, vUv.y * 9.0 - uTime * 0.9);
+        vec2 cell = floor(grid);
+        vec2 f = fract(grid) - 0.5;
+        float bubble = smoothstep(0.2, 0.08, length(f + (hash(cell) - 0.5) * 0.5)) * step(0.6, hash(cell + 3.1));
+        float level = smoothstep(0.93, 0.9, vUv.y);
+        gl_FragColor = vec4((col * (0.7 + swirl * 0.5) + bubble * 0.9) * level * 1.3, 0.9 * level);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    toneMapped: false,
+  })
+}
+
+/** Tubo rígido de la refrigeración: blanco, con el líquido viéndose pasar. */
+export function createPipeMaterial() {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime, uAlarm },
+    vertexShader: vertex,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      uniform float uAlarm;
+      varying vec2 vUv;
+      void main() {
+        // Sombreado falso de cilindro (uv.y da la vuelta al tubo).
+        float shade = 0.45 + 0.55 * sin(vUv.y * 3.14159);
+        float flow = smoothstep(0.35, 0.5, fract(vUv.x * 9.0 - uTime * 0.9)) * smoothstep(0.75, 0.6, fract(vUv.x * 9.0 - uTime * 0.9));
+        vec3 liquid = mix(vec3(0.1, 0.8, 1.0), vec3(1.0, 0.12, 0.06), uAlarm);
+        vec3 col = vec3(0.5, 0.52, 0.56) * shade + liquid * flow * 1.6;
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `,
     toneMapped: false,
   })
 }

@@ -185,6 +185,7 @@ export function Overlay() {
   const camera = useGame((s) => s.camera)
   const muted = useGame((s) => s.muted)
   const party = useGame((s) => s.party)
+  const crash = useGame((s) => s.crash)
   const collected = useGame((s) => s.collected.length)
   const total = useGame((s) => s.total)
   const { play, exit, toggleCamera, toggleMuted, restart } = useGame.getState()
@@ -295,6 +296,29 @@ export function Overlay() {
             </button>
           </div>
         </div>
+      )}
+
+      {crash && (
+        <>
+          <div className="alarm" aria-hidden="true" />
+          <div className="crash" role="alert" key={crash.id}>
+            <div className="crash__bar">
+              <span />
+              <span />
+              <span />
+              <p>produccion — bash</p>
+            </div>
+            <pre>
+              <span>$ ./deploy.sh --prod --viernes</span>
+              <span>&gt; Subiendo cambios ............ OK</span>
+              <span>&gt; Ejecutando migraciones ...... OK</span>
+              <span>&gt; Reiniciando servicios ....... </span>
+              <span className="crash__error">[X] ERROR 500 · {crash.title}</span>
+              <span className="crash__detail">    {crash.detail}</span>
+              <span className="crash__rollback">&gt; Rollback automático en marcha…</span>
+            </pre>
+          </div>
+        </>
       )}
 
       {toast && (

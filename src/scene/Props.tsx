@@ -5,16 +5,17 @@ import * as THREE from 'three'
 import fontBold from '@fontsource/poppins/files/poppins-latin-600-normal.woff?url'
 import { sfx } from '../game/audio'
 import { playerSay } from '../game/events'
-import { body } from '../game/state'
+import { body, shake } from '../game/state'
 import { useGame } from '../store'
 import { world } from '../world/layout'
 import { introProgress } from './intro'
 import {
-  createBeamMaterial,
   createBurstGeometry,
   createBurstMaterial,
   createGlowMaterial,
   createNeonMaterial,
+  createRackMaterial,
+  uAlarm,
   uTime,
 } from './materials/shaders'
 import { Bubble } from './Player'
@@ -264,126 +265,203 @@ function Duck() {
   )
 }
 
-// ---------------------------------------------------------------- Cohete
+// ---------------------------------------------------------------- Deploy
 
 const BUTTON = world.props.button
-const PAD = world.props.rocket
+const SERVER = world.props.server
 const BUTTON_TOP = BUTTON.center[1] + BUTTON.size[1] / 2
 
-type Phase = 'idle' | 'ignite' | 'fly' | 'away'
+/** Lo que puede salir mal un viernes. Va rotando. */
+const ERRORS = [
+  { title: 'NullPointerException', detail: 'at Viernes.tarde(Produccion.java:1700)' },
+  { title: 'Segmentation fault (core dumped)', detail: 'El core era el de IA. Ups.' },
+  { title: 'undefined is not a function', detail: 'Clásico. En local iba perfecto.' },
+  { title: 'Out of memory', detail: 'El modelo se ha comido toda la RAM. Y el postre.' },
+  { title: 'Todo roto. Todo.', detail: 'git blame dice que has sido tú.' },
+]
+
+const GRID = 3
+const DEBRIS = GRID * GRID * GRID
+
+type Phase = 'idle' | 'alarm' | 'down' | 'rebuild'
 
 /**
- * Botón de DEPLOY y su cohete: si saltas sobre el botón, el cohete despega,
- * estalla en fuegos artificiales y al rato vuelve otro a la plataforma.
+ * Botón de DEPLOY y el servidor de producción. Si saltas sobre el botón, el
+ * servidor revienta en pedazos, salta un error en pantalla y, tras el
+ * rollback automático, se recompone como si nada.
  */
-function DeployRocket() {
-  const rocket = useRef<THREE.Group>(null)
-  const flame = useRef<THREE.Mesh>(null)
-  const light = useRef<THREE.PointLight>(null)
+function DeployServer() {
+  const tower = useRef<THREE.Group>(null)
   const button = useRef<THREE.Mesh>(null)
-  const fire = useMemo(() => createBeamMaterial('#ff7a1a'), [])
+  const debris = useRef<THREE.InstancedMesh>(null)
+  const flash = useRef<THREE.PointLight>(null)
+  const leds = useMemo(() => createRackMaterial(3.3), [])
   const hazard = useMemo(() => createNeonMaterial('#ffd60a', 1.2), [])
-  const smoke = useMemo(
-    () => createBurstMaterial('#aab4c8', { speed: 1.7, gravity: -0.7, life: 1.7, size: 80 }),
+  const blasts = useMemo(
+    () => [
+      createBurstMaterial('#ff8a1e', { speed: 3.2, gravity: 2.2, life: 0.9, size: 64 }),
+      createBurstMaterial('#ffe066', { speed: 4.8, gravity: 4.5, life: 0.65, size: 30 }),
+      createBurstMaterial('#8d96aa', { speed: 1.5, gravity: -0.9, life: 2.4, size: 95 }),
+    ],
     [],
   )
-  const sparks = useMemo(
-    () =>
-      ['#ff4d6d', '#ffd60a', '#19e6ff'].map((color) =>
-        createBurstMaterial(color, { speed: 3.6, gravity: 1.2, life: 1.3, size: 46 }),
-      ),
-    [],
-  )
-  const burst = useMemo(() => createBurstGeometry(90, 0.15), [])
-  const state = useRef({ phase: 'idle' as Phase, since: 0, pressed: false, exploded: false })
+  const burst = useMemo(() => createBurstGeometry(80, 0.3), [])
 
-  useFrame(({ clock, gl, size }) => {
+  // El servidor está hecho de 27 trozos: cada uno sabe dónde va y adónde sale volando.
+  const parts = useMemo(() => {
+    const list: Array<{
+      home: THREE.Vector3
+      pos: THREE.Vector3
+      vel: THREE.Vector3
+      rot: THREE.Euler
+      spin: THREE.Vector3
+    }> = []
+    const cell = [SERVER.size[0] / GRID, SERVER.size[1] / GRID, SERVER.size[2] / GRID]
+    for (let x = 0; x < GRID; x++) {
+      for (let y = 0; y < GRID; y++) {
+        for (let z = 0; z < GRID; z++) {
+          const home = new THREE.Vector3(
+            SERVER.center[0] + (x - 1) * cell[0],
+            SERVER.center[1] + (y - 1) * cell[1],
+            SERVER.center[2] + (z - 1) * cell[2],
+          )
+          list.push({ home, pos: home.clone(), vel: new THREE.Vector3(), rot: new THREE.Euler(), spin: new THREE.Vector3() })
+        }
+      }
+    }
+    return { list, cell }
+  }, [])
+
+  const scratch = useMemo(
+    () => ({ m: new THREE.Matrix4(), q: new THREE.Quaternion(), s: new THREE.Vector3(), p: new THREE.Vector3() }),
+    [],
+  )
+  const state = useRef({ phase: 'idle' as Phase, since: 0, pressed: false, count: 0 })
+
+  useFrame(({ clock, gl, size }, delta) => {
     const s = state.current
+    const dt = Math.min(delta, 1 / 20)
     const t = clock.elapsedTime
     const elapsed = t - s.since
+    const game = useGame.getState()
     const ratio = gl.getPixelRatio() * (size.height / 900) * 13
-    smoke.uniforms.uPixelRatio.value = ratio
-    sparks.forEach((m) => (m.uniforms.uPixelRatio.value = ratio))
+    blasts.forEach((m) => (m.uniforms.uPixelRatio.value = ratio))
 
     // ¿Está el jugador encima del botón?
     const on =
-      useGame.getState().mode === 'play' &&
+      game.mode === 'play' &&
       body.grounded &&
       Math.abs(body.pos[1] - BUTTON_TOP) < 0.2 &&
       Math.hypot(body.pos[0] - BUTTON.center[0], body.pos[2] - BUTTON.center[2]) < 0.75
     if (on && !s.pressed) {
       sfx.button()
       if (s.phase === 'idle') {
-        s.phase = 'ignite'
+        s.phase = 'alarm'
         s.since = t
-        s.exploded = false
-        smoke.uniforms.uOrigin.value.set(PAD[0], 0.4, PAD[2])
-        smoke.uniforms.uStart.value = uTime.value
-        sfx.rocket()
+        sfx.alarm()
         playerSay('Deploy en viernes… ¿qué puede salir mal?')
-      } else playerSay('Ya está en producción. Reza.')
+      } else playerSay('Ya está roto. No lo rompas más.')
     }
     s.pressed = on
     if (button.current) {
-      const goal = on ? 0.35 : 1
-      button.current.scale.y += (goal - button.current.scale.y) * 0.3
+      button.current.scale.y += ((on ? 0.35 : 1) - button.current.scale.y) * 0.3
     }
 
-    let y = 0
-    let throttle = 0
-    let scale = introProgress(2.8, 1)
-    let shake = 0
-    if (s.phase === 'ignite') {
-      throttle = Math.min(1, elapsed / 0.9)
-      shake = 0.03 * throttle
-      if (elapsed > 0.9) {
-        s.phase = 'fly'
+    if (s.phase === 'alarm' && elapsed > 0.9) {
+      // ¡Pum! Cada trozo sale despedido desde el centro.
+      s.phase = 'down'
+      s.since = t
+      let seed = 1234 + s.count * 97
+      const rand = () => {
+        seed = (seed * 16807) % 2147483647
+        return seed / 2147483647
+      }
+      for (const part of parts.list) {
+        part.pos.copy(part.home)
+        part.vel
+          .set(part.home.x - SERVER.center[0], part.home.y - SERVER.center[1] + 0.4, part.home.z - SERVER.center[2])
+          .normalize()
+          .multiplyScalar(3 + rand() * 6)
+        part.vel.y += 4 + rand() * 6
+        part.spin.set(rand() * 10 - 5, rand() * 10 - 5, rand() * 10 - 5)
+      }
+      blasts.forEach((m, i) => {
+        m.uniforms.uOrigin.value.set(SERVER.center[0], SERVER.center[1] + (i === 2 ? 0.6 : 0), SERVER.center[2])
+        m.uniforms.uStart.value = uTime.value + (i === 2 ? 0.1 : 0)
+      })
+      if (flash.current) flash.current.intensity = 900
+      shake.value = 1.1
+      sfx.explosion()
+      game.setCrash({ id: s.count, ...ERRORS[s.count % ERRORS.length] })
+      s.count++
+      playerSay('En mi máquina funcionaba…')
+    } else if (s.phase === 'down') {
+      // Los trozos caen, rebotan y se quedan tirados por el suelo.
+      const rest = parts.cell[1] / 2
+      for (const part of parts.list) {
+        part.vel.y -= 18 * dt
+        part.pos.addScaledVector(part.vel, dt)
+        if (part.pos.y < rest) {
+          part.pos.y = rest
+          part.vel.y *= -0.35
+          part.vel.x *= 0.7
+          part.vel.z *= 0.7
+          part.spin.multiplyScalar(0.6)
+        }
+        part.rot.x += part.spin.x * dt
+        part.rot.y += part.spin.y * dt
+        part.rot.z += part.spin.z * dt
+      }
+      if (elapsed > 5.4) {
+        s.phase = 'rebuild'
         s.since = t
+        sfx.rebuild()
       }
-    } else if (s.phase === 'fly') {
-      throttle = 1
-      y = 11 * elapsed * elapsed
-      if (elapsed > 2.2 && !s.exploded) {
-        // Lejos de la vista, el despliegue "termina": palmeras de colores.
-        s.exploded = true
-        sparks.forEach((m, i) => {
-          m.uniforms.uOrigin.value.set(PAD[0] - 9 - i * 5, world.top + 7 + i * 3, -12 + i * 3)
-          m.uniforms.uStart.value = uTime.value + i * 0.25
-        })
-        sfx.firework()
-        playerSay('Ha salido bien. Sospechoso.')
+    } else if (s.phase === 'rebuild') {
+      // Rollback: cada trozo vuelve a su sitio.
+      const k = 1 - Math.exp(-7 * dt)
+      for (const part of parts.list) {
+        part.pos.lerp(part.home, k)
+        part.rot.set(part.rot.x * (1 - k), part.rot.y * (1 - k), part.rot.z * (1 - k))
       }
-      if (elapsed > 3) {
-        s.phase = 'away'
-        s.since = t
+      if (elapsed > 1.3) {
+        s.phase = 'idle'
+        game.setCrash(null)
+        playerSay('Rollback hecho. Aquí no ha pasado nada.')
       }
-    } else if (s.phase === 'away') {
-      // Tras una pausa llega otro cohete, creciendo sobre la plataforma.
-      scale = Math.min(1, Math.max(0, (elapsed - 4) / 0.8))
-      scale = 1 - Math.pow(1 - scale, 3)
-      if (elapsed > 4.8) s.phase = 'idle'
     }
 
-    if (rocket.current) {
-      rocket.current.visible = !(s.phase === 'fly' && y > 120) && scale > 0.001
-      rocket.current.position.set(
-        PAD[0] + Math.sin(t * 70) * shake,
-        0.14 + y,
-        PAD[2] + Math.cos(t * 55) * shake,
+    // La alarma tiñe de rojo neones, RGB y refrigeración mientras dura el fallo.
+    const alarm = s.phase === 'alarm' || s.phase === 'down' ? 1 : 0
+    uAlarm.value += (alarm - uAlarm.value) * (1 - Math.exp(-6 * dt))
+    if (flash.current) flash.current.intensity *= Math.exp(-5 * dt)
+
+    const broken = s.phase === 'down' || s.phase === 'rebuild'
+    if (tower.current) {
+      tower.current.visible = !broken
+      const shiver = s.phase === 'alarm' ? 0.05 : 0
+      tower.current.position.set(
+        SERVER.center[0] + Math.sin(t * 80) * shiver,
+        SERVER.center[1],
+        SERVER.center[2] + Math.cos(t * 67) * shiver,
       )
-      rocket.current.rotation.z = s.phase === 'fly' ? Math.sin(elapsed * 3) * 0.04 : 0
-      rocket.current.scale.setScalar(Math.max(0.001, scale))
+      tower.current.scale.setScalar(Math.max(0.001, introProgress(2.8, 1)))
     }
-    if (flame.current) {
-      const flicker = 0.85 + Math.sin(t * 60) * 0.15
-      flame.current.scale.set(throttle, throttle * flicker * (s.phase === 'fly' ? 1.8 : 1), throttle)
-      flame.current.visible = throttle > 0.01
+    const mesh = debris.current
+    if (mesh) {
+      mesh.visible = broken
+      if (broken) {
+        const { m, q, s: scale } = scratch
+        scale.set(parts.cell[0] * 0.96, parts.cell[1] * 0.96, parts.cell[2] * 0.96)
+        parts.list.forEach((part, i) => {
+          mesh.setMatrixAt(i, m.compose(part.pos, q.setFromEuler(part.rot), scale))
+        })
+        mesh.instanceMatrix.needsUpdate = true
+      }
     }
-    if (light.current) light.current.intensity = throttle * 260
   })
 
-  const hull = <meshStandardMaterial color="#e9edf5" roughness={0.35} metalness={0.4} />
-  const red = <meshStandardMaterial color="#ff3b3b" roughness={0.4} emissive="#ff3b3b" emissiveIntensity={0.25} />
+  const metal = <meshStandardMaterial color="#1b1e26" roughness={0.45} metalness={0.7} />
 
   return (
     <>
@@ -391,7 +469,7 @@ function DeployRocket() {
       <group position={BUTTON.center}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={BUTTON.size} />
-          <meshStandardMaterial color="#1b1e26" roughness={0.45} metalness={0.7} />
+          {metal}
         </mesh>
         <mesh ref={button} position-y={BUTTON.size[1] / 2}>
           <cylinderGeometry args={[0.46, 0.5, 0.3, 32]} />
@@ -424,58 +502,47 @@ function DeployRocket() {
         </Text>
       </group>
 
-      {/* Plataforma de lanzamiento */}
-      <group position={[PAD[0], 0, PAD[2]]}>
-        <mesh position-y={0.07} receiveShadow>
-          <cylinderGeometry args={[1.25, 1.35, 0.14, 40]} />
-          <meshStandardMaterial color="#17191f" roughness={0.5} metalness={0.7} />
+      {/* Servidor de producción, entero */}
+      <group ref={tower} position={SERVER.center}>
+        <mesh castShadow receiveShadow>
+          <boxGeometry args={SERVER.size} />
+          {metal}
         </mesh>
-        <mesh position-y={0.15} rotation-x={Math.PI / 2} material={hazard}>
-          <torusGeometry args={[1.05, 0.03, 8, 64]} />
+        <mesh position={[0, -0.2, SERVER.size[2] / 2 + 0.006]} material={leds}>
+          <planeGeometry args={[SERVER.size[0] - 0.24, SERVER.size[1] - 0.9]} />
         </mesh>
+        <mesh position={[0, -SERVER.size[1] / 2 + 0.05, 0]} material={hazard}>
+          <boxGeometry args={[SERVER.size[0] + 0.08, 0.08, SERVER.size[2] + 0.08]} />
+        </mesh>
+        <Text
+          font={fontBold}
+          fontSize={0.36}
+          position={[0, SERVER.size[1] / 2 - 0.34, SERVER.size[2] / 2 + 0.012]}
+          color={[0.5, 2.4, 1]}
+          anchorX="center"
+          anchorY="middle"
+          material-toneMapped={false}
+        >
+          PROD
+        </Text>
       </group>
 
-      <group ref={rocket} position={[PAD[0], 0.14, PAD[2]]}>
-        {/* Motor, cuerpo, ventana y morro */}
-        <mesh position-y={0.2}>
-          <cylinderGeometry args={[0.2, 0.3, 0.4, 20]} />
-          <meshStandardMaterial color="#22252e" roughness={0.4} metalness={0.8} />
-        </mesh>
-        <mesh position-y={1.45} castShadow>
-          <cylinderGeometry args={[0.42, 0.42, 2.1, 28]} />
-          {hull}
-        </mesh>
-        <mesh position-y={1.2}>
-          <cylinderGeometry args={[0.43, 0.43, 0.14, 28]} />
-          {red}
-        </mesh>
-        <mesh position={[0, 1.85, 0.4]}>
-          <sphereGeometry args={[0.15, 16, 16]} />
-          <meshBasicMaterial color={[0.4, 2.2, 3.2]} toneMapped={false} />
-        </mesh>
-        <mesh position-y={2.95} castShadow>
-          <coneGeometry args={[0.42, 0.9, 28]} />
-          {red}
-        </mesh>
-        {[0, 1, 2].map((i) => (
-          <group key={i} rotation-y={(i * Math.PI * 2) / 3}>
-            <mesh position={[0, 0.72, 0.55]} rotation-x={0.35} castShadow>
-              <boxGeometry args={[0.07, 0.75, 0.46]} />
-              {red}
-            </mesh>
-          </group>
-        ))}
-        {/* Llama: un cono invertido con el shader de haz */}
-        <mesh ref={flame} position-y={-0.9} rotation-x={Math.PI} material={fire} visible={false}>
-          <cylinderGeometry args={[0.02, 0.36, 2, 20, 1, true]} />
-        </mesh>
-        <pointLight ref={light} position-y={-0.4} color="#ff8a2e" intensity={0} distance={22} decay={2} />
-      </group>
-
-      <points geometry={burst} material={smoke} frustumCulled={false} />
-      {sparks.map((material, i) => (
+      {/* Servidor de producción, en pedazos */}
+      <instancedMesh ref={debris} args={[undefined, undefined, DEBRIS]} castShadow frustumCulled={false} visible={false}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshStandardMaterial color="#262a34" roughness={0.5} metalness={0.6} emissive="#ff5a1e" emissiveIntensity={0.25} />
+      </instancedMesh>
+      {blasts.map((material, i) => (
         <points key={i} geometry={burst} material={material} frustumCulled={false} />
       ))}
+      <pointLight
+        ref={flash}
+        position={[SERVER.center[0], SERVER.center[1] + 0.5, SERVER.center[2]]}
+        color="#ff7a2e"
+        intensity={0}
+        distance={30}
+        decay={2}
+      />
     </>
   )
 }
@@ -486,7 +553,7 @@ export function Props() {
     <>
       <Elevator />
       <Duck />
-      <DeployRocket />
+      <DeployServer />
     </>
   )
 }

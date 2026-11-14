@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { body } from '../game/state'
+import { body, shake } from '../game/state'
 import { celebrationTime, useGame } from '../store'
 import { world } from '../world/layout'
 
@@ -82,6 +82,12 @@ export function CameraRig() {
     const k = 1 - Math.exp(-(mode === 'intro' ? 2.2 : 3.4) * dt)
     state.camera.position.lerp(goalPos, k)
     look.current.lerp(goalLook, k)
+    // Sacudida (explosiones): un temblor que se amortigua solo.
+    if (shake.value > 0.002) {
+      state.camera.position.x += (Math.random() - 0.5) * shake.value
+      state.camera.position.y += (Math.random() - 0.5) * shake.value
+      shake.value *= Math.exp(-4.5 * dt)
+    }
     state.camera.lookAt(look.current)
   })
 

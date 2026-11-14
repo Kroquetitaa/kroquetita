@@ -194,13 +194,42 @@ function build() {
     },
   ]
 
-  // Atrezo: armarios de servidores, botón de despliegue, cohete y pato.
-  const rackSize: Vec3 = [1, 2.3, 0.9]
-  const racks: Box[] = [-21, -19.9, -18.8, 18.8, 19.9, 21].map((x) => ({
-    center: [x, rackSize[1] / 2, -7],
-    size: rackSize,
-    owner: 0,
-  }))
+  // ---------- Interior del ordenador: la placa vive dentro de una caja
+  const pc = {
+    /** Paredes de la caja (el frente es el cristal: queda abierto a la cámara) */
+    walls: { minX: -34, maxX: 35, minZ: -24, maxZ: 20, height: 17 },
+    /** Tarjeta gráfica, de canto tras la fila trasera */
+    gpu: { center: [0, 1.9, -16.6], size: [18, 3.8, 1.3], owner: 0 } as Box,
+    /** Módulos de memoria a la derecha de la placa */
+    ram: [18.4, 19.5, 20.6, 21.7].map(
+      (x): Box => ({ center: [x, 1.3, -5.5], size: [0.36, 2.6, 7], owner: 0 }),
+    ),
+    /** Fuente de alimentación, en la esquina trasera izquierda */
+    psu: { center: [-24.5, 1.9, -16.5], size: [9, 3.8, 6], owner: 0 } as Box,
+    /** Jaula de discos, delante a la izquierda */
+    drives: { center: [-24, 1.05, 4], size: [4.6, 2.1, 3.4], owner: 0 } as Box,
+    /** Depósito de la refrigeración líquida: [x, z], radio y altura */
+    reservoir: { position: [26.5, -14] as [number, number], radius: 1.3, height: 8 },
+    /** Radiador con tres ventiladores en la pared del fondo */
+    radiator: { xs: [-7, 1.5, 10], y: 5.3, radius: 3.5 },
+    /** Condensadores repartidos por la placa: [x, z, altura] */
+    capacitors: [
+      [-6, 2, 0.9], [-4.8, 2, 1.2], [-6, 0.8, 0.9],
+      [-7.6, -6.2, 1.2], [-6.4, -6.2, 0.9],
+      [7.2, -6.6, 0.9], [8.4, -6.6, 1.2], [7.2, -5.4, 0.9],
+      [1.9, 2.9, 1.2], [15.4, 1.6, 0.9], [15.4, 2.8, 1.2],
+    ] as Array<[number, number, number]>,
+  }
+  const capacitorBoxes = pc.capacitors.map(([x, z, h]) =>
+    toAABB({ center: [x, h / 2, z], size: [0.72, h, 0.72] }),
+  )
+  const reservoirBox = toAABB({
+    center: [pc.reservoir.position[0], pc.reservoir.height / 2, pc.reservoir.position[1]],
+    size: [pc.reservoir.radius * 2, pc.reservoir.height, pc.reservoir.radius * 2],
+  })
+
+  // Atrezo con el que se juega: botón de despliegue, servidor de producción y pato.
+  const server: Box = { center: [20.5, 1.3, 6], size: [1.7, 2.6, 1.7], owner: 0 }
   const props = {
     elevator: {
       center: elevatorCenter,
@@ -211,9 +240,9 @@ function build() {
       collider: toAABB({ center: elevatorCenter, size: elevatorSize }),
     },
     mirador,
-    racks,
-    button: { center: [17.5, 0.25, 9] as Vec3, size: [1.4, 0.5, 1.4] as Vec3 },
-    rocket: [21, 0, 3.5] as Vec3,
+    button: { center: [17, 0.25, 10.5] as Vec3, size: [1.4, 0.5, 1.4] as Vec3 },
+    /** Servidor de producción: lo que revienta al pulsar DEPLOY */
+    server,
     duck: [-2, 0, 10.5] as Vec3,
   }
 
@@ -223,7 +252,13 @@ function build() {
       toAABB({ center: [b.x, b.height / 2, b.z], size: [b.width, b.height, b.depth] }),
     ),
     toAABB(mirador),
-    ...racks.map(toAABB),
+    toAABB(pc.gpu),
+    ...pc.ram.map(toAABB),
+    toAABB(pc.psu),
+    toAABB(pc.drives),
+    ...capacitorBoxes,
+    reservoirBox,
+    toAABB(server),
     toAABB(props.button),
     props.elevator.collider,
   ]
@@ -238,11 +273,12 @@ function build() {
     coins,
     pads,
     props,
+    pc,
     path,
     colliders,
     spawn,
     /** Rectángulo de la placa (para dibujarla y dejar libre su interior) */
-    board: { minX: -X - 3.6, maxX: X + 3.6, minZ: BACK - 3.2, maxZ: FRONT + 3.2 },
+    board: { minX: -X - 3.6, maxX: X + 11.4, minZ: BACK - 8.2, maxZ: FRONT + 3.2 },
     /** Núcleo de IA: flota sobre el procesador */
     core: [cpu.center[0], 8.8, MID - 0.5] as Vec3,
     /** Donde aparece el trofeo al completar las monedas */
@@ -250,8 +286,8 @@ function build() {
     /** Altura aproximada de la escena (cámara, polvo y fuegos artificiales) */
     top: 9,
     /** Encuadre de la portada */
-    view: { position: [-6, 23, 40] as Vec3, look: [-4, 0.5, -2] as Vec3, halfWidth: 24 },
-    bounds: { minX: -27, maxX: 26, minZ: BACK - 6.5, maxZ: FRONT + 8 },
+    view: { position: [-5, 24, 42] as Vec3, look: [-3, 0.8, -3] as Vec3, halfWidth: 25.5 },
+    bounds: { minX: -31, maxX: 32, minZ: BACK - 11.5, maxZ: FRONT + 8 },
   }
 }
 

@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { MeshReflectorMaterial, Stars, Text } from '@react-three/drei'
+import { MeshReflectorMaterial, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import fontBold from '@fontsource/poppins/files/poppins-latin-600-normal.woff?url'
 import fontRegular from '@fontsource/poppins/files/poppins-latin-400-normal.woff?url'
@@ -9,7 +9,6 @@ import { useGame } from '../store'
 import { world, type Block, type Box } from '../world/layout'
 import { blockRise, introProgress, introTime } from './intro'
 import {
-  createAuroraMaterial,
   createBeamMaterial,
   createBoardMaterial,
   createDustMaterial,
@@ -21,6 +20,7 @@ import {
   createScanMaterial,
   createStoneTexture,
 } from './materials/shaders'
+import { Computer } from './Computer'
 import { Props } from './Props'
 import { Scenery } from './Scenery'
 import { VoxelLogo } from './VoxelLogo'
@@ -361,15 +361,6 @@ function Dust({ count = 320 }: { count?: number }) {
   return <points geometry={geometry} material={material} frustumCulled={false} />
 }
 
-function Aurora() {
-  const material = useMemo(() => createAuroraMaterial(), [])
-  return (
-    <mesh position={[0, 30, -85]} material={material}>
-      <planeGeometry args={[260, 80]} />
-    </mesh>
-  )
-}
-
 /** La placa: una lámina de pistas y vías dibujada sobre el suelo reflectante. */
 function Board() {
   const { minX, maxX, minZ, maxZ } = world.board
@@ -476,8 +467,6 @@ export function World() {
 
   return (
     <>
-      <Aurora />
-      <Stars radius={110} depth={50} count={1800} factor={3.2} saturation={0.4} fade speed={0.7} />
       <Floor />
       {world.blocks.map((block) => (
         <Monolith key={block.index} block={block} stone={stone} />
@@ -494,6 +483,7 @@ export function World() {
         <meshBasicMaterial color={[2.4, 1.5, 0.35]} toneMapped={false} />
       </Boxes>
       <Mirador />
+      <Computer />
       <Runners />
       <Scenery />
       <Props />

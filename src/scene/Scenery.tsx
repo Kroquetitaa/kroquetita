@@ -7,9 +7,6 @@ import { introProgress } from './intro'
 import {
   createBeamMaterial,
   createCoreMaterial,
-  createRackMaterial,
-  createStreakMaterial,
-  createTowerMaterial,
   uParty,
 } from './materials/shaders'
 
@@ -21,35 +18,6 @@ const rng = (seed: number) => () => {
 
 /** Posición del núcleo de IA: flotando sobre el procesador central. */
 const CORE = new THREE.Vector3(...world.core)
-
-/** Ciudad lejana: un arco de rascacielos con ventanas encendidas tras el diorama. */
-function Skyline({ count = 70 }: { count?: number }) {
-  const ref = useRef<THREE.InstancedMesh>(null)
-  const material = useMemo(() => createTowerMaterial(), [])
-
-  useLayoutEffect(() => {
-    const mesh = ref.current
-    if (!mesh) return
-    const rand = rng(4242)
-    const matrix = new THREE.Matrix4()
-    for (let i = 0; i < count; i++) {
-      // Repartidos en un arco lejano por detrás, nunca a los lados ni delante.
-      const angle = -Math.PI * 0.2 - rand() * Math.PI * 0.6
-      const radius = 72 + rand() * 40
-      const height = 8 + rand() * rand() * 42
-      matrix.makeScale(3 + rand() * 5, height, 3 + rand() * 5)
-      matrix.setPosition(Math.cos(angle) * radius * 1.15, height / 2, Math.sin(angle) * radius - 6)
-      mesh.setMatrixAt(i, matrix)
-    }
-    mesh.instanceMatrix.needsUpdate = true
-  }, [count])
-
-  return (
-    <instancedMesh ref={ref} args={[undefined, undefined, count]} material={material} frustumCulled={false}>
-      <boxGeometry args={[1, 1, 1]} />
-    </instancedMesh>
-  )
-}
 
 /**
  * Núcleo de IA: una esfera que late dentro de una malla geodésica, con anillos
@@ -221,13 +189,12 @@ function Synapses({ perCurve = 3 }: { perCurve?: number }) {
 }
 
 const LOOPS = [
-  { x0: -25, x1: 26, z0: -16, z1: 13, speed: 11, dir: 1, color: [0.2, 2.4, 3.8] },
-  { x0: -28, x1: 29, z0: -19, z1: 15.5, speed: 9, dir: -1, color: [3.8, 1.1, 0.25] },
-  { x0: -31, x1: 32, z0: -22, z1: 18, speed: 13, dir: 1, color: [3.2, 0.45, 2.6] },
+  { x0: -30.5, x1: 31.5, z0: -21.5, z1: 13, speed: 11, dir: 1, color: [0.2, 2.4, 3.8] },
+  { x0: -32.5, x1: 33.5, z0: -22.8, z1: 16, speed: 9, dir: -1, color: [3.8, 1.1, 0.25] },
 ]
 const TRAIL = 26
 
-/** Corredores de luz: recorren circuitos sobre la rejilla dejando una estela. */
+/** Corredores de luz: dan vueltas al fondo de la caja dejando una estela. */
 function Racers() {
   const ref = useRef<THREE.InstancedMesh>(null)
   const scratch = useMemo(() => ({ m: new THREE.Matrix4() }), [])
@@ -413,146 +380,16 @@ function PetDrone() {
   )
 }
 
-/** Armarios de servidores con sus LED (se puede saltar encima). */
-function Racks() {
-  const materials = useMemo(() => world.props.racks.map((_, i) => createRackMaterial(i * 17.3)), [])
-  return (
-    <>
-      {world.props.racks.map((rack, i) => (
-        <group key={i} position={rack.center}>
-          <mesh castShadow receiveShadow>
-            <boxGeometry args={rack.size} />
-            <meshStandardMaterial color="#15171d" roughness={0.45} metalness={0.75} />
-          </mesh>
-          <mesh position-z={rack.size[2] / 2 + 0.006} material={materials[i]}>
-            <planeGeometry args={[rack.size[0] - 0.16, rack.size[1] - 0.2]} />
-          </mesh>
-        </group>
-      ))}
-    </>
-  )
-}
-
-const CRYSTAL_COLORS = [
-  [0.2, 2, 3],
-  [0.4, 2.6, 1.6],
-  [3, 0.6, 2.2],
-  [3, 1.6, 0.3],
-]
-
-/** Cristales de datos repartidos por el suelo: flotan, giran y crecen si te acercas. */
-function Crystals({ count = 14 }: { count?: number }) {
-  const ref = useRef<THREE.InstancedMesh>(null)
-  const items = useMemo(() => {
-    const rand = rng(9001)
-    const list: Array<{ x: number; z: number; size: number; spin: number; grow: number }> = []
-    while (list.length < count) {
-      const x = -26 + rand() * 50
-      const z = -15 + rand() * 28
-      // Fuera de la placa y de la zona de salida.
-      const board = world.board
-      const inside =
-        x > board.minX - 1.5 && x < board.maxX + 1.5 && z > board.minZ - 1.5 && z < board.maxZ + 1.5
-      const spawn = Math.hypot(x - world.spawn[0], z - world.spawn[2]) < 2.5
-      if (inside || spawn) continue
-      list.push({ x, z, size: 0.15 + rand() * 0.18, spin: rand() * 6, grow: 0 })
-    }
-    return list
-  }, [count])
-  const scratch = useMemo(
-    () => ({ m: new THREE.Matrix4(), q: new THREE.Quaternion(), e: new THREE.Euler(), p: new THREE.Vector3(), s: new THREE.Vector3() }),
-    [],
-  )
-
-  useLayoutEffect(() => {
-    const mesh = ref.current
-    if (!mesh) return
-    const color = new THREE.Color()
-    items.forEach((_, i) => {
-      const c = CRYSTAL_COLORS[i % CRYSTAL_COLORS.length]
-      mesh.setColorAt(i, color.setRGB(c[0] * 0.42, c[1] * 0.42, c[2] * 0.42))
-    })
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
-  }, [items])
-
-  useFrame(({ clock }, delta) => {
-    const mesh = ref.current
-    if (!mesh) return
-    const t = clock.elapsedTime
-    const appear = introProgress(2.8, 1.4)
-    const { m, q, e, p, s } = scratch
-    items.forEach((item, i) => {
-      const near = Math.hypot(item.x - body.pos[0], item.z - body.pos[2]) < 2.3 && body.pos[1] < 2 ? 1 : 0
-      item.grow += (near - item.grow) * (1 - Math.exp(-7 * delta))
-      const size = item.size * (1 + item.grow * 0.9) * appear
-      p.set(item.x, size * 1.5 + 0.12 + Math.sin(t * 1.4 + item.spin) * 0.08, item.z)
-      q.setFromEuler(e.set(0, t * (0.5 + item.grow * 3) + item.spin, 0))
-      s.set(size, size * 1.9, size)
-      mesh.setMatrixAt(i, m.compose(p, q, s))
-    })
-    mesh.instanceMatrix.needsUpdate = true
-  })
-
-  return (
-    <instancedMesh ref={ref} args={[undefined, undefined, count]} frustumCulled={false}>
-      <octahedronGeometry args={[1, 0]} />
-      <meshBasicMaterial toneMapped={false} />
-    </instancedMesh>
-  )
-}
-
-/** Estrellas fugaces: cada pocos segundos una cruza el cielo. */
-function ShootingStars() {
-  const ref = useRef<THREE.Mesh>(null)
-  const material = useMemo(() => createStreakMaterial(), [])
-  const state = useRef({ next: 3, start: 0, shot: 0, origin: new THREE.Vector3(), flying: false })
-
-  useFrame(({ clock }) => {
-    const mesh = ref.current
-    if (!mesh) return
-    const t = clock.elapsedTime
-    const s = state.current
-    if (!s.flying && t > s.next) {
-      // Semilla por disparo: distinta altura y posición cada vez.
-      const a = Math.sin(++s.shot * 12.9898) * 43758.5453
-      const r = a - Math.floor(a)
-      s.origin.set(-70 + r * 80, 42 + ((r * 7) % 1) * 26, -95)
-      s.start = t
-      s.flying = true
-    }
-    if (!s.flying) return
-    const life = (t - s.start) / 1.1
-    if (life >= 1) {
-      s.flying = false
-      s.next = t + 4 + (s.shot % 3) * 2.5
-      material.uniforms.uAlpha.value = 0
-      return
-    }
-    mesh.position.set(s.origin.x + life * 62, s.origin.y - life * 22, s.origin.z)
-    material.uniforms.uAlpha.value = Math.sin(life * Math.PI)
-  })
-
-  return (
-    <mesh ref={ref} rotation-z={-0.34} material={material}>
-      <planeGeometry args={[16, 0.3]} />
-    </mesh>
-  )
-}
-
-/** Todo lo que da vida al escenario alrededor del diorama. */
+/** Todo lo que da vida al escenario alrededor de la placa. */
 export function Scenery() {
   return (
     <>
-      <Skyline />
       <AICore />
       <Synapses />
       <Racers />
       <PatrolDrone phase={0} height={world.top * 0.5} speed={0.22} />
       <PatrolDrone phase={Math.PI} height={world.top * 0.95} speed={-0.17} />
       <PetDrone />
-      <Racks />
-      <Crystals />
-      <ShootingStars />
     </>
   )
 }

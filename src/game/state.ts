@@ -8,6 +8,9 @@ export function respawn() {
   Object.assign(body, createBody(world.spawn))
 }
 
+/** Sacudida de cámara pendiente (la consume y amortigua la cámara). */
+export const shake = { value: 0 }
+
 // Solo en desarrollo: acceso desde la consola para depurar la física.
 if (import.meta.env.DEV) {
   ;(window as unknown as { __body: typeof body }).__body = body
