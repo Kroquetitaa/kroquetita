@@ -10,6 +10,7 @@ import { CameraRig } from './CameraRig'
 import { Detail, DETAIL_LAYER } from './Detail'
 import { Fireworks } from './Celebration'
 import { Folk } from './Folk'
+import { Lab } from './Lab'
 import { Library } from './Library'
 import { Coins } from './Coins'
 import { Player } from './Player'
@@ -162,6 +163,7 @@ export function Experience() {
         <Folk />
         <Boss />
         <Library />
+        <Lab />
         <Fireworks />
         <Runtime />
       </Suspense>

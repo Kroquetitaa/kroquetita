@@ -74,6 +74,7 @@ const UI = {
     quests: 'Encargos',
     education: 'Formación',
     appliedAt: 'Aplicado en',
+    concepts: 'Conceptos',
     questNew: 'Nuevo encargo',
     questDone: 'Encargo completado',
     bossName: 'Bug en producción',
@@ -140,6 +141,7 @@ const UI = {
     quests: 'Errands',
     education: 'Education',
     appliedAt: 'Applied at',
+    concepts: 'Concepts',
     questNew: 'New errand',
     questDone: 'Errand complete',
     bossName: 'Bug in production',
@@ -229,6 +231,10 @@ export const MEDALS: Record<Achievement, { title: Localized; hint: Localized }> 
   wrecker: {
     title: { es: 'Lo rompo todo', en: 'Break everything' },
     hint: { es: 'Rompe cada cosa de la sala de romper', en: 'Break every item in the break room' },
+  },
+  curious: {
+    title: { es: 'Curiosidad infinita', en: 'Endlessly curious' },
+    hint: { es: 'Prueba todas las instalaciones de la sala de conceptos', en: 'Try every exhibit in the concepts room' },
   },
   hired: {
     title: { es: 'Contratado', en: 'Hired' },

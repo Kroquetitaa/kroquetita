@@ -7,6 +7,8 @@ import { world } from '../world/layout'
 
 const goalPos = new THREE.Vector3()
 const goalLook = new THREE.Vector3()
+const roomPos = new THREE.Vector3()
+const roomLook = new THREE.Vector3()
 
 /** Duración (s) del vuelo de cámara al completar las monedas */
 const FLIGHT = 9
@@ -92,8 +94,24 @@ export function CameraRig() {
       // Más allá de los bordes originales (biblioteca a la izquierda, sala de romper a la derecha)
       // la cámara acompaña del todo.
       const far = portrait ? 0 : Math.min(0, px + 30) + Math.max(0, px - 30)
-      goalPos.set(px * follow - (portrait ? 0 : 2) + far * 0.7, 7 + py * 0.6, 27 * fit + pz * 0.35)
-      goalLook.set(px * (portrait ? 0.96 : 0.7) + far * 0.5, 2.6 + py * 0.7, pz * 0.25)
+      // Hacia delante (sala de conceptos) la cámara retrocede con el jugador para no quedarse encima.
+      const deep = Math.max(0, pz - 19)
+      goalPos.set(
+        px * follow - (portrait ? 0 : 2) + far * 0.7,
+        7 + py * 0.6 + deep * 0.12,
+        27 * fit + pz * 0.35 + deep * 0.72,
+      )
+      goalLook.set(px * (portrait ? 0.96 : 0.7) + far * 0.5, 2.6 + py * 0.7, pz * 0.25 + deep * 0.72)
+      // Dentro de la sala ya no interesa el plano general de las cajas: la cámara pasa a un plano
+      // propio, más alto y centrado en el jugador y en la instalación que tiene delante.
+      const room = Math.min(1, deep / 8)
+      const inLab = room * room * (3 - 2 * room)
+      if (inLab > 0) {
+        roomPos.set(px * (portrait ? 0.96 : 0.86), 9.5 + py * 0.6, pz + 15 * Math.min(fit, 1.5))
+        roomLook.set(px * (portrait ? 0.98 : 0.92), 1.3 + py * 0.7, pz - 3.5)
+        goalPos.lerp(roomPos, inLab)
+        goalLook.lerp(roomLook, inLab)
+      }
     } else {
       goalPos.set(px - 1.4, py + 3.3, pz + 7.6)
       goalLook.set(px, py + 0.9, pz - 1)

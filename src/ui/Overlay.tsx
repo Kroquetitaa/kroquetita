@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { durationOf, linesOf, periodOf, profile, stages, type Lang } from '../data/career'
+import { concepts } from '../data/concepts'
 import { education } from '../data/education'
 import { isAudioRunning, setMuted, sfx, unlockAudio } from '../game/audio'
 import { setMusicIntensity } from '../game/music'
@@ -301,6 +302,39 @@ function StudyCard() {
           {t.appliedAt} <b>{study.appliedAt}</b>
         </p>
       )}
+    </section>
+  )
+}
+
+/** Cartela de la instalación de la sala de conceptos en cuya plataforma está el jugador. */
+function ConceptCard() {
+  const index = useGame((s) => (s.mode === 'play' ? s.concept : null))
+  const seen = useGame((s) => s.seenConcepts.length)
+  const lang = useLang()
+  const t = useUI()
+  if (index === null) return null
+  const concept = concepts[index]
+  if (!concept) return null
+  return (
+    <section
+      className="career study"
+      style={{ '--accent': concept.color } as React.CSSProperties}
+      aria-label={t.concepts}
+      key={index}
+    >
+      <div className="career__body">
+        <div>
+          <p className="career__part">{concept.tag[lang]}</p>
+          <h2>{concept.title[lang]}</h2>
+        </div>
+      </div>
+      <p className="career__summary study__note">{concept.explain[lang]}</p>
+      <p className="study__applied">
+        {concept.action[lang]}{' '}
+        <b>
+          {seen} / {concepts.length}
+        </b>
+      </p>
     </section>
   )
 }
@@ -843,6 +877,7 @@ export function Overlay() {
       <Dialogue />
       <BossBar />
       <StudyCard />
+      <ConceptCard />
       <QuestList />
       <QuestToast />
       <MedalToast />

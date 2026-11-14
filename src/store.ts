@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { stages, type Lang } from './data/career'
+import { concepts } from './data/concepts'
 import { education } from './data/education'
 import { world } from './world/layout'
 
@@ -26,6 +27,7 @@ export const ACHIEVEMENTS = [
   'speedrun',
   'graduate',
   'wrecker',
+  'curious',
 ] as const
 export type Achievement = (typeof ACHIEVEMENTS)[number]
 export type CameraMode = 'wide' | 'chase'
@@ -96,6 +98,9 @@ interface GameState {
   study: number | null
   /** Ya se ha subido alguna vez al último libro */
   topBook: boolean
+  /** Instalación de la sala de conceptos en cuya plataforma está el jugador, y las ya visitadas */
+  concept: number | null
+  seenConcepts: number[]
   /** Qué cosas de la sala de romper se han roto ya, y cuántas veces en total */
   smashed: Smashable[]
   smashCount: number
@@ -147,6 +152,7 @@ interface GameState {
   setReady: () => void
   setProgress: (value: number) => void
   setStudy: (index: number | null) => void
+  setConcept: (index: number | null) => void
   /** Se ha roto algo en la sala de romper */
   smash: (id: Smashable) => void
   spawnBoss: () => void
@@ -193,6 +199,8 @@ export const useGame = create<GameState>((set, get) => ({
   bossHp: BOSS_HP,
   study: null,
   topBook: false,
+  concept: null,
+  seenConcepts: [],
   smashed: [],
   smashCount: 0,
   quests: { recruiter: 'idle', guide: 'idle', qa: 'idle', sysadmin: 'idle', intern: 'idle', librarian: 'idle' },
@@ -233,6 +241,13 @@ export const useGame = create<GameState>((set, get) => ({
       set({ topBook: true })
       get().completeQuest('librarian')
     }
+  },
+  setConcept: (concept) => {
+    if (get().concept === concept) return
+    set({ concept })
+    if (concept === null || get().seenConcepts.includes(concept)) return
+    set((s) => ({ seenConcepts: [...s.seenConcepts, concept] }))
+    if (get().seenConcepts.length >= concepts.length) get().unlock('curious')
   },
   smash: (id) => {
     set((s) => ({
