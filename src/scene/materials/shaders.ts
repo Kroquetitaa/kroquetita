@@ -540,326 +540,124 @@ export function createCoreMaterial() {
   })
 }
 
-/** Iluminación RGB: un arcoíris que fluye a lo largo de la pieza (uv.x). */
-export function createRgbMaterial(phase = 0, speed = 0.25) {
+
+/** Textura procedural de piedra/hormigón: grano y vetas suaves en un canvas. */
+export function createStoneTexture(size = 256) {
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = size
+  const ctx = canvas.getContext('2d')!
+  ctx.fillStyle = '#c4c4c4'
+  ctx.fillRect(0, 0, size, size)
+
+  // Semilla fija para que la textura sea idéntica en cada carga.
+  let seed = 1337
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647
+    return seed / 2147483647
+  }
+
+  for (let i = 0; i < 26; i++) {
+    const x = rand() * size
+    const y = rand() * size
+    const r = 30 + rand() * 90
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r)
+    const v = rand() > 0.5 ? 255 : 0
+    g.addColorStop(0, `rgba(${v},${v},${v},0.09)`)
+    g.addColorStop(1, `rgba(${v},${v},${v},0)`)
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, size, size)
+  }
+
+  const image = ctx.getImageData(0, 0, size, size)
+  for (let i = 0; i < image.data.length; i += 4) {
+    const n = (rand() - 0.5) * 20
+    image.data[i] += n
+    image.data[i + 1] += n
+    image.data[i + 2] += n
+  }
+  ctx.putImageData(image, 0, 0)
+
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.anisotropy = 4
+  return texture
+}
+
+/** Aurora lejana: cortinas de ruido que fluyen despacio tras los bloques. */
+export function createAuroraMaterial() {
   return new THREE.ShaderMaterial({
-    uniforms: { uTime, uParty, uAlarm, uPhase: { value: phase }, uSpeed: { value: speed } },
+    uniforms: { uTime, uParty },
     vertexShader: vertex,
     fragmentShader: /* glsl */ `
       uniform float uTime;
       uniform float uParty;
-      uniform float uAlarm;
-      uniform float uPhase;
-      uniform float uSpeed;
       varying vec2 vUv;
-      void main() {
-        float hue = vUv.x + uPhase - uTime * uSpeed * (1.0 + uParty * 2.0);
-        vec3 col = 0.55 + 0.45 * cos(6.28318 * (hue + vec3(0.0, 0.33, 0.67)));
-        col = mix(col, vec3(1.0, 0.06, 0.04) * (0.4 + step(0.5, fract(uTime * 3.0))), uAlarm);
-        gl_FragColor = vec4(col * 1.9, 1.0);
-      }
-    `,
-    toneMapped: false,
-  })
-}
 
-/** Chapa de la caja: panel oscuro con rejilla hexagonal y un resplandor al fondo. */
-export function createCaseMaterial(size: [number, number]) {
-  return new THREE.ShaderMaterial({
-    uniforms: { uTime, uSize: { value: new THREE.Vector2(size[0], size[1]) } },
-    vertexShader: vertex,
-    fragmentShader: /* glsl */ `
-      uniform float uTime;
-      uniform vec2 uSize;
-      varying vec2 vUv;
-      // Distancia al borde de la celda hexagonal más cercana.
-      float hex(vec2 p) {
-        vec2 r = vec2(1.0, 1.732);
-        vec2 a = mod(p, r) - r * 0.5;
-        vec2 b = mod(p - r * 0.5, r) - r * 0.5;
-        vec2 g = dot(a, a) < dot(b, b) ? a : b;
-        g = abs(g);
-        return max(dot(g, vec2(0.5, 0.866)), g.x);
-      }
-      void main() {
-        vec2 p = vUv * uSize;
-        float cell = hex(p / 0.75);
-        float hole = smoothstep(0.34, 0.3, cell);
-        float rim = smoothstep(0.06, 0.0, abs(cell - 0.36));
-        // Luz ambiental de los componentes: más viva cerca del suelo.
-        float low = smoothstep(uSize.y, 0.0, p.y);
-        vec3 metal = vec3(0.022, 0.024, 0.03) * (0.6 + low);
-        vec3 leak = mix(vec3(0.05, 0.35, 0.6), vec3(0.6, 0.15, 0.5), 0.5 + 0.5 * sin(p.x * 0.08 + uTime * 0.25));
-        vec3 col = metal * (1.0 - hole * 0.75) + rim * vec3(0.03, 0.035, 0.045) + leak * hole * 0.05 * low;
-        // Juntas de panel.
-        float seam = smoothstep(0.04, 0.0, abs(fract(p.x / 11.5) - 0.5) - 0.495);
-        col += vec3(0.02) * seam;
-        gl_FragColor = vec4(col, 1.0);
-      }
-    `,
-    toneMapped: false,
-  })
-}
-
-/** Líquido refrigerante: remolinos de color y burbujas que suben. */
-export function createCoolantMaterial() {
-  return new THREE.ShaderMaterial({
-    uniforms: { uTime, uParty, uAlarm },
-    vertexShader: vertex,
-    fragmentShader: /* glsl */ `
-      uniform float uTime;
-      uniform float uParty;
-      uniform float uAlarm;
-      varying vec2 vUv;
       float hash(vec2 p) {
         return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
       }
+      float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+                   mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+      }
+      float fbm(vec2 p) {
+        float v = 0.0;
+        float a = 0.5;
+        for (int i = 0; i < 4; i++) {
+          v += a * noise(p);
+          p *= 2.03;
+          a *= 0.5;
+        }
+        return v;
+      }
+
       void main() {
-        // Remolino: bandas diagonales que giran alrededor del cilindro.
-        float swirl = 0.5 + 0.5 * sin((vUv.x * 2.0 + vUv.y * 3.0) * 6.2831 - uTime * 1.6);
-        vec3 a = vec3(0.05, 0.75, 1.0);
-        vec3 b = vec3(0.55, 0.2, 1.0);
-        vec3 col = mix(a, b, swirl);
-        col = mix(col, 0.55 + 0.45 * cos(6.28318 * (vUv.y - uTime * 0.3 + vec3(0.0, 0.33, 0.67))), uParty);
-        col = mix(col, vec3(1.0, 0.1, 0.05), uAlarm);
-        // Burbujas: puntos que ascienden por columnas.
-        vec2 grid = vec2(vUv.x * 14.0, vUv.y * 9.0 - uTime * 0.9);
-        vec2 cell = floor(grid);
-        vec2 f = fract(grid) - 0.5;
-        float bubble = smoothstep(0.2, 0.08, length(f + (hash(cell) - 0.5) * 0.5)) * step(0.6, hash(cell + 3.1));
-        float level = smoothstep(0.93, 0.9, vUv.y);
-        gl_FragColor = vec4((col * (0.7 + swirl * 0.5) + bubble * 0.9) * level * 1.3, 0.9 * level);
+        float t = uTime * (0.035 + uParty * 0.1);
+        // Cortinas verticales deformadas por ruido.
+        float warp = fbm(vec2(vUv.x * 3.0 + t, t * 0.7));
+        float curtain = fbm(vec2(vUv.x * 7.0 + warp * 2.0 - t * 1.5, vUv.y * 1.3 + t));
+        curtain = pow(smoothstep(0.3, 0.72, curtain), 1.5);
+        float height = smoothstep(0.0, 0.25, vUv.y) * smoothstep(1.0, 0.35, vUv.y);
+        float sides = smoothstep(0.0, 0.2, vUv.x) * smoothstep(1.0, 0.8, vUv.x);
+        vec3 cold = vec3(0.1, 0.32, 1.0);
+        vec3 warm = vec3(1.0, 0.36, 0.12);
+        vec3 col = mix(cold, warm, smoothstep(0.3, 0.75, vUv.x + (warp - 0.5) * 0.4));
+        float a = curtain * height * sides * 0.5;
+        gl_FragColor = vec4(col * a, a);
       }
     `,
     transparent: true,
     depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    fog: false,
     toneMapped: false,
   })
 }
 
-/** Tubo rígido de la refrigeración: blanco, con el líquido viéndose pasar. */
-export function createPipeMaterial() {
+/** Estela de una estrella fugaz: fina y brillante en la cabeza. */
+export function createStreakMaterial() {
   return new THREE.ShaderMaterial({
-    uniforms: { uTime, uAlarm },
+    uniforms: { uAlpha: { value: 0 } },
     vertexShader: vertex,
     fragmentShader: /* glsl */ `
-      uniform float uTime;
-      uniform float uAlarm;
+      uniform float uAlpha;
       varying vec2 vUv;
       void main() {
-        // Sombreado falso de cilindro (uv.y da la vuelta al tubo).
-        float shade = 0.45 + 0.55 * sin(vUv.y * 3.14159);
-        float flow = smoothstep(0.35, 0.5, fract(vUv.x * 9.0 - uTime * 0.9)) * smoothstep(0.75, 0.6, fract(vUv.x * 9.0 - uTime * 0.9));
-        vec3 liquid = mix(vec3(0.1, 0.8, 1.0), vec3(1.0, 0.12, 0.06), uAlarm);
-        vec3 col = vec3(0.5, 0.52, 0.56) * shade + liquid * flow * 1.6;
-        gl_FragColor = vec4(col, 1.0);
-      }
-    `,
-    toneMapped: false,
-  })
-}
-
-/** Cristal templado: casi invisible, con el canto iluminado y reflejos diagonales. */
-export function createGlassMaterial(size: [number, number]) {
-  return new THREE.ShaderMaterial({
-    uniforms: { uTime, uSize: { value: new THREE.Vector2(size[0], size[1]) } },
-    vertexShader: vertex,
-    fragmentShader: /* glsl */ `
-      uniform float uTime;
-      uniform vec2 uSize;
-      varying vec2 vUv;
-      void main() {
-        vec2 p = vUv * uSize;
-        vec2 inset = min(p, uSize - p);
-        float border = min(inset.x, inset.y);
-        float edge = smoothstep(0.13, 0.0, border);
-        float bevel = smoothstep(0.7, 0.0, border) * 0.12;
-        // Dos reflejos que se deslizan muy despacio por el panel.
-        float d = (p.x + p.y * 0.6) * 0.085 - uTime * 0.018;
-        float wide = smoothstep(0.4, 0.5, fract(d)) * smoothstep(0.64, 0.5, fract(d));
-        float thin = smoothstep(0.47, 0.5, fract(d * 2.3 + 0.3)) * smoothstep(0.53, 0.5, fract(d * 2.3 + 0.3));
-        float a = 0.018 + wide * 0.03 + thin * 0.02 + bevel + edge * 0.6;
-        gl_FragColor = vec4(vec3(0.62, 0.82, 1.0) * a * 1.25, a);
+        float along = pow(clamp(vUv.x, 0.0, 1.0), 3.0);
+        float across = smoothstep(0.5, 0.0, abs(vUv.y - 0.5));
+        float a = along * across * uAlpha;
+        gl_FragColor = vec4(vec3(0.8, 0.9, 1.0) * a * 2.5, a);
       }
     `,
     transparent: true,
     depthWrite: false,
     side: THREE.DoubleSide,
     blending: THREE.AdditiveBlending,
-    toneMapped: false,
-  })
-}
-
-/** Textura de la placa base: máscara oscura, pistas de cobre, vías y serigrafía. */
-export function createPcbTexture(size: [number, number]) {
-  const W = 1024
-  const H = Math.round((W * size[1]) / size[0])
-  const canvas = document.createElement('canvas')
-  canvas.width = W
-  canvas.height = H
-  const ctx = canvas.getContext('2d')!
-  ctx.fillStyle = '#0a151a'
-  ctx.fillRect(0, 0, W, H)
-
-  // Semilla fija: la placa es idéntica en cada carga.
-  let seed = 2024
-  const rand = () => {
-    seed = (seed * 16807) % 2147483647
-    return seed / 2147483647
-  }
-
-  // Haces de pistas con un quiebro a 45 grados, rematados en una vía.
-  ctx.lineWidth = 2
-  for (let i = 0; i < 90; i++) {
-    const lines = 2 + Math.floor(rand() * 5)
-    const horizontal = rand() > 0.5
-    const x = rand() * W
-    const y = rand() * H
-    const first = 40 + rand() * 180
-    const jog = 20 + rand() * 60
-    const second = 40 + rand() * 200
-    const sign = rand() > 0.5 ? 1 : -1
-    ctx.strokeStyle = `rgba(50, 160, 148, ${0.22 + rand() * 0.25})`
-    for (let l = 0; l < lines; l++) {
-      const o = l * 7
-      ctx.beginPath()
-      if (horizontal) {
-        ctx.moveTo(x, y + o)
-        ctx.lineTo(x + first, y + o)
-        ctx.lineTo(x + first + jog, y + o + jog * sign)
-        ctx.lineTo(x + first + jog + second, y + o + jog * sign)
-      } else {
-        ctx.moveTo(x + o, y)
-        ctx.lineTo(x + o, y + first)
-        ctx.lineTo(x + o + jog * sign, y + first + jog)
-        ctx.lineTo(x + o + jog * sign, y + first + jog + second)
-      }
-      ctx.stroke()
-    }
-  }
-  for (let i = 0; i < 320; i++) {
-    const x = rand() * W
-    const y = rand() * H
-    ctx.fillStyle = 'rgba(200, 170, 90, 0.75)'
-    ctx.beginPath()
-    ctx.arc(x, y, 3.2, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.fillStyle = '#0a151a'
-    ctx.beginPath()
-    ctx.arc(x, y, 1.3, 0, Math.PI * 2)
-    ctx.fill()
-  }
-
-  // Serigrafía: zócalos, ranuras y rótulos.
-  ctx.strokeStyle = 'rgba(225, 232, 240, 0.6)'
-  ctx.fillStyle = 'rgba(225, 232, 240, 0.72)'
-  ctx.lineWidth = 2.5
-  ctx.strokeRect(W * 0.34, H * 0.26, W * 0.31, H * 0.34)
-  for (let i = 0; i < 4; i++) ctx.strokeRect(W * (0.735 + i * 0.045), H * 0.14, W * 0.03, H * 0.58)
-  for (let i = 0; i < 3; i++) ctx.strokeRect(W * 0.08, H * (0.79 + i * 0.065), W * 0.6, H * 0.03)
-  ctx.font = 'bold 26px ui-monospace, Menlo, Consolas, monospace'
-  ctx.fillText('KROQUETITA AI-BOARD', W * 0.08, H * 0.74)
-  ctx.font = '15px ui-monospace, Menlo, Consolas, monospace'
-  ctx.fillText('REV 5.2  ·  MADE WITH THREE.JS', W * 0.08, H * 0.765)
-  ctx.fillText('CPU_SOCKET', W * 0.34, H * 0.245)
-  ctx.fillText('DIMM_A1 A2 B1 B2', W * 0.735, H * 0.125)
-  ctx.fillText('PCIE_X16', W * 0.69, H * 0.812)
-  ctx.fillText('ATX_PWR', W * 0.9, H * 0.36)
-  ctx.fillText('CPU_FAN  AIO_PUMP', W * 0.34, H * 0.635)
-
-  // Taladros de montaje con su corona dorada.
-  for (const [u, v] of [[0.03, 0.04], [0.97, 0.04], [0.03, 0.96], [0.97, 0.96], [0.5, 0.04], [0.5, 0.96]]) {
-    ctx.fillStyle = 'rgba(214, 178, 92, 0.9)'
-    ctx.beginPath()
-    ctx.arc(W * u, H * v, 13, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.fillStyle = '#05080a'
-    ctx.beginPath()
-    ctx.arc(W * u, H * v, 6.5, 0, Math.PI * 2)
-    ctx.fill()
-  }
-
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.colorSpace = THREE.SRGBColorSpace
-  texture.anisotropy = 8
-  return texture
-}
-
-/**
- * Ventilador en marcha, para superponer a uno ya pintado en la textura del
- * modelo: un aro RGB y el barrido de las aspas, que es lo que da el giro.
- */
-export function createSpinMaterial(phase = 0, blades = 9, speed = 14) {
-  return new THREE.ShaderMaterial({
-    uniforms: {
-      uTime,
-      uParty,
-      uAlarm,
-      uPhase: { value: phase },
-      uBlades: { value: blades },
-      uSpeed: { value: speed },
-    },
-    vertexShader: vertex,
-    fragmentShader: /* glsl */ `
-      uniform float uTime;
-      uniform float uParty;
-      uniform float uAlarm;
-      uniform float uPhase;
-      uniform float uBlades;
-      uniform float uSpeed;
-      varying vec2 vUv;
-      void main() {
-        vec2 p = vUv * 2.0 - 1.0;
-        float r = length(p);
-        float angle = atan(p.y, p.x);
-        float turn = uTime * uSpeed * (1.0 + uParty * 1.5);
-        // Aspas: destellos que giran entre el buje y el marco.
-        float sweep = pow(0.5 + 0.5 * sin(angle * uBlades + turn), 4.0);
-        float disc = smoothstep(0.26, 0.34, r) * smoothstep(0.9, 0.8, r);
-        float ring = smoothstep(0.05, 0.0, abs(r - 0.93)) + smoothstep(0.04, 0.0, abs(r - 0.25)) * 0.6;
-        vec3 hue = 0.55 + 0.45 * cos(6.28318 * (angle / 6.28318 + uPhase - uTime * 0.12 + vec3(0.0, 0.33, 0.67)));
-        hue = mix(hue, vec3(1.0, 0.06, 0.04) * (0.4 + step(0.5, fract(uTime * 3.0))), uAlarm);
-        float a = sweep * disc * 0.2 + ring * 0.85;
-        gl_FragColor = vec4(hue * a * 1.6, a);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    toneMapped: false,
-  })
-}
-
-/** Burbujas y brillo del refrigerante, para superponer al depósito del modelo. */
-export function createBubblesMaterial() {
-  return new THREE.ShaderMaterial({
-    uniforms: { uTime, uParty, uAlarm },
-    vertexShader: vertex,
-    fragmentShader: /* glsl */ `
-      uniform float uTime;
-      uniform float uParty;
-      uniform float uAlarm;
-      varying vec2 vUv;
-      float hash(vec2 p) {
-        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-      }
-      void main() {
-        float swirl = 0.5 + 0.5 * sin((vUv.x * 2.0 + vUv.y * 2.5) * 6.2831 - uTime * 1.4);
-        vec3 liquid = mix(vec3(0.1, 0.7, 1.0), vec3(0.6, 0.25, 1.0), swirl);
-        liquid = mix(liquid, 0.55 + 0.45 * cos(6.28318 * (vUv.y - uTime * 0.3 + vec3(0.0, 0.33, 0.67))), uParty);
-        liquid = mix(liquid, vec3(1.0, 0.1, 0.05), uAlarm);
-        vec2 grid = vec2(vUv.x * 12.0, vUv.y * 8.0 - uTime * 0.8);
-        vec2 cell = floor(grid);
-        vec2 f = fract(grid) - 0.5;
-        float bubble = smoothstep(0.2, 0.07, length(f + (hash(cell) - 0.5) * 0.5)) * step(0.55, hash(cell + 3.1));
-        float ends = smoothstep(0.0, 0.08, vUv.y) * smoothstep(1.0, 0.92, vUv.y);
-        float a = (0.16 + swirl * 0.12 + bubble * 0.7) * ends;
-        gl_FragColor = vec4(liquid * a * 1.2 + vec3(bubble * 0.35 * ends), a);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
+    fog: false,
     toneMapped: false,
   })
 }

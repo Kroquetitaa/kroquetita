@@ -20,6 +20,12 @@ interface GameState {
   stage: number
   /** Hasta cuándo (performance.now) se pausa el avance automático de etapas */
   stageHold: number
+  /** Bichos aplastados */
+  bugs: number
+  /** Hasta cuándo (performance.now) dura la reunión en la que te ha metido el jefe de proyecto */
+  meetingUntil: number
+  /** Hasta cuándo (performance.now) dura el efecto del café */
+  boostUntil: number
   /** Error de despliegue en pantalla (botón DEPLOY), o null */
   crash: { id: number; title: string; detail: string } | null
   /** Cambia en cada reinicio para recolocar al jugador */
@@ -31,6 +37,9 @@ interface GameState {
   toggleMuted: () => void
   toggleParty: () => void
   setCrash: (crash: GameState['crash']) => void
+  squashBug: () => void
+  startMeeting: (seconds: number) => void
+  drinkCoffee: (seconds: number) => void
   /** `manual`: lo eligió el usuario, así que el avance automático espera un rato */
   setStage: (index: number, manual?: boolean) => void
   collect: (id: number) => void
@@ -46,6 +55,9 @@ export const useGame = create<GameState>((set) => ({
   total: world.coins.length,
   wonAt: null,
   party: false,
+  bugs: 0,
+  meetingUntil: 0,
+  boostUntil: 0,
   stage: 0,
   stageHold: 0,
   crash: null,
@@ -57,9 +69,12 @@ export const useGame = create<GameState>((set) => ({
   toggleMuted: () => set((s) => ({ muted: !s.muted })),
   toggleParty: () => set((s) => ({ party: !s.party })),
   setCrash: (crash) => set({ crash }),
+  squashBug: () => set((s) => ({ bugs: s.bugs + 1 })),
+  startMeeting: (seconds) => set({ meetingUntil: performance.now() + seconds * 1000 }),
+  drinkCoffee: (seconds) => set({ boostUntil: performance.now() + seconds * 1000 }),
   setStage: (index, manual) =>
     set((s) => {
-      const count = world.cards.length
+      const count = world.blocks.length
       return {
         stage: ((index % count) + count) % count,
         stageHold: manual ? performance.now() + 14000 : s.stageHold,
@@ -71,7 +86,7 @@ export const useGame = create<GameState>((set) => ({
       const collected = [...s.collected, id]
       return { collected, wonAt: collected.length === s.total ? performance.now() : s.wonAt }
     }),
-  restart: () => set((s) => ({ collected: [], wonAt: null, runId: s.runId + 1 })),
+  restart: () => set((s) => ({ collected: [], wonAt: null, bugs: 0, runId: s.runId + 1 })),
 }))
 
 /** Segundos desde la victoria, o -1 si aún no se han recogido todas las monedas. */

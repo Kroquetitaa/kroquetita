@@ -54,23 +54,22 @@ export function CameraRig() {
       // Deriva lenta: la cámara nunca está del todo quieta.
       const drift = Math.sin(state.clock.elapsedTime * 0.17) * 1.4
       if (portrait) {
-        // El texto va arriba: la torre se encuadra en la mitad inferior.
-        goalPos.set(-4 + drift + x * 1.2, view.position[1] + y, distance)
-        goalLook.set(0, view.look[1] + distance * 0.13, -1)
+        // El texto va arriba: los bloques se encuadran en la mitad inferior.
+        goalPos.set(-4 + drift + x * 1.2, view.position[1] + 6 + y, distance)
+        goalLook.set(0, view.look[1] + distance * 0.16, -1)
       } else {
         goalPos.set(view.position[0] + drift + x * 1.8, view.position[1] + y, distance)
         goalLook.set(view.look[0], view.look[1], view.look[2])
       }
     } else if (celebrating >= 0 && celebrating < FLIGHT) {
-      // Vuelo de celebración: un arco por delante de la torre.
+      // Vuelo de celebración: un arco por delante de los bloques.
       const angle = -0.7 + (celebrating / FLIGHT) * 1.4
       const radius = distance * 1.05
-      goalPos.set(Math.sin(angle) * radius, 19, Math.cos(angle) * radius - 2)
-      goalLook.set(0, 15, -2)
+      goalPos.set(Math.sin(angle) * radius, world.top * 0.8 + 4, Math.cos(angle) * radius - 2)
+      goalLook.set(0, world.top * 0.6, -2)
     } else if (cameraMode === 'wide') {
-      // La torre es enorme al lado del jugador: se le sigue de cerca y desde abajo.
-      goalPos.set(px * 0.6 - 2, 5.5 + py * 0.6, pz + 22 * fit)
-      goalLook.set(px * 0.75, 4 + py * 0.75, pz - 6)
+      goalPos.set(px * 0.5 - 2, 7 + py * 0.6, 27 * fit + pz * 0.35)
+      goalLook.set(px * 0.7, 2.6 + py * 0.7, pz * 0.25)
     } else {
       goalPos.set(px - 1.4, py + 3.3, pz + 7.6)
       goalLook.set(px, py + 0.9, pz - 1)

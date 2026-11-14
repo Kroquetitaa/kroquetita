@@ -14,6 +14,7 @@ import {
   createBurstMaterial,
   createGlowMaterial,
   createNeonMaterial,
+  createPortalMaterial,
   createRackMaterial,
   uAlarm,
   uTime,
@@ -43,7 +44,7 @@ function liftTop(t: number) {
   return LIFT.top - (LIFT.top - low) * smooth((p - WAIT_DOWN - RISE - WAIT_UP) / FALL)
 }
 
-/** Ascensor a la azotea de la torre: sube y baja solo. Súbete y espera. */
+/** Ascensor a la fila de atrás: sube y baja solo. Súbete y espera. */
 function Elevator() {
   const platform = useRef<THREE.Group>(null)
   const neon = useMemo(() => createNeonMaterial('#19e6ff', 1.3), [])
@@ -64,7 +65,7 @@ function Elevator() {
       Math.abs(body.pos[1] - top) < 0.05 &&
       Math.abs(body.pos[0] - x) < LIFT.size[0] / 2 &&
       Math.abs(body.pos[2] - z) < LIFT.size[2] / 2
-    if (riding && !s.riding && top < LIFT.top - 1) playerSay('Ascensor a la azotea. Sin reuniones por el camino.')
+    if (riding && !s.riding && top < LIFT.top - 1) playerSay('Ascensor arriba. Sin reuniones por el camino.')
     s.riding = riding
     const atTop = top >= LIFT.top - 0.01
     if (atTop && !s.atTop && riding) sfx.ding()
@@ -547,6 +548,143 @@ function DeployServer() {
   )
 }
 
+// ---------------------------------------------------------------- Portales
+
+/** Dos portales conectados: entras por uno y sales por el otro. */
+function Portals() {
+  const material = useMemo(() => createPortalMaterial('#b06bff'), [])
+  const rings = useRef<Array<THREE.Mesh | null>>([])
+  const state = useRef({ cooldown: 0, armed: true })
+
+  useFrame(({ clock }, delta) => {
+    const s = state.current
+    s.cooldown = Math.max(0, s.cooldown - delta)
+    // Tras un viaje, los portales no se rearman hasta que el jugador sale de ellos:
+    // así no te devuelven si te quedas quieto al llegar.
+    if (!s.armed) {
+      s.armed = world.props.portals.every(
+        (portal) => Math.hypot(body.pos[0] - portal[0], body.pos[2] - portal[2]) > 1.1 || Math.abs(body.pos[1] - portal[1]) > 0.5,
+      )
+    }
+    const t = clock.elapsedTime
+    rings.current.forEach((ring, i) => {
+      if (ring) ring.rotation.z = t * (i % 2 ? -1.4 : 1.4)
+    })
+    if (useGame.getState().mode !== 'play' || s.cooldown > 0 || !s.armed || !body.grounded) return
+    for (let i = 0; i < world.props.portals.length; i++) {
+      const portal = world.props.portals[i]
+      const dx = body.pos[0] - portal[0]
+      const dz = body.pos[2] - portal[2]
+      if (Math.abs(body.pos[1] - portal[1]) > 0.1 || dx * dx + dz * dz > 0.7 * 0.7) continue
+      const exit = world.props.portals[1 - i]
+      body.pos[0] = exit[0]
+      body.pos[1] = exit[1]
+      body.pos[2] = exit[2]
+      body.vel[0] = body.vel[1] = body.vel[2] = 0
+      s.cooldown = 0.4
+      s.armed = false
+      shake.value = 0.25
+      sfx.portal()
+      if (Math.random() < 0.5) playerSay(i === 0 ? 'Atajo desbloqueado.' : 'Y vuelta abajo.')
+      // Uno por vez: sin esto, al llegar al otro portal volvería a entrar en él.
+      break
+    }
+  })
+
+  return (
+    <>
+      {world.props.portals.map((portal, i) => (
+        <group key={i} position={[portal[0], portal[1] + 0.04, portal[2]]}>
+          <mesh rotation-x={-Math.PI / 2} material={material}>
+            <planeGeometry args={[2.2, 2.2]} />
+          </mesh>
+          {/* Arco vertical que marca el portal desde lejos */}
+          <mesh
+            position-y={1.15}
+            ref={(mesh) => {
+              rings.current[i] = mesh
+            }}
+          >
+            <torusGeometry args={[0.95, 0.05, 8, 6]} />
+            <meshBasicMaterial color={[2.2, 0.9, 3.4]} toneMapped={false} />
+          </mesh>
+        </group>
+      ))}
+    </>
+  )
+}
+
+// ---------------------------------------------------------------- Café
+
+const COFFEE = world.props.coffee
+
+/** Máquina de café: acércate y sales con un rato de velocidad extra. */
+function CoffeeMachine() {
+  const steam = useMemo(
+    () => createBurstMaterial('#c8d0e0', { speed: 0.5, gravity: -0.9, life: 1.3, size: 40 }),
+    [],
+  )
+  const burst = useMemo(() => createBurstGeometry(18, 1), [])
+  const neon = useMemo(() => createNeonMaterial('#ff9f1c', 1.3), [])
+  const state = useRef({ ready: 0, nextSteam: 0 })
+  const front = COFFEE.center[2] + COFFEE.size[2] / 2
+
+  useFrame(({ clock, gl, size }) => {
+    const s = state.current
+    const t = clock.elapsedTime
+    steam.uniforms.uPixelRatio.value = gl.getPixelRatio() * (size.height / 900) * 13
+    // Echa vapor cada poco, sirva o no.
+    if (t > s.nextSteam) {
+      s.nextSteam = t + 1.6
+      steam.uniforms.uOrigin.value.set(COFFEE.center[0], COFFEE.center[1] + COFFEE.size[1] / 2, COFFEE.center[2])
+      steam.uniforms.uStart.value = uTime.value
+    }
+    const game = useGame.getState()
+    if (game.mode !== 'play' || t < s.ready || body.pos[1] > 0.5) return
+    if (Math.abs(body.pos[0] - COFFEE.center[0]) < 0.9 && Math.abs(body.pos[2] - (front + 0.6)) < 0.7) {
+      s.ready = t + 12
+      game.drinkCoffee(8)
+      sfx.sip()
+      playerSay('Café. Ahora programo a 2x.')
+    }
+  })
+
+  return (
+    <>
+      <group position={COFFEE.center}>
+        <mesh castShadow receiveShadow>
+          <boxGeometry args={COFFEE.size} />
+          <meshStandardMaterial color="#20232b" roughness={0.4} metalness={0.7} />
+        </mesh>
+        {/* Hueco de la taza, taza y rótulo */}
+        <mesh position={[0, -0.25, COFFEE.size[2] / 2 + 0.006]}>
+          <planeGeometry args={[0.8, 0.8]} />
+          <meshBasicMaterial color="#07080b" />
+        </mesh>
+        <mesh position={[0, -0.5, COFFEE.size[2] / 2 + 0.16]} castShadow>
+          <cylinderGeometry args={[0.14, 0.11, 0.24, 14]} />
+          <meshStandardMaterial color="#f2f2f2" roughness={0.5} />
+        </mesh>
+        <mesh position={[0, 0.46, COFFEE.size[2] / 2 + 0.01]} material={neon}>
+          <boxGeometry args={[COFFEE.size[0] - 0.3, 0.05, 0.02]} />
+        </mesh>
+        <Text
+          font={fontBold}
+          fontSize={0.26}
+          position={[0, 0.74, COFFEE.size[2] / 2 + 0.012]}
+          color={[3, 1.6, 0.4]}
+          anchorX="center"
+          anchorY="middle"
+          material-toneMapped={false}
+        >
+          CAFÉ
+        </Text>
+      </group>
+      <points geometry={burst} material={steam} frustumCulled={false} />
+    </>
+  )
+}
+
 /** Objetos con los que se puede jugar. */
 export function Props() {
   return (
@@ -554,6 +692,8 @@ export function Props() {
       <Elevator />
       <Duck />
       <DeployServer />
+      <Portals />
+      <CoffeeMachine />
     </>
   )
 }

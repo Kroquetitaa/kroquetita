@@ -7,7 +7,7 @@ import { sfx } from '../game/audio'
 import { onPlayerSay } from '../game/events'
 import { input } from '../game/input'
 import { stepBody } from '../game/physics'
-import { body, respawn } from '../game/state'
+import { body, lastLanding, respawn } from '../game/state'
 import { celebrationTime, useGame } from '../store'
 import { world } from '../world/layout'
 import { introTime } from './intro'
@@ -241,6 +241,7 @@ export function Player() {
     happyUntil: 0,
     nextQuip: 0,
     saidIntro: false,
+    inMeeting: false,
     last: { idle: -1, coin: -1 } as Record<string, number>,
   })
   const [bubble, setBubble] = useState({ text: '', shownAt: 0 })
@@ -292,8 +293,18 @@ export function Player() {
     const t = state.clock.elapsedTime
 
     if (playing) {
-      const x = input.stickX || input.x
-      const z = input.stickZ || input.z
+      // En una reunión no se mueve nadie; al acabar, vuelta a la salida.
+      const now = performance.now()
+      const meeting = now < game.meetingUntil
+      if (a.inMeeting && !meeting) {
+        respawn()
+        say('fall', true)
+        setBubble({ text: 'Podía haber sido un email.', shownAt: now })
+      }
+      a.inMeeting = meeting
+      const x = meeting ? 0 : input.stickX || input.x
+      const z = meeting ? 0 : input.stickZ || input.z
+      const boost = now < game.boostUntil ? 1.7 : 1
       const physics = {
         colliders: world.colliders,
         bounds: world.bounds,
@@ -305,7 +316,13 @@ export function Player() {
         const fallSpeed = body.vel[1]
         stepBody(
           body,
-          { x, z, run: input.run || Math.hypot(input.stickX, input.stickZ) > 0.85, jump: input.jumpQueued },
+          {
+            x,
+            z,
+            run: input.run || Math.hypot(input.stickX, input.stickZ) > 0.85,
+            jump: input.jumpQueued && !meeting,
+            boost,
+          },
           dt / 2,
           physics,
         )
@@ -323,6 +340,7 @@ export function Player() {
         if (body.justLanded) {
           sfx.land()
           a.squash = 1
+          lastLanding.time = performance.now()
           // Anillo de polvo en el punto de aterrizaje.
           puff.current?.position.set(body.pos[0], body.pos[1] + 0.04, body.pos[2])
           puffMaterial.uniforms.uProgress.value = 0

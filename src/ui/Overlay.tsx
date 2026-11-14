@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { profile, stages } from '../data/career'
-import { setMuted, sfx, unlockAudio } from '../game/audio'
+import { isAudioRunning, setMuted, sfx, unlockAudio } from '../game/audio'
 import { setMusicIntensity } from '../game/music'
 import { input } from '../game/input'
 import { useGame } from '../store'
@@ -250,6 +250,19 @@ export function Overlay() {
   const muted = useGame((s) => s.muted)
   const party = useGame((s) => s.party)
   const crash = useGame((s) => s.crash)
+  const bugs = useGame((s) => s.bugs)
+  const meetingUntil = useGame((s) => s.meetingUntil)
+  const boostUntil = useGame((s) => s.boostUntil)
+  // Reunión y café duran unos segundos: se vuelve a pintar cuando caducan.
+  const [, tick] = useState(0)
+  useEffect(() => {
+    const end = Math.max(meetingUntil, boostUntil) - performance.now()
+    if (end <= 0) return
+    const timer = window.setTimeout(() => tick((n) => n + 1), end + 30)
+    return () => window.clearTimeout(timer)
+  }, [meetingUntil, boostUntil])
+  const inMeeting = performance.now() < meetingUntil
+  const caffeinated = performance.now() < boostUntil
   const collected = useGame((s) => s.collected.length)
   const total = useGame((s) => s.total)
   const { play, exit, toggleCamera, toggleMuted, restart } = useGame.getState()
@@ -267,11 +280,21 @@ export function Overlay() {
     if (!won) setDismissed(false)
   }, [won])
 
-  // El audio solo puede arrancar tras un gesto del usuario: vale el primero.
+  // El audio solo puede arrancar tras un gesto del usuario; hasta entonces se avisa.
+  const [soundOn, setSoundOn] = useState(false)
   useEffect(() => {
-    const unlock = () => unlockAudio()
-    window.addEventListener('pointerdown', unlock, { once: true })
-    window.addEventListener('keydown', unlock, { once: true })
+    // Se reintenta en cada gesto hasta que el audio arranca de verdad.
+    const unlock = () => {
+      unlockAudio()
+      window.setTimeout(() => {
+        if (!isAudioRunning()) return
+        setSoundOn(true)
+        window.removeEventListener('pointerdown', unlock)
+        window.removeEventListener('keydown', unlock)
+      }, 150)
+    }
+    window.addEventListener('pointerdown', unlock)
+    window.addEventListener('keydown', unlock)
     return () => {
       window.removeEventListener('pointerdown', unlock)
       window.removeEventListener('keydown', unlock)
@@ -347,7 +370,22 @@ export function Overlay() {
           {collected} / {total}
         </span>
         <span className="coins__label">{won ? '¡Todas!' : 'Monedas'}</span>
+        {bugs > 0 && (
+          <span className="coins__bugs" title="Bichos aplastados">
+            <i aria-hidden="true" />
+            {bugs}
+          </span>
+        )}
+        {caffeinated && <span className="coins__boost">Café ×1,7</span>}
       </div>
+
+      {inMeeting && playing && (
+        <div className="meeting" role="alert">
+          <p className="meeting__title">Reunión de seguimiento</p>
+          <p>Podía haber sido un email.</p>
+          <span className="meeting__bar" />
+        </div>
+      )}
 
       {won && playing && !dismissed && (
         <div className="win" role="status">
@@ -435,6 +473,7 @@ export function Overlay() {
             </button>
           </>
         )}
+        {ready && !soundOn && <span className="toolbar__hint">Haz clic para activar la música</span>}
         {ready && (
           <button
             type="button"

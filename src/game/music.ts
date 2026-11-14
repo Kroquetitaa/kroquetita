@@ -218,7 +218,7 @@ function pump() {
 function applyLevels() {
   if (!rig) return
   const now = rig.ctx.currentTime
-  rig.out.gain.setTargetAtTime(muted ? 0 : 0.5, now, 0.4)
+  rig.out.gain.setTargetAtTime(muted ? 0 : 0.68, now, 0.4)
   rig.drumBus.gain.setTargetAtTime(intensity > 0 ? 0.8 : 0, now, 0.6)
   rig.arpFilter.frequency.setTargetAtTime([900, 1900, 3200][intensity], now, 1.2)
 }

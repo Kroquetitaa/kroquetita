@@ -42,8 +42,7 @@ export function Fireworks() {
       const r1 = a - Math.floor(a)
       const r2 = b - Math.floor(b)
       const r3 = c - Math.floor(c)
-      // Por encima y por delante de la torre, para que se vean enteros.
-      material.uniforms.uOrigin.value.set(-20 + r1 * 40, world.top * 0.8 + r2 * 9, 2 + r3 * 6)
+      material.uniforms.uOrigin.value.set(-16 + r1 * 32, world.top * 0.6 + r2 * (world.top * 0.6 + 3), -9 + r3 * 9)
       material.uniforms.uColor.value.set(PALETTE[s.launched % PALETTE.length])
       material.uniforms.uStart.value = uTime.value
       material.uniforms.uPixelRatio.value = ratio

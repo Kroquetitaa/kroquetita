@@ -491,6 +491,92 @@ body {
   color: var(--muted);
 }
 
+.coins__bugs,
+.coins__boost {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Icono del bicho: un óvalo rojo con cabeza */
+.coins__bugs i {
+  position: relative;
+  width: 12px;
+  height: 14px;
+  border-radius: 50% 50% 46% 46%;
+  background: #e5352b;
+  box-shadow: 0 0 8px rgba(229, 53, 43, 0.7);
+}
+
+.coins__bugs i::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: -3px;
+  width: 6px;
+  height: 5px;
+  border-radius: 50%;
+  background: #17131a;
+}
+
+.coins__boost {
+  color: #ffb347;
+  animation: breathe 1s ease-in-out infinite;
+}
+
+/* ---------- Reunión ---------- */
+
+.meeting {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(360px, calc(100vw - 2 * var(--gutter)));
+  padding: 18px 20px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+  background: rgba(20, 24, 34, 0.88);
+  backdrop-filter: blur(10px);
+  text-align: center;
+  transform: translate(-50%, -50%);
+  animation: crash-in 0.4s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+.meeting p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+.meeting .meeting__title {
+  margin-bottom: 4px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Barra que se vacía mientras dura la reunión */
+.meeting__bar {
+  display: block;
+  height: 3px;
+  margin-top: 14px;
+  border-radius: 2px;
+  background: #5b8cff;
+  transform-origin: left;
+  animation: meeting-drain 3.4s linear forwards;
+}
+
+@keyframes meeting-drain {
+  to {
+    transform: scaleX(0);
+  }
+}
+
 /* ---------- Cartel de victoria ---------- */
 
 .win {
@@ -832,6 +918,20 @@ body {
   border-color: rgba(255, 255, 255, 0.5);
   color: #fff;
   outline: none;
+}
+
+/* Aviso junto al botón de sonido mientras el navegador no deja sonar nada */
+.toolbar__hint {
+  align-self: center;
+  padding: 7px 14px;
+  border: 1px solid rgba(25, 230, 255, 0.4);
+  border-radius: 999px;
+  background: rgba(14, 18, 24, 0.6);
+  backdrop-filter: blur(6px);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  animation: breathe 2.4s ease-in-out infinite;
 }
 
 .toolbar svg {

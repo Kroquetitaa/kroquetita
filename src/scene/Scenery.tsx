@@ -5,12 +5,12 @@ import { body } from '../game/state'
 import { introProgress } from './intro'
 
 const LOOPS = [
-  { x0: -29, x1: 29, z0: -10.5, z1: 14, speed: 11, dir: 1, color: [0.2, 2.4, 3.8] },
-  { x0: -31.5, x1: 31.5, z0: -12, z1: 16, speed: 9, dir: -1, color: [3.8, 1.1, 0.25] },
+  { x0: -27, x1: 27, z0: -9.5, z1: 17.5, speed: 11, dir: 1, color: [0.2, 2.4, 3.8] },
+  { x0: -29.5, x1: 29.5, z0: -11.5, z1: 18.2, speed: 9, dir: -1, color: [3.8, 1.1, 0.25] },
 ]
 const TRAIL = 26
 
-/** Corredores de luz: dan vueltas a la torre por el suelo dejando una estela. */
+/** Corredores de luz: dan vueltas a los bloques por el suelo dejando una estela. */
 function Racers() {
   const ref = useRef<THREE.InstancedMesh>(null)
   const scratch = useMemo(() => ({ m: new THREE.Matrix4() }), [])
@@ -156,7 +156,7 @@ function PetDrone() {
   )
 }
 
-/** Lo que se mueve por el suelo alrededor de la torre. */
+/** Lo que se mueve por el suelo alrededor de los bloques. */
 export function Scenery() {
   return (
     <>

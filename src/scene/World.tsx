@@ -5,8 +5,7 @@ import * as THREE from 'three'
 import { body } from '../game/state'
 import { useGame } from '../store'
 import { world } from '../world/layout'
-import { Computer } from './Computer'
-import { GlassCards } from './GlassCards'
+import { Blocks } from './Blocks'
 import { introProgress } from './intro'
 import {
   createBeamMaterial,
@@ -15,8 +14,10 @@ import {
   createPadMaterial,
   createPortalMaterial,
 } from './materials/shaders'
+import { NPCs } from './NPCs'
 import { Props } from './Props'
 import { Scenery } from './Scenery'
+import { Sky } from './Sky'
 
 const FLAT = -Math.PI / 2
 
@@ -113,11 +114,11 @@ function Pads() {
   )
 }
 
-/** En la portada, una luz sigue al ratón por delante del cristal, como una linterna. */
+/** En la portada, una luz sigue al ratón por delante de los bloques, como una linterna. */
 function PointerLight() {
   const light = useRef<THREE.PointLight>(null)
   const plane = useMemo(
-    () => new THREE.Plane(new THREE.Vector3(0, 0, 1), -(world.pc.glassZ + 3)),
+    () => new THREE.Plane(new THREE.Vector3(0, 0, 1), -8.5),
     [],
   )
   const target = useMemo(() => new THREE.Vector3(), [])
@@ -131,7 +132,7 @@ function PointerLight() {
       target.y = Math.max(0.8, target.y)
       l.position.lerp(target, 1 - Math.exp(-8 * delta))
     }
-    const goal = intro ? 70 * introProgress(3, 1.5) : 0
+    const goal = intro ? 55 * introProgress(3, 1.5) : 0
     l.intensity += (goal - l.intensity) * (1 - Math.exp(-4 * delta))
   })
 
@@ -155,10 +156,11 @@ export function World() {
   return (
     <>
       <Floor />
-      <Computer />
-      <GlassCards />
+      <Sky />
+      <Blocks />
       <Scenery />
       <Props />
+      <NPCs />
       <Pads />
       <PointerLight />
       <SpawnPortal />

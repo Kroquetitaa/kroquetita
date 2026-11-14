@@ -12,6 +12,9 @@ export function setMuted(value: boolean) {
   setMusicMuted(value)
 }
 
+/** ¿Ha arrancado ya el audio? (el navegador exige un gesto del usuario) */
+export const isAudioRunning = () => ctx?.state === 'running'
+
 export function unlockAudio() {
   if (!ctx) {
     try {
@@ -96,6 +99,28 @@ export const sfx = {
   },
   secret() {
     ;[392, 523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, f, 0.12, 'square', 0.05, i * 0.07))
+  },
+  beep() {
+    tone(1200, 1500, 0.06, 'square', 0.03)
+    tone(900, 900, 0.07, 'square', 0.03, 0.08)
+  },
+  meow() {
+    tone(700, 1100, 0.12, 'sawtooth', 0.04)
+    tone(1100, 600, 0.22, 'sawtooth', 0.04, 0.1)
+  },
+  squash() {
+    tone(500, 90, 0.12, 'square', 0.07)
+    noise(0.12, 0.18, 3000, 500)
+  },
+  meeting() {
+    ;[523, 415, 330].forEach((f, i) => tone(f, f, 0.2, 'triangle', 0.07, i * 0.16))
+  },
+  sip() {
+    ;[520, 620, 740, 880].forEach((f, i) => tone(f, f * 1.1, 0.07, 'sine', 0.06, i * 0.06))
+  },
+  portal() {
+    tone(200, 1600, 0.35, 'sine', 0.06)
+    tone(1600, 300, 0.3, 'triangle', 0.04, 0.2)
   },
   quack() {
     tone(820, 520, 0.09, 'sawtooth', 0.06)

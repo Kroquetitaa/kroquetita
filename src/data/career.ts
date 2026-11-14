@@ -4,18 +4,18 @@
  */
 
 export interface Stage {
-  /** Empresa: título de la tarjeta */
+  /** Empresa: título grande en la cara del bloque */
   title: string
   /** Puesto */
   role: string
   /** Rango de fechas */
   period: string
+  /** Duración en meses: de ella sale la altura del bloque */
+  months?: number
   /** Color de acento (bordes, línea guía y luz) */
   color: string
   /**
-   * Componente del PC al que se asocia, como rótulo de la tarjeta. Las etapas
-   * se reparten por los componentes en orden de arranque del equipo:
-   * fuente, placa, bomba, ventiladores, depósito, memoria, gráfica y CPU.
+   * Rótulo corto de la etapa (se muestra en la ficha lateral).
    */
   part?: string
   /** Logo en /public/logos; se convierte en un emblema 3D de vóxeles */
@@ -49,22 +49,24 @@ export const profile = {
   coinImage: '/avatar.png',
 }
 
-// De la más antigua a la más reciente. La última es la etapa actual: la CPU.
+// De la más antigua a la más reciente. La última es la etapa actual: la torre más alta.
 export const stages: Stage[] = [
   {
     title: 'Plexus Tech',
     role: 'Desarrollador de software',
     period: 'Mar 2021 — Jun 2021',
+    months: 4,
     color: '#19e6ff',
-    part: 'FUENTE · EL ARRANQUE',
+    part: 'EL ARRANQUE',
     logo: '/logos/plexus.png',
   },
   {
     title: 'Dedeeit',
     role: 'Desarrollador Front-end',
     period: 'Jun 2021 — Ene 2022',
+    months: 8,
     color: '#3df2b0',
-    part: 'PLACA BASE · LAS BASES',
+    part: 'LAS BASES',
     logo: '/logos/dedeeit.jpg',
     logoCrop: [0, 0.14, 1, 0.55],
   },
@@ -72,32 +74,36 @@ export const stages: Stage[] = [
     title: 'Emiral',
     role: 'Desarrollador Full Stack',
     period: 'Ene 2022 — Jul 2022',
+    months: 7,
     color: '#ffd60a',
-    part: 'BOMBA · COGIENDO RITMO',
+    part: 'COGIENDO RITMO',
     logo: '/logos/emiral.png',
   },
   {
     title: 'Sectorea IT',
     role: 'Desarrollador Front-end',
     period: 'Oct 2022 — May 2023',
+    months: 8,
     color: '#2f7bff',
-    part: 'VENTILADOR III',
+    part: 'TRES PROYECTOS A LA VEZ',
     logo: '/logos/sectorea.png',
   },
   {
     title: 'Pepper Spain',
     role: 'Desarrollador Front-end',
     period: 'Oct 2022 — Sep 2023',
+    months: 12,
     color: '#ff4d6d',
-    part: 'VENTILADOR II',
+    part: 'TRES PROYECTOS A LA VEZ',
     logo: '/logos/pepper.svg',
   },
   {
     title: 'Packar',
     role: 'Frontend Lead',
     period: 'Sep 2022 — Abr 2024',
+    months: 20,
     color: '#ff9f1c',
-    part: 'VENTILADOR I · LIDERANDO',
+    part: 'PRIMER EQUIPO A CARGO',
     logo: '/logos/packar.png',
     logoCrop: [0.06, 0.34, 0.36, 0.67],
   },
@@ -105,24 +111,27 @@ export const stages: Stage[] = [
     title: 'Tyris Software',
     role: 'Senior Frontend Developer',
     period: 'Abr 2024 — Abr 2026',
+    months: 25,
     color: '#8b5cf6',
-    part: 'REFRIGERACIÓN · SENIOR',
+    part: 'SENIOR',
     logo: '/logos/tyris.png',
   },
   {
     title: 'Sportian',
     role: 'Lead Frontend Developer',
     period: 'Abr 2024 — Abr 2026',
+    months: 25,
     color: '#22d3ee',
-    part: 'MEMORIA · LIDERAZGO',
+    part: 'LIDERAZGO',
     logo: '/logos/sportian.webp',
   },
   {
     title: 'Santander',
     role: 'Data Solutions Architecture Senior Associate',
     period: '2026',
+    months: 6,
     color: '#ec0000',
-    part: 'GRÁFICA · DATOS A ESCALA',
+    part: 'DATOS A ESCALA',
     logo: '/logos/santander.png',
   },
   {
@@ -130,7 +139,7 @@ export const stages: Stage[] = [
     role: 'Tech Lead AI Engineer',
     period: '2026 — Hoy',
     color: '#ff6a2b',
-    part: 'CPU · EL CEREBRO: IA',
+    part: 'INTELIGENCIA ARTIFICIAL',
     logo: '/logos/theaibusiness.png',
   },
 ]

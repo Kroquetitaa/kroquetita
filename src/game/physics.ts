@@ -30,6 +30,8 @@ export interface Body {
   justDoubleJumped: boolean
   /** Un trampolín acaba de lanzarlo */
   justLaunched: boolean
+  /** Segundos de vuelo dirigido que quedan: mientras dure no se puede maniobrar */
+  ballistic: number
 }
 
 /** Trampolín: lanza hacia arriba a quien lo pise. */
@@ -52,6 +54,8 @@ export interface Controls {
   z: number
   run: boolean
   jump: boolean
+  /** Multiplicador de velocidad (1 = normal) */
+  boost?: number
 }
 
 export interface Bounds {
@@ -73,6 +77,7 @@ export const createBody = (spawn: [number, number, number]): Body => ({
   airJumps: 1,
   justDoubleJumped: false,
   justLaunched: false,
+  ballistic: 0,
 })
 
 function hits(colliders: AABB[], x: number, y: number, z: number, out: AABB[]) {
@@ -161,10 +166,15 @@ export function stepBody(body: Body, controls: Controls, dt: number, world: Worl
     ix /= len
     iz /= len
   }
-  const max = controls.run ? RUN_SPEED : WALK_SPEED
-  const blend = 1 - Math.exp(-(body.grounded ? 14 : 8) * dt)
-  body.vel[0] += (ix * max - body.vel[0]) * blend
-  body.vel[2] += (iz * max - body.vel[2]) * blend
+  const max = (controls.run ? RUN_SPEED : WALK_SPEED) * (controls.boost ?? 1)
+  const flying = body.ballistic > 0
+  body.ballistic = Math.max(0, body.ballistic - dt)
+  if (!flying) {
+    // En un vuelo dirigido (muelle) la trayectoria ya está decidida.
+    const blend = 1 - Math.exp(-(body.grounded ? 14 : 8) * dt)
+    body.vel[0] += (ix * max - body.vel[0]) * blend
+    body.vel[2] += (iz * max - body.vel[2]) * blend
+  }
 
   if (len > 0.1) {
     const target = Math.atan2(ix, iz)
@@ -176,7 +186,9 @@ export function stepBody(body: Body, controls: Controls, dt: number, world: Worl
   // Salto (con un pequeño margen tras dejar el suelo).
   body.coyote = body.grounded ? COYOTE : Math.max(0, body.coyote - dt)
   let jumped = false
-  if (controls.jump && body.coyote > 0) {
+  if (flying) {
+    // Sin saltos mientras dura el vuelo.
+  } else if (controls.jump && body.coyote > 0) {
     body.vel[1] = JUMP_SPEED
     body.grounded = false
     body.coyote = 0
@@ -227,6 +239,7 @@ export function stepBody(body: Body, controls: Controls, dt: number, world: Worl
   if (grounded) {
     body.vel[1] = 0
     body.airJumps = 1
+    if (body.ballistic < 0.01 || body.vel[1] <= 0) body.ballistic = 0
     // Trampolines.
     for (const pad of pads) {
       const dx = body.pos[0] - pad.position[0]
@@ -241,5 +254,7 @@ export function stepBody(body: Body, controls: Controls, dt: number, world: Worl
   }
   if (grounded && !wasGrounded) body.justLanded = true
   body.grounded = grounded
+  // Si choca en pleno vuelo, se acabó el vuelo dirigido.
+  if (flying && body.vel[0] === 0 && body.vel[2] === 0) body.ballistic = 0
   body.speed = Math.min(1, Math.hypot(body.vel[0], body.vel[2]) / RUN_SPEED)
 }
