@@ -2135,6 +2135,10 @@ body {
     font-size: 11.5px;
   }
 
+  .quests.is-covered {
+    display: none;
+  }
+
   .boss {
     top: calc(var(--gutter) + 318px);
   }

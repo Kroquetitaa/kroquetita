@@ -17,7 +17,7 @@ import { introProgress } from './intro'
 import { createNeonMaterial, uTime } from './materials/shaders'
 
 /**
- * Sala de romper: a la derecha del todo, un recinto con siete cosas de lo
+ * Sala de romper: a la derecha del todo, un recinto con once cosas de lo
  * aprendido hechas para romperse, cada una a su manera:
  *
  *  - la torre de tests unitarios se embiste corriendo;
@@ -26,7 +26,11 @@ import { createNeonMaterial, uTime } from './materials/shaders'
  *  - a los dados se les dan patadas hasta que revientan en sus puntos;
  *  - al grafo se le salta a un vértice y se le caen todos como fruta;
  *  - la pila de pull requests se pisa y acaba en conflicto de merge;
- *  - el monolito de código heredado aguanta tres golpes y se desmorona.
+ *  - el monolito de código heredado aguanta tres golpes y se desmorona;
+ *  - la piñata de bugs revienta al tercer salto;
+ *  - la pila de llamadas se embiste y se desborda;
+ *  - a la tabla de datos se le hace un DROP TABLE de un golpe;
+ *  - la curva del sobreajuste salta como una goma (y eso lo arregla).
  *
  * Todas se recomponen solas al rato, rebobinando. La física de las piezas es
  * propia y mínima (`Pieces`); la colisión de lo que está roto se anula
@@ -74,6 +78,11 @@ const TEXTS = {
   legacy: { es: 'CÓDIGO HEREDADO · NO TOCAR', en: 'LEGACY CODE · DO NOT TOUCH' },
   todo: { es: 'TODO: arreglar esto', en: 'TODO: fix this' },
   why: { es: '// no sé por qué funciona', en: '// no idea why this works' },
+  pinata: { es: 'PIÑATA DE BUGS', en: 'BUG PIÑATA' },
+  noBugs: { es: '0 BUGS (EN ESTA SALA)', en: '0 BUGS (IN THIS ROOM)' },
+  stack: { es: 'PILA DE LLAMADAS', en: 'CALL STACK' },
+  table: { es: 'DATOS', en: 'DATASET' },
+  overfit: { es: 'SOBREAJUSTE', en: 'OVERFITTING' },
 } satisfies Record<string, Localized>
 
 /** Lo que suelta el jugador al romper cada cosa */
@@ -85,6 +94,13 @@ const QUIPS: Record<Smashable, Localized> = {
   graph: { es: 'Antes era un árbol. Ahora es un bosque.', en: 'It was a tree. Now it is a forest.' },
   prs: { es: 'Aprobado sin leer.', en: 'Approved without reading.' },
   legacy: { es: 'Funcionaba. Nadie sabía por qué.', en: 'It worked. Nobody knew why.' },
+  pinata: {
+    es: 'Dentro había más bugs. Siempre hay más bugs.',
+    en: 'There were more bugs inside. There are always more bugs.',
+  },
+  stack: { es: 'Recursión sin caso base. Un clásico.', en: 'Recursion with no base case. A classic.' },
+  table: { es: 'Tranquilos, había backup. ¿Había backup?', en: 'Relax, there was a backup. Was there a backup?' },
+  overfit: { es: 'Menos curvas y generaliza mejor.', en: 'Fewer curves, better generalisation.' },
 }
 
 // Los colores de los textos van como THREE.Color: troika ignora los arrays.
@@ -185,6 +201,19 @@ function paint<T extends THREE.BufferGeometry>(g: T, color: Vec3) {
   const count = g.attributes.position.count
   const colors = new Float32Array(count * 3)
   for (let i = 0; i < count; i++) colors.set(color, i * 3)
+  g.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+  return g
+}
+
+/** Pinta una caja de un color, sombreado por caras (para lo que va con material básico). */
+function tint(g: THREE.BoxGeometry, color: Vec3) {
+  const count = g.attributes.position.count
+  const colors = new Float32Array(count * 3)
+  for (let i = 0; i < count; i++) {
+    // BoxGeometry da cuatro vértices por cara, en el orden de TONES.
+    const tone = TONES[Math.floor(i / 4)]
+    colors.set([color[0] * tone, color[1] * tone, color[2] * tone], i * 3)
+  }
   g.setAttribute('color', new THREE.BufferAttribute(colors, 3))
   return g
 }
@@ -358,7 +387,12 @@ function bound(mesh: THREE.InstancedMesh | null, sphere: THREE.Sphere) {
 }
 const around = (x: number, y: number, z: number, radius: number) =>
   new THREE.Sphere(new THREE.Vector3(x, y, z), radius)
-const ROOM_SPHERE = around((AREA.minX + AREA.maxX) / 2 - OX, 2, (AREA.minZ + AREA.maxZ) / 2 - OZ, 16)
+const ROOM_SPHERE = around(
+  (AREA.minX + AREA.maxX) / 2 - OX,
+  2,
+  (AREA.minZ + AREA.maxZ) / 2 - OZ,
+  Math.hypot(AREA.maxX - AREA.minX, AREA.maxZ - AREA.minZ) / 2 + 1.5,
+)
 
 // ---------------------------------------------------------------- Colisiones y jugador
 
@@ -526,9 +560,14 @@ const ROOM: Walls = {
   maxZ: AREA.maxZ - OZ - 0.4,
 }
 
+type Tumble = 'any' | 'y' | 'z' | 'none'
+
 interface PieceOptions {
-  /** Cómo se queda al pararse: sobre la cara más cercana, solo sobre las de arriba y abajo, o tal cual (bolas) */
-  tumble?: 'any' | 'y' | 'none'
+  /**
+   * Cómo se queda al pararse: sobre la cara más cercana ('any'), solo sobre las de arriba y abajo ('y'),
+   * solo sobre las de delante y detrás ('z': lo que de pie es una lámina) o tal cual (bolas)
+   */
+  tumble?: Tumble
   /** Además, encarada: el giro alrededor de la vertical se redondea al cuarto de vuelta */
   square?: boolean
   bounce?: number
@@ -735,7 +774,7 @@ class Pieces {
   }
 
   /** Decide cómo va a quedarse una pieza que ya no rebota. */
-  private settle(i: number, tumble: 'any' | 'y' | 'none') {
+  private settle(i: number, tumble: Tumble) {
     const a = i * 3
     const b = i * 4
     this.calm[i] = 0
@@ -750,7 +789,7 @@ class Pieces {
     let sign = 1
     let most = -1
     for (let k = 0; k < 3; k++) {
-      if (tumble === 'y' && k !== 1) continue
+      if ((tumble === 'y' && k !== 1) || (tumble === 'z' && k !== 2)) continue
       const y = _v.copy(AXES[k]).applyQuaternion(_q).y
       if (Math.abs(y) > most) {
         most = Math.abs(y)
@@ -850,6 +889,10 @@ const DICE = ARCADE.dice
 const GRAPH = ARCADE.graph
 const PRS = ARCADE.prs
 const LEGACY = ARCADE.legacy
+const PINATA = ARCADE.pinata
+const STACK = ARCADE.stack
+const TABLE = ARCADE.table
+const OVERFIT = ARCADE.overfit
 
 /** Dónde va el rótulo de cada cosa (delante de ella, en coordenadas de la sala) y cuánto mide */
 const PLAQUES: Record<Smashable, { at: Vec3; width: number }> = {
@@ -866,6 +909,10 @@ const PLAQUES: Record<Smashable, { at: Vec3; width: number }> = {
   graph: { at: local([GRAPH.center[0], 0, GRAPH.center[2] + 1.7]), width: plaqueWidth(TEXTS.graph) },
   prs: { at: local([PRS.center[0], 0, PRS.center[2] + 1.75]), width: plaqueWidth(TEXTS.prs) },
   legacy: { at: local([LEGACY.center[0], 0, LEGACY.center[2] + 2.05]), width: plaqueWidth(TEXTS.legacy) },
+  pinata: { at: local([PINATA.center[0], 0, PINATA.center[2] + 1.3]), width: plaqueWidth(TEXTS.pinata) },
+  stack: { at: local([STACK.center[0], 0, STACK.center[2] + 1.5]), width: plaqueWidth(TEXTS.stack) },
+  table: { at: local([TABLE.center[0], 0, TABLE.center[2] + 1.2]), width: plaqueWidth(TEXTS.table) },
+  overfit: { at: local([OVERFIT.center[0], 0, OVERFIT.center[2] + 1.5]), width: plaqueWidth(TEXTS.overfit) },
 }
 
 /** El texto de un rótulo de pie (el tablero va fundido con la carpintería de la sala). */
@@ -2513,6 +2560,953 @@ function Legacy() {
   )
 }
 
+// ---------------------------------------------------------------- 8. Piñata de bugs
+
+const [PIN_X, , PIN_Z] = local(PINATA.center)
+/** Altura del eje del que cuelga (bajo la viga) y distancia del eje al centro del cuerpo */
+const PIN_PIVOT = PINATA.height - 0.2
+const PIN_ROPE = PINATA.rope
+/** Radio con el que cuenta como tocada, golpes que aguanta y lo mínimo que pasa entre uno y otro */
+const PIN_REACH = 0.7
+const PIN_HITS = 3
+const PIN_GAP = 0.45
+/** Velocidad de giro que le da cada golpe: lo justo para que no llegue a los postes */
+const PIN_KICK = 2.9
+/** Lo que lleva dentro: bichitos y confeti; con cada golpe que no es el último suelta algo de confeti */
+const MINI_BUGS = 16
+const CONFETTI = 28
+const SHED = 8
+const CANDY = [
+  new THREE.Color(1.7, 0.3, 0.85),
+  new THREE.Color(1.8, 1.4, 0.2),
+  new THREE.Color(0.25, 1.35, 1.7),
+  new THREE.Color(1.8, 0.65, 0.15),
+  new THREE.Color(0.65, 1.7, 0.3),
+]
+const CANDY_TONES = CANDY.map((color): Vec3 => [color.r, color.g, color.b])
+
+/** El cuerpo de la piñata: un escarabajo a rayas de colores, visto de lado, con flecos de papel. */
+function pinataBody() {
+  const parts: THREE.BufferGeometry[] = []
+  // Cinco franjas (alto y fondo de cada una): más gordo por el centro.
+  const bands = [
+    [0.62, 0.7],
+    [0.8, 0.86],
+    [0.86, 0.92],
+    [0.8, 0.86],
+    [0.62, 0.7],
+  ]
+  bands.forEach(([height, depth], i) => {
+    const x = (i - 2) * 0.26 + 0.12
+    const fringe = CANDY_TONES[(i + 2) % CANDY_TONES.length]
+    parts.push(tint(slab([0.26, height, depth], [x, 0, 0]), CANDY_TONES[i % CANDY_TONES.length]))
+    // Flecos de papel: una tira a media altura, algo levantada, y otra colgando por debajo.
+    for (const side of [-1, 1]) {
+      parts.push(
+        tint(slab([0.24, 0.2, 0.02], [x, 0.08, side * (depth / 2 + 0.03)], [side * 0.3, 0, 0]), fringe),
+        tint(slab([0.24, 0.2, 0.02], [x, -height / 2 - 0.06, side * (depth / 2 - 0.04)]), fringe),
+      )
+    }
+  })
+  // Cabeza (mira hacia −X), ojos, antenas y patas.
+  const dark: Vec3 = [0.34, 0.1, 0.48]
+  parts.push(tint(slab([0.34, 0.5, 0.56], [-0.7, -0.04, 0]), dark))
+  for (const side of [-1, 1]) {
+    parts.push(
+      tint(slab([0.04, 0.17, 0.17], [-0.885, 0.04, side * 0.15]), [2.4, 2.4, 2.4]),
+      tint(slab([0.03, 0.08, 0.08], [-0.91, 0.03, side * 0.15]), [0.03, 0.03, 0.05]),
+      tint(slab([0.05, 0.36, 0.05], [-0.8, 0.36, side * 0.16], [0, 0, 0.5]), dark),
+      tint(slab([0.1, 0.1, 0.1], [-0.89, 0.53, side * 0.16]), CANDY_TONES[1]),
+    )
+    for (const x of [-0.3, 0.12, 0.54]) parts.push(tint(slab([0.1, 0.3, 0.1], [x, -0.5, side * 0.3]), dark))
+  }
+  // La anilla de la que cuelga.
+  parts.push(tint(slab([0.14, 0.1, 0.14], [0.12, 0.47, 0]), [0.9, 0.75, 0.45]))
+  return fuse(parts)
+}
+
+/** La cuerda, del eje a la anilla: se queda columpiándose, vacía, cuando la piñata revienta. */
+function pinataRope() {
+  const length = PIN_ROPE - 0.5
+  return fuse([
+    tint(slab([0.04, length, 0.04], [0, -length / 2, 0]), [0.85, 0.7, 0.42]),
+    tint(slab([0.1, 0.08, 0.1], [0, -length, 0]), [0.85, 0.7, 0.42]),
+  ])
+}
+
+/** Bichito de caramelo (cabe en un cubo unidad): cuerpo, cabeza oscura y dos ojos; el color lo pone la instancia. */
+const MINI_BUG = fuse([
+  tint(slab([0.86, 0.8, 0.62], [0, 0, -0.17]), [1, 1, 1]),
+  tint(slab([0.62, 0.6, 0.3], [0, -0.1, 0.33]), [0.26, 0.24, 0.32]),
+  tint(slab([0.18, 0.18, 0.05], [-0.17, 0.02, 0.49]), [2.2, 2.2, 2.2]),
+  tint(slab([0.18, 0.18, 0.05], [0.17, 0.02, 0.49]), [2.2, 2.2, 2.2]),
+])
+
+/**
+ * Piñata de bugs: un escarabajo de colores colgado de un pórtico, meciéndose.
+ * Salta contra ella: con cada golpe se balancea con ganas y suelta confeti, y
+ * al tercero revienta en una lluvia de bichitos de caramelo. La cuerda se
+ * queda columpiándose vacía hasta que vuelve a llenarse.
+ */
+function Pinata() {
+  const lang = useLang()
+  const swing = useRef<THREE.Group>(null)
+  const shell = useRef<THREE.Mesh>(null)
+  const bugs = useRef<THREE.InstancedMesh>(null)
+  const flakes = useRef<THREE.InstancedMesh>(null)
+  const sign = useRef<THREE.Object3D>(null)
+  const state = useRef({
+    phase: 'whole' as Phase,
+    time: 0,
+    moving: false,
+    hits: 0,
+    sinceHit: 10,
+    /** Péndulo: ángulo (rad) y velocidad de giro */
+    angle: 0,
+    speed: 0,
+  })
+
+  const { body, rope, critters, confetti, hooks } = useMemo(() => {
+    const rand = rng(31337)
+    const fill = (count: number, hx: number, hy: number, hz: number, options: PieceOptions) => {
+      const pieces = new Pieces(count, options)
+      for (let i = 0; i < count; i++) {
+        // Su sitio es dentro de la piñata: de ahí salen y ahí vuelven.
+        pieces.home(
+          i,
+          PIN_X + (rand() - 0.5) * 0.8,
+          PIN_PIVOT - PIN_ROPE + (rand() - 0.5) * 0.5,
+          PIN_Z + (rand() - 0.5) * 0.5,
+          hx,
+          hy,
+          hz,
+        )
+        pieces.size[i] = 0
+      }
+      return pieces
+    }
+    return {
+      body: pinataBody(),
+      rope: pinataRope(),
+      critters: fill(MINI_BUGS, 0.11, 0.07, 0.14, { tumble: 'y', bounce: 0.5, walls: ROOM }),
+      confetti: fill(CONFETTI, 0.06, 0.008, 0.04, { tumble: 'y', bounce: 0.2, drag: 3, gravity: 7, walls: ROOM }),
+      hooks: { land: (_: number, impact: number) => impact > 3 && thud() } satisfies PieceHooks,
+    }
+  }, [])
+
+  /** Suelta piezas (de `from` a `to`) desde donde esté ahora el cuerpo. */
+  const spill = (pieces: Pieces, from: number, to: number, x: number, y: number, power: number) => {
+    for (let i = from; i < to; i++) {
+      const a = i * 3
+      pieces.pos[a] = x + between(-0.45, 0.45)
+      pieces.pos[a + 1] = y + between(-0.3, 0.3)
+      pieces.pos[a + 2] = PIN_Z + between(-0.3, 0.3)
+      pieces.size[i] = 1
+      pieces.launch(
+        i,
+        between(-power, power),
+        between(1.5, 2 + power * 1.6),
+        between(-power, power),
+        between(4, 12),
+        between(0, 0.08),
+      )
+    }
+  }
+
+  useLayoutEffect(() => {
+    critters.write(bugs.current)
+    confetti.write(flakes.current)
+    for (let i = 0; i < MINI_BUGS; i++) bugs.current?.setColorAt(i, CANDY[i % CANDY.length])
+    for (let i = 0; i < CONFETTI; i++) flakes.current?.setColorAt(i, CANDY[(i * 3) % CANDY.length])
+    commit(bugs.current)
+    commit(flakes.current)
+    bound(bugs.current, ROOM_SPHERE)
+    bound(flakes.current, ROOM_SPHERE)
+  }, [critters, confetti])
+
+  useFrame(({ clock }, delta) => {
+    const p = sense(clock.elapsedTime, delta)
+    const s = state.current
+    // Péndulo amortiguado; además, nunca está del todo quieta.
+    s.speed += (-(GRAVITY / PIN_ROPE) * s.angle - 0.9 * s.speed) * p.dt
+    s.angle = Math.min(1, Math.max(-1, s.angle + s.speed * p.dt))
+    const shown = s.angle + Math.sin(clock.elapsedTime * 1.5) * 0.05
+    if (swing.current) swing.current.rotation.z = shown
+    const x = PIN_X + Math.sin(shown) * PIN_ROPE
+    const y = PIN_PIVOT - Math.cos(shown) * PIN_ROPE
+    s.sinceHit += p.dt
+
+    if (s.phase === 'whole') {
+      // Cada golpe la abolla un instante.
+      if (shell.current) shell.current.scale.setScalar(1 + 0.16 * Math.max(0, 1 - s.sinceHit / 0.25))
+      if (p.playing && !p.grounded && s.sinceHit > PIN_GAP && touches(p, x, y, PIN_Z, PIN_REACH)) {
+        s.sinceHit = 0
+        s.hits++
+        // Sale despedida hacia donde iba el jugador (o, si venía de frente, hacia el lado contrario al suyo).
+        const way = p.speed > 1 && Math.abs(p.dirX) > 0.3 ? Math.sign(p.dirX) : x >= p.x ? 1 : -1
+        s.speed = way * PIN_KICK
+        if (flakes.current) flakes.current.visible = true
+        if (s.hits < PIN_HITS) {
+          spill(confetti, (s.hits - 1) * SHED, s.hits * SHED, x, y, 2.2)
+          sfx.squash()
+        } else {
+          // Tercer golpe: revienta.
+          spill(confetti, (PIN_HITS - 1) * SHED, CONFETTI, x, y, 3.4)
+          spill(critters, 0, MINI_BUGS, x, y, 3.2)
+          if (shell.current) shell.current.visible = false
+          if (bugs.current) bugs.current.visible = true
+          s.phase = 'broken'
+          s.time = 0
+          s.moving = true
+          shake.value = Math.max(shake.value, 0.35)
+          sfx.squash()
+          sfx.secret()
+          report('pinata')
+          return
+        }
+      }
+      if (s.hits > 0) {
+        const busy = confetti.step(p.dt)
+        if (busy || s.moving) confetti.write(flakes.current)
+        s.moving = busy
+      }
+      return
+    }
+    s.time += p.dt
+    if (s.phase === 'broken') {
+      const raining = critters.step(p.dt, hooks)
+      const fluttering = confetti.step(p.dt)
+      const busy = raining || fluttering
+      if (busy || s.moving) {
+        critters.write(bugs.current)
+        confetti.write(flakes.current)
+      }
+      s.moving = busy
+      if (sign.current) sign.current.visible = s.time > 0.6
+      if (s.time > 8 && !busy) {
+        s.phase = 'rewind'
+        s.time = 0
+        critters.beginRewind()
+        confetti.beginRewind()
+        if (sign.current) sign.current.visible = false
+        sfx.rebuild()
+      }
+      return
+    }
+    // Todo vuelve adentro y la piñata se hincha otra vez en la punta de la cuerda.
+    const k = Math.min(1, s.time / REWIND)
+    const shrink = 1 - smooth(clamp01((k - 0.7) / 0.3))
+    critters.rewind(k, 1)
+    confetti.rewind(k, 1.4)
+    critters.size.fill(shrink)
+    confetti.size.fill(shrink)
+    critters.write(bugs.current)
+    confetti.write(flakes.current)
+    if (shell.current) {
+      shell.current.visible = k > 0.6
+      shell.current.scale.setScalar(Math.max(0.001, smooth(clamp01((k - 0.6) / 0.4))))
+    }
+    if (k >= 1) {
+      critters.endRewind()
+      confetti.endRewind()
+      if (bugs.current) bugs.current.visible = false
+      if (flakes.current) flakes.current.visible = false
+      s.hits = 0
+      s.moving = false
+      s.phase = 'whole'
+    }
+  })
+
+  return (
+    <Detail>
+      <group ref={swing} position={[PIN_X, PIN_PIVOT, PIN_Z]}>
+        <mesh geometry={rope} material={LIT} />
+        <mesh ref={shell} geometry={body} material={LIT} position={[0.05, -PIN_ROPE, 0]} />
+      </group>
+      <instancedMesh ref={bugs} args={[MINI_BUG, LIT, MINI_BUGS]} visible={false} />
+      <instancedMesh ref={flakes} args={[BOX, LIT, CONFETTI]} visible={false} />
+      <Text
+        ref={sign}
+        visible={false}
+        font={fontBold}
+        fontSize={0.24}
+        position={[PIN_X, PIN_PIVOT - PIN_ROPE, PIN_Z]}
+        color={INK_OK}
+        anchorX="center"
+        anchorY="middle"
+        whiteSpace="nowrap"
+        material-toneMapped={false}
+      >
+        {TEXTS.noBugs[lang]}
+      </Text>
+      <Label id="pinata" text={TEXTS.pinata[lang]} />
+    </Detail>
+  )
+}
+
+// ---------------------------------------------------------------- 9. Pila de llamadas
+
+const [STACK_X, , STACK_Z] = local(STACK.center)
+/** Largo, alto y fondo de un marco de pila */
+const SLAB = STACK.frame
+/** Lo que tarda un marco nuevo en caer a su sitio */
+const DROP = 0.35
+/** Zona de la celda del atlas que enseña la cara de delante de un marco */
+const STACK_FACE: Region = [0.02, 0.21, 0.98, 0.79]
+const STACK_COLD = new THREE.Color(0.08, 0.26, 0.62)
+const STACK_HOT = new THREE.Color(0.72, 0.1, 0.08)
+type StackMode = 'grow' | 'hold' | 'unwind' | 'rest'
+
+/** Atlas de los marcos: una llamada por celda (f(1), f(2)…), con su dirección de retorno. */
+const stackAtlas = () =>
+  atlasTexture(2, 5, (ctx, column, row, width, height) => {
+    const call = row * 2 + column + 1
+    if (call > STACK.limit) return
+    ctx.textBaseline = 'middle'
+    ctx.fillStyle = '#ffffff'
+    ctx.font = `600 84px ${MONO}`
+    ctx.fillText(`f(${call})`, 30, height / 2 + 4)
+    ctx.font = `600 30px ${MONO}`
+    ctx.fillStyle = '#b9c8e6'
+    ctx.textAlign = 'right'
+    ctx.fillText(`ret 0x7ffe${(0xf0 - call * 16).toString(16)}`, width - 28, height / 2 + 4)
+  })
+
+/**
+ * Pila de llamadas: una torre estrecha de marcos, uno por llamada recursiva.
+ * Crece sola (cada par de segundos cae un marco encima, hasta el límite),
+ * aguanta un rato tambaleándose y vuelve a menguar. Embístela (o písale la
+ * cima, cuando se alcanza): se dobla por el medio y los marcos se desparraman
+ * como una baraja. Stack overflow.
+ */
+function CallStack() {
+  const lang = useLang()
+  const mesh = useRef<THREE.InstancedMesh>(null)
+  const sign = useRef<THREE.Object3D>(null)
+  const state = useRef({
+    phase: 'whole' as Phase,
+    time: 0,
+    moving: false,
+    /** Marcos que hay ahora mismo, en qué anda (crecer, aguantar, menguar, descansar) y cuánto lleva en ello */
+    count: STACK.base,
+    mode: 'rest' as StackMode,
+    clock: 0,
+  })
+
+  const { pieces, geometry, cells, material, there, since, tight, hooks, axis } = useMemo(() => {
+    const pieces = new Pieces(STACK.limit, { tumble: 'y', bounce: 0.2, walls: ROOM })
+    const rand = rng(1024)
+    const q = new THREE.Quaternion()
+    const { geometry, cells } = labelBox([null, null, null, null, STACK_FACE, STACK_FACE], STACK.limit)
+    for (let i = 0; i < STACK.limit; i++) {
+      // Apilados sin mucho cuidado: cada uno algo girado y desplazado.
+      q.setFromAxisAngle(UP, (rand() - 0.5) * 0.08)
+      pieces.home(
+        i,
+        STACK_X + (rand() - 0.5) * 0.06,
+        (i + 0.5) * SLAB[1],
+        STACK_Z + (rand() - 0.5) * 0.06,
+        SLAB[0] / 2,
+        SLAB[1] / 2,
+        SLAB[2] / 2,
+        q,
+      )
+      pieces.size[i] = i < STACK.base ? 1 : 0
+      cells.setXY(i, i % 2, 4 - Math.floor(i / 2))
+    }
+    return {
+      pieces,
+      geometry,
+      cells,
+      material: createAtlasMaterial(stackAtlas(), 2, 5, 1.5),
+      /** Qué marcos están puestos, y cuánto hace que cada uno llegó (o se fue) */
+      there: new Uint8Array(STACK.limit).fill(1, 0, STACK.base),
+      since: new Float32Array(STACK.limit).fill(10),
+      tight: around(STACK_X, 2.4, STACK_Z, 3.4),
+      hooks: { land: (_: number, impact: number) => impact > 3 && thud() } satisfies PieceHooks,
+      axis: new THREE.Vector3(),
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    pieces.write(mesh.current)
+    const last = STACK.limit - 1
+    for (let i = 0; i <= last; i++) mesh.current?.setColorAt(i, _color.copy(STACK_COLD).lerp(STACK_HOT, i / last))
+    cells.needsUpdate = true
+    commit(mesh.current)
+    bound(mesh.current, tight)
+  }, [pieces, cells, tight])
+
+  useFrame(({ clock }, delta) => {
+    const p = sense(clock.elapsedTime, delta)
+    const s = state.current
+    if (s.phase === 'whole') {
+      // Con el jugador lejos de la sala, la pila espera tal y como está.
+      if (p.x < ROOM.minX - 4) return
+      const close = Math.hypot(p.x - STACK_X, p.z - STACK_Z) < 12
+      s.clock += p.dt
+      if (s.mode === 'grow' && s.clock > 2) {
+        there[s.count] = 1
+        since[s.count] = 0
+        s.count++
+        s.clock = 0
+        if (s.count >= STACK.limit) s.mode = 'hold'
+      } else if (s.mode === 'hold' && s.clock > 5) {
+        s.mode = 'unwind'
+        s.clock = 0
+      } else if (s.mode === 'unwind' && s.clock > 0.45) {
+        s.count--
+        there[s.count] = 0
+        since[s.count] = 0
+        s.clock = 0
+        if (s.count <= STACK.base) s.mode = 'rest'
+      } else if (s.mode === 'rest' && s.clock > 2.5) {
+        s.mode = 'grow'
+      }
+
+      // Cada marco: cayendo a su sitio, puesto (y tambaleándose más cuanto más arriba) o desapareciendo.
+      const t = clock.elapsedTime
+      let solid = 0
+      let unbroken = true
+      for (let i = 0; i < STACK.limit; i++) {
+        const a = i * 3
+        const before = since[i]
+        since[i] += p.dt
+        let fall = 0
+        if (there[i]) {
+          fall = Math.max(0, 1 - since[i] / DROP)
+          if (close && before < DROP && since[i] >= DROP) thud()
+          pieces.size[i] = 1
+        } else pieces.size[i] = Math.max(0, 1 - since[i] / 0.25)
+        if (unbroken && there[i] && fall === 0) solid++
+        else unbroken = false
+        pieces.pos[a] = pieces.homePos[a] + Math.sin(t * 1.6 + i * 0.45) * 0.0012 * i * i * (s.count / STACK.limit)
+        pieces.pos[a + 1] = (i + 0.5) * SLAB[1] + fall * fall * 2.6
+      }
+      pieces.write(mesh.current)
+      // La colisión llega hasta el último marco ya asentado.
+      const top = solid * SLAB[1]
+      STACK.collider.max[1] = top
+
+      if (!p.playing) return
+      const stomped = stomps(p, STACK_X, STACK_Z, SLAB[0] / 2, SLAB[2] / 2, top)
+      if (!stomped && !rams(p, STACK_X, STACK_Z, SLAB[0] / 2, SLAB[2] / 2, top)) return
+      // Se dobla por el medio: los marcos centrales salen con más fuerza. Pisada, se desparrama hacia la cámara.
+      const dx = stomped ? 0 : p.dirX
+      const dz = stomped ? 1 : p.dirZ
+      if (stomped) bounce(8.5)
+      axis.set(dz, 0, -dx)
+      for (let i = 0; i < STACK.limit; i++) {
+        if (!there[i]) {
+          pieces.size[i] = 0
+          continue
+        }
+        const middle = Math.sin((Math.PI * (i + 0.5)) / s.count)
+        const push = 1 + 3.4 * middle + 0.2 * i
+        pieces.launch(
+          i,
+          dx * push + between(-0.4, 0.4),
+          0.6 + 1.6 * middle,
+          dz * push + between(-0.4, 0.4),
+          between(0.5, 2.5),
+          i * 0.015,
+          axis,
+        )
+      }
+      setSolid(STACK.collider, null)
+      bound(mesh.current, ROOM_SPHERE)
+      s.phase = 'broken'
+      s.time = 0
+      shake.value = Math.max(shake.value, 0.3)
+      sfx.squash()
+      report('stack')
+      return
+    }
+    s.time += p.dt
+    if (s.phase === 'broken') {
+      const busy = pieces.step(p.dt, hooks)
+      if (busy || s.moving) pieces.write(mesh.current)
+      s.moving = busy
+      // El aviso parpadea un momento y luego se queda fijo.
+      if (sign.current) sign.current.visible = s.time > 1.4 || Math.floor(s.time * 8) % 2 === 0
+      if (s.time > 8 && !busy) {
+        s.phase = 'rewind'
+        s.time = 0
+        pieces.beginRewind()
+        if (sign.current) sign.current.visible = false
+        sfx.rebuild()
+      }
+      return
+    }
+    // Los marcos de la base vuelven a su sitio; los demás se deshacen por el camino (ya volverán a caer).
+    const k = Math.min(1, s.time / REWIND)
+    pieces.rewind(k, 1.2)
+    for (let i = STACK.base; i < STACK.limit; i++) pieces.size[i] = Math.min(pieces.size[i], 1 - smooth(k))
+    pieces.write(mesh.current)
+    if (k >= 1 && away(p, STACK_X, STACK_Z, SLAB[0] / 2, SLAB[2] / 2)) {
+      pieces.endRewind()
+      there.fill(0).fill(1, 0, STACK.base)
+      since.fill(10)
+      s.count = STACK.base
+      s.mode = 'rest'
+      s.clock = 0
+      setSolid(STACK.collider, STACK)
+      bound(mesh.current, tight)
+      s.phase = 'whole'
+    }
+  })
+
+  return (
+    <Detail>
+      <instancedMesh ref={mesh} args={[geometry, material, STACK.limit]} />
+      <Text
+        ref={sign}
+        visible={false}
+        font={fontBold}
+        fontSize={0.3}
+        position={[STACK_X, STACK.limit * SLAB[1] + 0.5, STACK_Z]}
+        color={INK_BAD}
+        anchorX="center"
+        anchorY="middle"
+        whiteSpace="nowrap"
+        material-toneMapped={false}
+      >
+        STACK OVERFLOW
+      </Text>
+      <Label id="stack" text={TEXTS.stack[lang]} />
+    </Detail>
+  )
+}
+
+// ---------------------------------------------------------------- 10. Tabla de datos
+
+const [TABLE_X, , TABLE_Z] = local(TABLE.center)
+const TABLE_TOP = TABLE.size[1]
+const TABLE_HALF = TABLE.size[0] / 2
+const CELLS = TABLE.columns * TABLE.rows
+/** Lo que pone en la tabla: la cabecera y siete filas, con algún dato para olvidar */
+const TABLE_HEAD = ['id', 'name', 'lang', 'score', 'bugs', 'ok']
+const TABLE_ROWS = [
+  ['1', 'ana', 'ts', '0.97', '0', 'true'],
+  ['2', 'bob', 'py', '0.81', '3', 'true'],
+  ['3', 'eve', 'go', 'NaN', '12', 'false'],
+  ['4', 'kro', 'rs', '0.66', '1', 'true'],
+  ['5', 'null', 'js', '1.00', '∞', 'NULL'],
+  ['6', 'li', 'sql', 'NaN', '7', 'true'],
+  ['7', 'max', 'c', '0.42', '2', 'false'],
+]
+const cellText = (column: number, row: number) => (row === 0 ? TABLE_HEAD[column] : TABLE_ROWS[row - 1][column])
+const cellBroken = (column: number, row: number) => row > 0 && /^(NaN|NULL|null|∞)$/.test(cellText(column, row))
+/** Zona de la celda del atlas que enseña cada cara de una casilla */
+const CELL_FACE: Region = [0.03, 0.23, 0.97, 0.77]
+const CELL_HEAD = new THREE.Color(0.5, 0.3, 0.06)
+const CELL_BAD = new THREE.Color(0.42, 0.07, 0.1)
+const CELL_TONES = [new THREE.Color(0.05, 0.17, 0.26), new THREE.Color(0.07, 0.22, 0.33)]
+/** Línea del terminal: ancho, alto y los pasos en que se «teclea» */
+const TERMINAL: [number, number] = [3.6, 0.45]
+const KEYSTROKES = 20
+
+/** Atlas de la tabla: una celda por casilla, tal cual está colocada. */
+const tableAtlas = () =>
+  atlasTexture(TABLE.columns, TABLE.rows, (ctx, column, row, width, height) => {
+    ctx.font = `600 40px ${MONO}`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillStyle = row === 0 ? '#ffe9b0' : cellBroken(column, row) ? '#ffb0b0' : '#e6fbff'
+    ctx.fillText(cellText(column, row), width / 2, height / 2 + 2, width * 0.86)
+  })
+
+/** Las dos líneas del terminal (arriba la que borra, abajo la que arregla): se enseña media textura cada vez. */
+const terminalTexture = () => {
+  const texture = canvasTexture(1024, 256, (ctx) => {
+    ctx.font = `600 80px ${MONO}`
+    ctx.textBaseline = 'middle'
+    ctx.fillStyle = '#ffffff'
+    ctx.fillText('> DROP TABLE users;', 14, 66, 996)
+    ctx.fillText('> ROLLBACK; -- ok', 14, 194, 996)
+  })
+  texture.repeat.set(1, 0.5)
+  return texture
+}
+
+/**
+ * Tabla de datos: una rejilla de casillas de pie, con su cabecera y algún NaN.
+ * Embístela o písale el canto de arriba: alguien teclea «DROP TABLE users;» y
+ * las casillas se caen fila a fila, de abajo arriba. El marco se queda en pie,
+ * vacío, hasta el rollback.
+ */
+function DataTable() {
+  const lang = useLang()
+  const mesh = useRef<THREE.InstancedMesh>(null)
+  const line = useRef<THREE.Mesh>(null)
+  const state = useRef({
+    phase: 'whole' as Phase,
+    time: 0,
+    moving: false,
+    /** Segundos que sigue a la vista la línea del terminal una vez restaurada la tabla */
+    note: 0,
+  })
+
+  const { pieces, geometry, cells, material, screen, strip, tight, hooks } = useMemo(() => {
+    const pieces = new Pieces(CELLS, { tumble: 'z', bounce: 0.3, walls: ROOM })
+    const { geometry, cells } = labelBox([null, null, null, null, CELL_FACE, CELL_FACE], CELLS)
+    const [width, height] = TABLE.cell
+    for (let i = 0; i < CELLS; i++) {
+      const column = i % TABLE.columns
+      const row = Math.floor(i / TABLE.columns)
+      pieces.home(
+        i,
+        TABLE_X + (column - (TABLE.columns - 1) / 2) * width,
+        TABLE.foot + (TABLE.rows - row - 0.5) * height,
+        TABLE_Z,
+        width / 2 - 0.01,
+        height / 2 - 0.01,
+        0.04,
+      )
+      cells.setXY(i, column, TABLE.rows - 1 - row)
+    }
+    return {
+      pieces,
+      geometry,
+      cells,
+      material: createAtlasMaterial(tableAtlas(), TABLE.columns, TABLE.rows, 1.6),
+      screen: new THREE.MeshBasicMaterial({
+        map: terminalTexture(),
+        color: new THREE.Color(0.5, 2.6, 1),
+        transparent: true,
+        depthWrite: false,
+        toneMapped: false,
+      }),
+      // Anclada por la izquierda: al «teclear» se estira hacia la derecha.
+      strip: new THREE.PlaneGeometry(TERMINAL[0], TERMINAL[1]).translate(TERMINAL[0] / 2, 0, 0),
+      tight: around(TABLE_X, TABLE_TOP / 2, TABLE_Z, 2.6),
+      hooks: { land: (_: number, impact: number) => impact > 3 && thud() } satisfies PieceHooks,
+    }
+  }, [])
+
+  /** Enseña una línea del terminal (0, la que borra; 1, la que arregla), tecleada hasta `typed` (0..1). */
+  const type = (row: number, typed: number) => {
+    const plane = line.current
+    const map = screen.map
+    if (!plane || !map) return
+    const shown = Math.min(1, Math.ceil(typed * KEYSTROKES) / KEYSTROKES)
+    plane.visible = shown > 0
+    plane.scale.x = Math.max(0.001, shown)
+    map.repeat.x = shown
+    map.offset.y = row === 0 ? 0.5 : 0
+  }
+
+  useLayoutEffect(() => {
+    pieces.write(mesh.current)
+    for (let i = 0; i < CELLS; i++) {
+      const column = i % TABLE.columns
+      const row = Math.floor(i / TABLE.columns)
+      mesh.current?.setColorAt(i, row === 0 ? CELL_HEAD : cellBroken(column, row) ? CELL_BAD : CELL_TONES[row % 2])
+    }
+    cells.needsUpdate = true
+    commit(mesh.current)
+    bound(mesh.current, tight)
+  }, [pieces, cells, tight])
+
+  useFrame(({ clock }, delta) => {
+    const p = sense(clock.elapsedTime, delta)
+    const s = state.current
+    if (s.phase === 'whole') {
+      if (s.note > 0) {
+        s.note -= p.dt
+        if (s.note <= 0 && line.current) line.current.visible = false
+      }
+      if (!p.playing) return
+      const stomped = stomps(p, TABLE_X, TABLE_Z, TABLE_HALF, TABLE.size[2] / 2, TABLE_TOP)
+      if (!stomped && !rams(p, TABLE_X, TABLE_Z, TABLE_HALF, TABLE.size[2] / 2, TABLE_TOP)) return
+      if (stomped) bounce(8.5)
+      // Las casillas se sueltan fila a fila, de abajo arriba; embestida, salen hacia donde iba el jugador.
+      const way = stomped ? 0 : p.dirZ
+      for (let i = 0; i < CELLS; i++) {
+        const row = Math.floor(i / TABLE.columns)
+        pieces.launch(
+          i,
+          between(-1.5, 1.5),
+          between(0.5, 2.5),
+          way * between(1.5, 4) + between(-2.2, 2.2),
+          between(3, 7),
+          (TABLE.rows - 1 - row) * 0.08 + between(0, 0.03),
+        )
+      }
+      setSolid(TABLE.collider, null)
+      bound(mesh.current, ROOM_SPHERE)
+      s.phase = 'broken'
+      s.time = 0
+      s.note = 0
+      shake.value = Math.max(shake.value, 0.25)
+      sfx.squash()
+      report('table')
+      return
+    }
+    s.time += p.dt
+    if (s.phase === 'broken') {
+      type(0, s.time / 0.9)
+      const busy = pieces.step(p.dt, hooks)
+      if (busy || s.moving) pieces.write(mesh.current)
+      s.moving = busy
+      if (s.time > 8 && !busy) {
+        s.phase = 'rewind'
+        s.time = 0
+        pieces.beginRewind()
+        sfx.rebuild()
+      }
+      return
+    }
+    const k = Math.min(1, s.time / REWIND)
+    type(1, s.time / 0.8)
+    pieces.rewind(k, 1)
+    pieces.write(mesh.current)
+    if (k >= 1 && away(p, TABLE_X, TABLE_Z, TABLE_HALF, TABLE.size[2] / 2)) {
+      pieces.endRewind()
+      pieces.write(mesh.current)
+      setSolid(TABLE.collider, TABLE)
+      bound(mesh.current, tight)
+      s.note = 1.6
+      s.phase = 'whole'
+    }
+  })
+
+  return (
+    <Detail>
+      <instancedMesh ref={mesh} args={[geometry, material, CELLS]} />
+      <mesh
+        ref={line}
+        geometry={strip}
+        material={screen}
+        position={[TABLE_X - TERMINAL[0] / 2, TABLE_TOP + 0.5, TABLE_Z]}
+        visible={false}
+      />
+      <Label id="table" text={TEXTS.table[lang]} />
+    </Detail>
+  )
+}
+
+// ---------------------------------------------------------------- 11. Sobreajuste
+
+const [FIT_X, , FIT_Z] = local(OVERFIT.center)
+const FIT_BASE = OVERFIT.size[1]
+/** Radio de un dato, y medio ancho de lo que ocupa la nube */
+const DOT = 0.13
+const FIT_HALF = 2.1
+/** Los datos (x respecto al centro, y): una tendencia clara y bastante ruido */
+const POINTS: Array<[number, number]> = (() => {
+  const rand = rng(2012)
+  return Array.from({ length: 14 }, (_, i): [number, number] => {
+    const x = -FIT_HALF + (i * FIT_HALF * 2) / 13
+    return [x, Math.min(2.55, Math.max(0.75, 1.5 + 0.24 * x + (rand() - 0.5) * 1.05))]
+  })
+})()
+/** La recta de regresión (mínimos cuadrados): ordenada en el centro y pendiente */
+const TREND = (() => {
+  const n = POINTS.length
+  const meanX = POINTS.reduce((sum, [x]) => sum + x, 0) / n
+  const meanY = POINTS.reduce((sum, [, y]) => sum + y, 0) / n
+  const slope =
+    POINTS.reduce((sum, [x, y]) => sum + (x - meanX) * (y - meanY), 0) /
+    POINTS.reduce((sum, [x]) => sum + (x - meanX) ** 2, 0)
+  return { at: meanY - slope * meanX, slope }
+})()
+/** Trozos en los que se parte la curva al romperse, y tramos del tubo que abarca cada uno */
+const SHARDS = 30
+const SHARD_SPAN = 6
+const TUBE_SIDES = 5
+const READOUT = { overfit: 'train 100 % · test 12 %', fixed: 'train 91 % · test 90 %' }
+const DOT_TONE = new THREE.Color(0.5, 1.8, 2.4)
+const SHARD_TONE = new THREE.Color(2.6, 0.45, 1.7)
+/** La curva del modelo sobreajustado: neón, con un destello que la recorre */
+const WIGGLE = createNeonMaterial('#ff4fd8', 1.35)
+
+/**
+ * El modelo sobreajustado: una curva que pasa exactamente por todos los datos
+ * y, entre uno y otro, se va por las ramas (una vez hacia arriba, otra hacia abajo).
+ */
+function wiggle() {
+  const at = (x: number, y: number) => new THREE.Vector3(FIT_X + x, Math.max(FIT_BASE + 0.15, y), FIT_Z)
+  const [first, last] = [POINTS[0], POINTS[POINTS.length - 1]]
+  const path = [at(first[0] - 0.28, first[1] + 0.45)]
+  POINTS.forEach(([x, y], i) => {
+    path.push(at(x, y))
+    const next = POINTS[i + 1]
+    if (next) path.push(at((x + next[0]) / 2, (y + next[1]) / 2 + (i % 2 ? 0.46 : -0.46)))
+  })
+  path.push(at(last[0] + 0.28, last[1] - 0.45))
+  return new THREE.CatmullRomCurve3(path)
+}
+
+/**
+ * Sobreajuste: catorce datos sobre varillas y una curva de neón ridícula que
+ * pasa por todos y cada uno. Salta contra ella (o crúzala corriendo) y salta
+ * como una goma: se deshace en trozos de un extremo al otro, los datos caen
+ * rodando y en su lugar se dibuja una recta tranquila. Romperlo era arreglarlo.
+ */
+function Overfit() {
+  const lang = useLang()
+  const balls = useRef<THREE.InstancedMesh>(null)
+  const bits = useRef<THREE.InstancedMesh>(null)
+  const curve = useRef<THREE.Mesh>(null)
+  const trend = useRef<THREE.Mesh>(null)
+  const [fixed, setFixed] = useState(false)
+  const state = useRef({ phase: 'whole' as Phase, time: 0, moving: false, side: 0, flip: false })
+
+  const { dots, shards, tube, rule, tight, hooks } = useMemo(() => {
+    const dots = new Pieces(POINTS.length, { tumble: 'none', bounce: 0.5, walls: ROOM })
+    POINTS.forEach(([x, y], i) => dots.home(i, FIT_X + x, y, FIT_Z, DOT, DOT, DOT))
+
+    const path = wiggle()
+    const tube = new THREE.TubeGeometry(path, SHARDS * SHARD_SPAN, 0.035, TUBE_SIDES)
+    // Cada trozo sustituye a su tramo de tubo: mismo sitio, misma inclinación.
+    const shards = new Pieces(SHARDS, { tumble: 'any', bounce: 0.35, walls: ROOM })
+    const q = new THREE.Quaternion()
+    for (let i = 0; i < SHARDS; i++) {
+      const from = path.getPoint(i / SHARDS)
+      const to = path.getPoint((i + 1) / SHARDS)
+      q.setFromAxisAngle(AXES[2], Math.atan2(to.y - from.y, to.x - from.x))
+      shards.home(i, (from.x + to.x) / 2, (from.y + to.y) / 2, FIT_Z, from.distanceTo(to) / 2, 0.035, 0.035, q)
+      shards.size[i] = 0
+    }
+    const s = state.current
+    return {
+      dots,
+      shards,
+      tube,
+      // La recta crece desde su extremo izquierdo.
+      rule: new THREE.BoxGeometry(1, 1, 1).translate(0.5, 0, 0),
+      tight: around(FIT_X, 1.5, FIT_Z, 3.2),
+      hooks: {
+        // El latigazo recorre la curva: cada trozo aparece al soltarse y el tubo se acorta hasta ahí.
+        release: (i: number) => {
+          const span = SHARD_SPAN * TUBE_SIDES * 6
+          shards.size[i] = 1
+          if (s.flip) tube.setDrawRange(0, i * span)
+          else tube.setDrawRange((i + 1) * span, Infinity)
+        },
+        land: (_: number, impact: number) => impact > 3 && thud(),
+      } satisfies PieceHooks,
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    dots.write(balls.current)
+    shards.write(bits.current)
+    POINTS.forEach((_, i) => balls.current?.setColorAt(i, DOT_TONE))
+    for (let i = 0; i < SHARDS; i++) bits.current?.setColorAt(i, SHARD_TONE)
+    commit(balls.current)
+    commit(bits.current)
+    bound(balls.current, tight)
+    bound(bits.current, ROOM_SPHERE)
+    if (trend.current) {
+      // De un extremo de la nube al otro, con la inclinación de la tendencia.
+      trend.current.position.set(FIT_X - FIT_HALF - 0.3, TREND.at - TREND.slope * (FIT_HALF + 0.3), FIT_Z)
+      trend.current.rotation.z = Math.atan(TREND.slope)
+    }
+  }, [dots, shards, tight])
+
+  useFrame(({ clock }, delta) => {
+    const p = sense(clock.elapsedTime, delta)
+    const s = state.current
+    // De qué lado de la curva está el jugador: cruzarla corriendo también la rompe.
+    const side = p.z > FIT_Z ? 1 : -1
+    const crossed = s.side !== 0 && side !== s.side
+    s.side = side
+    if (s.phase === 'whole') {
+      if (!p.playing || Math.abs(p.x - FIT_X) > FIT_HALF + 0.5 || p.y > 2.9) return
+      const ran = crossed && p.speed > RAM_SPEED
+      const hit = !p.grounded && POINTS.some(([x, y]) => touches(p, FIT_X + x, y, FIT_Z, DOT))
+      if (!ran && !hit) return
+      if (p.vy < 0 && !p.grounded) bounce(7.5)
+      // El latigazo sale del extremo más cercano al jugador.
+      s.flip = p.x > FIT_X
+      for (let i = 0; i < SHARDS; i++) {
+        const whip = (i % 2 ? 1 : -1) * between(2.5, 6)
+        const delay = (s.flip ? SHARDS - 1 - i : i) * 0.012
+        shards.launch(i, between(-1.5, 1.5), Math.abs(whip) * 0.7 + between(1, 3), whip * 0.5, between(5, 12), delay)
+      }
+      POINTS.forEach((_, i) => {
+        dots.launch(i, between(-0.8, 0.8), between(0.5, 2.5), between(-1, 1.5), 0, 0.1 + i * 0.025)
+      })
+      if (bits.current) bits.current.visible = true
+      if (trend.current) trend.current.visible = true
+      bound(balls.current, ROOM_SPHERE)
+      s.phase = 'broken'
+      s.time = 0
+      sfx.squash()
+      setFixed(true)
+      report('overfit')
+      return
+    }
+    s.time += p.dt
+    const line = trend.current
+    const length = (FIT_HALF + 0.3) * 2 * Math.hypot(1, TREND.slope)
+    if (s.phase === 'broken') {
+      const flying = shards.step(p.dt, hooks)
+      const rolling = dots.step(p.dt)
+      const busy = flying || rolling
+      if (busy || s.moving) {
+        shards.write(bits.current)
+        dots.write(balls.current)
+      }
+      s.moving = busy
+      if (curve.current && s.time > SHARDS * 0.012 + 0.05) curve.current.visible = false
+      // La recta se dibuja sola, de izquierda a derecha.
+      if (line) line.scale.set(Math.max(0.001, length * smooth(clamp01((s.time - 0.5) / 0.7))), 0.05, 0.05)
+      if (s.time > 8 && !busy) {
+        s.phase = 'rewind'
+        s.time = 0
+        shards.beginRewind()
+        dots.beginRewind()
+        sfx.rebuild()
+      }
+      return
+    }
+    // La recta se recoge, y los trozos y los datos vuelven a su sitio: el modelo vuelve a las andadas.
+    const k = Math.min(1, s.time / REWIND)
+    shards.rewind(k, 0.8)
+    dots.rewind(k, 0.8)
+    shards.write(bits.current)
+    dots.write(balls.current)
+    if (line) line.scale.set(Math.max(0.001, length * (1 - smooth(clamp01(k / 0.4)))), 0.05, 0.05)
+    if (k >= 1) {
+      shards.endRewind()
+      dots.endRewind()
+      shards.size.fill(0)
+      tube.setDrawRange(0, Infinity)
+      if (curve.current) curve.current.visible = true
+      if (bits.current) bits.current.visible = false
+      if (line) line.visible = false
+      bound(balls.current, tight)
+      s.phase = 'whole'
+      setFixed(false)
+    }
+  })
+
+  return (
+    <Detail>
+      <instancedMesh ref={balls} args={[BALL, LIT, POINTS.length]} />
+      <instancedMesh ref={bits} args={[BOX, LIT, SHARDS]} visible={false} />
+      <mesh ref={curve} geometry={tube} material={WIGGLE} />
+      <mesh ref={trend} geometry={rule} material={BRANCH} scale={[0.001, 0.05, 0.05]} visible={false} />
+      <Text
+        font={fontBold}
+        fontSize={0.19}
+        position={[FIT_X, 3.05, FIT_Z]}
+        color={fixed ? INK_OK : INK_BAD}
+        anchorX="center"
+        anchorY="middle"
+        whiteSpace="nowrap"
+        material-toneMapped={false}
+      >
+        {fixed ? READOUT.fixed : READOUT.overfit}
+      </Text>
+      <Label id="overfit" text={TEXTS.overfit[lang]} />
+    </Detail>
+  )
+}
+
 // ---------------------------------------------------------------- El recinto
 
 /** Dónde va el arco (en coordenadas de la sala) y cuánto está girado */
@@ -2625,6 +3619,37 @@ function Shell() {
         slab([0.035, 0.03, pd], [px + (side * pw) / 2, 0.04, pz]),
       )
     }
+
+    // Piñata: el pórtico del que cuelga.
+    for (const post of PINATA.posts) {
+      const [x, y, z] = local(post.center)
+      frame.push(slab(post.size, [x, y, z]), slab([0.5, 0.08, 0.5], [x, 0.04, z]))
+    }
+    frame.push(slab([PINATA.half * 2 + 0.6, 0.2, 0.3], [PIN_X, PINATA.height - 0.1, PIN_Z]))
+    neon.push(slab([PINATA.half * 2 - 0.3, 0.03, 0.03], [PIN_X, PINATA.height - 0.215, PIN_Z + 0.16]))
+
+    // Pila de llamadas: la peana.
+    frame.push(slab([SLAB[0] + 0.4, 0.05, SLAB[2] + 0.4], [STACK_X, 0.025, STACK_Z]))
+
+    // Tabla: el marco (dos montantes con su pie, el travesaño de arriba y el zócalo), que nunca se cae.
+    for (const side of [-1, 1]) {
+      frame.push(
+        slab([0.1, TABLE_TOP, 0.16], [TABLE_X + side * (TABLE_HALF - 0.05), TABLE_TOP / 2, TABLE_Z]),
+        slab([0.2, 0.08, 0.9], [TABLE_X + side * (TABLE_HALF - 0.05), 0.04, TABLE_Z]),
+      )
+    }
+    frame.push(
+      slab([TABLE.size[0], 0.06, 0.16], [TABLE_X, TABLE_TOP - 0.03, TABLE_Z]),
+      slab([TABLE.size[0], TABLE.foot, 0.16], [TABLE_X, TABLE.foot / 2, TABLE_Z]),
+    )
+    neon.push(slab([TABLE.size[0] - 0.2, 0.025, 0.025], [TABLE_X, TABLE_TOP + 0.012, TABLE_Z]))
+
+    // Sobreajuste: la base y una varilla por dato (la punta marca dónde estaba cuando se cae).
+    frame.push(slab(OVERFIT.size, [FIT_X, FIT_BASE / 2, FIT_Z]))
+    for (const [x, y] of POINTS) frame.push(slab([0.03, y - FIT_BASE, 0.03], [FIT_X + x, (y + FIT_BASE) / 2, FIT_Z]))
+    neon.push(
+      slab([OVERFIT.size[0] - 0.2, 0.025, 0.025], [FIT_X, FIT_BASE + 0.012, FIT_Z + OVERFIT.size[2] / 2 - 0.05]),
+    )
 
     // Camino de baldosas de luz, del mapa de siempre hasta el arco.
     for (const tile of ARCADE.path) {
@@ -2747,6 +3772,10 @@ export function Arcade() {
         <Graph />
         <PullRequests />
         <Legacy />
+        <Pinata />
+        <CallStack />
+        <DataTable />
+        <Overfit />
       </group>
       <group ref={post} position={ARCADE.signpost}>
         <Signpost />

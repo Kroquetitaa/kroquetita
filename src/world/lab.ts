@@ -3,7 +3,7 @@ import type { AABB, Box } from './layout'
 
 /**
  * Sala de conceptos: una exposición delante de la plaza (hacia la cámara, +Z).
- * Siete instalaciones en dos filas al tresbolillo; cada una tiene un pedestal
+ * Doce instalaciones en tres filas al tresbolillo; cada una tiene un pedestal
  * bajo, una cartela inclinada apoyada en su repisa delantera y, en el suelo,
  * la plataforma que se pisa para activarla. Aquí solo hay medidas: lo que se
  * dibuja está en `scene/Lab.tsx`.
@@ -31,7 +31,7 @@ const LIP = { depth: 0.5, height: 0.3 }
 const PAD = 2.2
 const PAD_GAP = 0.25
 /** Z de la cara delantera de los pedestales de cada fila (0 = la más cercana a la plaza) */
-const ROWS = [28.4, 39.6]
+const ROWS = [28.4, 39.6, 51]
 
 const exhibit = (id: ConceptId, row: number, x: number, base: [number, number], padWidth = PAD): Exhibit => {
   const front = ROWS[row]
@@ -47,7 +47,8 @@ const exhibit = (id: ConceptId, row: number, x: number, base: [number, number], 
 /**
  * En el orden de `concepts`. La fila de la plaza (z ≈ 27) no pasa de 3,2 de
  * alto; la de delante (z ≈ 38) puede llegar a 4,4 y va al tresbolillo, de modo
- * que desde la cámara las de atrás se ven entre las de delante.
+ * que desde la cámara las de atrás se ven entre las de delante. La tercera
+ * (z ≈ 50), con los conceptos avanzados, queda la más cercana a la cámara.
  */
 const exhibits: Exhibit[] = [
   exhibit('neural', 0, -14.5, [3.6, 2]),
@@ -58,6 +59,11 @@ const exhibits: Exhibit[] = [
   exhibit('rag', 0, 5.5, [7.6, 2]),
   exhibit('agents', 1, 10.5, [4.8, 2]),
   exhibit('descent', 0, 14.5, [3.6, 3.2]),
+  exhibit('diffusion', 2, -16.8, [3.2, 1.6]),
+  exhibit('mcp', 2, -9, [6, 2]),
+  exhibit('multiagent', 2, 7.6, [5.6, 2]),
+  exhibit('rl', 2, 0, [3.4, 2.6]),
+  exhibit('lora', 2, 16, [4.8, 2]),
 ]
 
 /** Colisión: el pedestal con su repisa (una sola caja baja; te puedes subir de un salto). */
@@ -67,12 +73,16 @@ const collider = (e: Exhibit): AABB => ({
 })
 
 /** Recinto de la sala: lo recorre un filo de neón en el suelo */
-const area = { minX: -21, maxX: 21, minZ: 22, maxZ: 45 }
+const area = { minX: -21, maxX: 21, minZ: 22, maxZ: 56 }
 
-/** Baldosas de luz: de la plaza a la entrada y, pasada la inscripción, por el pasillo central. */
+/**
+ * Baldosas de luz: de la plaza a la entrada; pasada la inscripción, por el
+ * pasillo central hasta la segunda fila, y de ahí a la tercera.
+ */
 const path: Vec3[] = [
   ...Array.from({ length: 4 }, (_, i): Vec3 => [0, 0, 19 + i * 0.9]),
   ...Array.from({ length: 12 }, (_, i): Vec3 => [0, 0, 25.4 + i * 0.9]),
+  ...Array.from({ length: 5 }, (_, i): Vec3 => [0, 0, 43.6 + i * 0.9]),
 ]
 
 export const lab = {
@@ -82,7 +92,7 @@ export const lab = {
   /** Solo los pedestales: las plataformas son planas y se pisan sin más */
   colliders: exhibits.map(collider),
   /** Hasta dónde debe poder andar el jugador hacia delante */
-  maxZ: 47,
+  maxZ: 58,
   area,
   /** Altura de los pedestales y medidas de su repisa */
   pedestal: PEDESTAL,

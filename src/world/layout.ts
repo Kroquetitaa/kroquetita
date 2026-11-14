@@ -198,16 +198,16 @@ function library(count: number) {
 }
 
 /**
- * Sala de romper, a la derecha del todo: siete cosas de lo aprendido (tests,
- * redes neuronales, estadística, grafos…) que se rompen cada una a su manera
- * y se recomponen solas. Aquí van su sitio y sus colisiones; cómo se rompe
- * cada una lo decide la propia sala, que anula la colisión de lo que está roto
- * y la restaura al recomponerlo.
+ * Sala de romper, a la derecha del todo: once cosas de lo aprendido (tests,
+ * redes neuronales, estadística, grafos, datos…) que se rompen cada una a su
+ * manera y se recomponen solas. Aquí van su sitio y sus colisiones; cómo se
+ * rompe cada una lo decide la propia sala, que anula la colisión de lo que
+ * está roto y la restaura al recomponerlo.
  */
 function breakRoom() {
   const solid = (center: Vec3, size: Vec3) => ({ center, size, collider: toAABB({ center, size }) })
   /** El recinto: lo que abarca la valla */
-  const area = { minX: 38.5, maxX: 57, minZ: -9, maxZ: 13 }
+  const area = { minX: 38.5, maxX: 68, minZ: -9, maxZ: 13 }
   const midX = (area.minX + area.maxX) / 2
   const midZ = (area.minZ + area.maxZ) / 2
   const wide = area.maxX - area.minX
@@ -242,6 +242,17 @@ function breakRoom() {
 
   /** Lado de un dado */
   const die = 1.1
+
+  // Piñata: cuelga de un pórtico bajo. Medio ancho del pórtico, su altura y lo que mide la cuerda.
+  const gantry = { center: [62.5, 0, 2] as Vec3, half: 2.1, height: 3.8, rope: 1.35 }
+  const post = (side: number) =>
+    solid([gantry.center[0] + side * gantry.half, gantry.height / 2, gantry.center[2]], [0.24, gantry.height, 0.24])
+  /** Pila de llamadas: medidas de un marco, cuántos tiene de entrada y hasta cuántos crece sola */
+  const calls = { center: [66, 0, -5.4] as Vec3, frame: [1.5, 0.36, 1] as Vec3, base: 4, limit: 9 }
+  const callsHeight = calls.base * calls.frame[1]
+  /** Tabla de datos: columnas, filas (la de arriba es la cabecera), tamaño de una celda y altura del zócalo */
+  const sheet = { columns: 6, rows: 8, cell: [0.6, 0.27] as [number, number], foot: 0.18 }
+  const sheetTop = round(sheet.foot + sheet.rows * sheet.cell[1] + 0.06)
   return {
     /** Punto del suelo desde el que crece todo al aparecer */
     origin: [midX, 0, 2] as Vec3,
@@ -273,6 +284,17 @@ function breakRoom() {
     prs: solid([41.2, 0.7, -0.6], [1.5, 1.4, 1.05]),
     /** Monolito de código heredado: tres golpes, pisándolo (con doble salto se llega) o embistiéndolo */
     legacy: solid([42.4, 1.25, -5.6], [2.4, 2.5, 2.4]),
+    /** Piñata de bugs: se le salta encima tres veces (la colisión son los dos postes, que no se rompen) */
+    pinata: { ...gantry, posts: [post(-1), post(1)] },
+    /** Pila de llamadas: se embiste (o se pisa). Su colisión crece y mengua con ella (la mueve la propia pila) */
+    stack: {
+      ...calls,
+      ...solid([calls.center[0], callsHeight / 2, calls.center[2]], [calls.frame[0], callsHeight, calls.frame[2]]),
+    },
+    /** Tabla de datos: se embiste o se le pisa el canto de arriba; el marco se queda en pie */
+    table: { ...sheet, ...solid([60.1, sheetTop / 2, -5.6], [sheet.columns * sheet.cell[0] + 0.2, sheetTop, 0.3]) },
+    /** Sobreajuste: la colisión es solo la base, baja (hay que poder cruzar la curva corriendo o saltar a ella) */
+    overfit: solid([62.3, 0.15, 9.8], [4.8, 0.3, 1.2]),
   }
 }
 
@@ -575,6 +597,10 @@ function build() {
     arcade.graph.collider,
     arcade.prs.collider,
     arcade.legacy.collider,
+    ...arcade.pinata.posts.map((post) => post.collider),
+    arcade.stack.collider,
+    arcade.table.collider,
+    arcade.overfit.collider,
     ...lab.colliders,
   ]
 

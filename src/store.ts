@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { stages, type Lang } from './data/career'
 import { concepts } from './data/concepts'
 import { education } from './data/education'
+import { isCrawler, langOfPath } from './seo/sync'
 import { world } from './world/layout'
 
 /** 'tour': la cámara recorre sola las cajas, sin jugar */
@@ -38,7 +39,19 @@ export type QuestId = (typeof QUESTS)[number]
 export type QuestState = 'idle' | 'active' | 'done'
 
 /** Cosas que se pueden romper en la sala de la derecha (los textos van en la propia escena) */
-export const SMASHABLES = ['tests', 'network', 'gauss', 'dice', 'graph', 'prs', 'legacy'] as const
+export const SMASHABLES = [
+  'tests',
+  'network',
+  'gauss',
+  'dice',
+  'graph',
+  'prs',
+  'legacy',
+  'pinata',
+  'stack',
+  'table',
+  'overfit',
+] as const
 export type Smashable = (typeof SMASHABLES)[number]
 
 /** Vidas del jefe final y tiempo (s) por debajo del cual la contrarreloj da medalla */
@@ -72,6 +85,11 @@ function initialMedals(): Achievement[] {
 
 /** Idioma guardado; si no hay, el del navegador (por defecto, español). */
 function initialLang(): Lang {
+  // La dirección manda: `/en/` es la versión inglesa. A los rastreadores se les enseña
+  // siempre el idioma de la dirección, no el de su navegador.
+  const fromPath = langOfPath()
+  if (fromPath) return fromPath
+  if (isCrawler()) return 'es'
   try {
     const saved = localStorage.getItem(LANG_KEY)
     if (saved === 'es' || saved === 'en') return saved

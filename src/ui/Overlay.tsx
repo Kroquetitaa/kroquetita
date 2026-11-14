@@ -1,3 +1,4 @@
+import { syncSeo } from '../seo/sync'
 import { useEffect, useRef, useState } from 'react'
 import { durationOf, linesOf, periodOf, profile, stages, type Lang } from '../data/career'
 import { concepts } from '../data/concepts'
@@ -363,6 +364,8 @@ function QuestList() {
   const playing = useGame((s) => s.mode === 'play')
   const bugs = useGame((s) => s.bugs - s.questBase)
   const visited = useGame((s) => s.visited.length)
+  // En el móvil la ficha de un libro o de un concepto ocupa este mismo sitio: la lista se aparta.
+  const covered = useGame((s) => s.study !== null || s.concept !== null)
   const lang = useLang()
   const t = useUI()
   const listed = QUESTS.filter((id) => quests[id] !== 'idle')
@@ -374,7 +377,7 @@ function QuestList() {
     return ''
   }
   return (
-    <section className="quests" aria-label={t.quests}>
+    <section className={covered ? 'quests is-covered' : 'quests'} aria-label={t.quests}>
       <h2>{t.quests}</h2>
       <ul>
         {listed.map((id) => (
@@ -623,7 +626,7 @@ function LanguageSwitch() {
   const setLang = useGame((s) => s.setLang)
 
   useEffect(() => {
-    document.documentElement.lang = lang
+    syncSeo(lang)
   }, [lang])
 
   const options: Array<{ code: Lang; label: string; name: string }> = [

@@ -4,39 +4,36 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Portfolio interactivo en 3D de Sergio Fuentes, Head of AI: recorre su trayectoria jugando, con React Three Fiber y WebGL."
-    />
-    <link rel="canonical" href="https://kroquetita.com/" />
-
-    <!-- Tarjeta al compartir el enlace (LinkedIn, WhatsApp, X…) -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Kroquetita" />
-    <meta property="og:url" content="https://kroquetita.com/" />
-    <meta property="og:title" content="Sergio Fuentes — Head of AI · Portfolio interactivo en 3D" />
-    <meta
-      property="og:description"
-      content="Más de cinco años de trayectoria convertidos en un mundo 3D que se puede recorrer y jugar. Frontend, móvil, datos, blockchain e IA."
-    />
-    <meta property="og:image" content="https://kroquetita.com/og.jpg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Escena 3D del portfolio: cajas de neón con la trayectoria de Sergio Fuentes y un cerebro luminoso encima" />
-    <meta property="og:locale" content="es_ES" />
-    <meta property="og:locale:alternate" content="en_GB" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Sergio Fuentes — Head of AI · Portfolio interactivo en 3D" />
-    <meta
-      name="twitter:description"
-      content="Más de cinco años de trayectoria convertidos en un mundo 3D que se puede recorrer y jugar."
-    />
-    <meta name="twitter:image" content="https://kroquetita.com/og.jpg" />
+    <!-- Título, descripción, tarjeta al compartir y datos estructurados: salen de src/seo/content.ts -->
+    <!--seo:head-->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Kroquetita by Sergio Fuentes — Head of AI</title>
+    <style>
+      /* Currículum en texto bajo el lienzo: lo leen buscadores, asistentes de IA y lectores de pantalla.
+         Sin JavaScript es la página; con la aplicación en marcha queda solo para lectores de pantalla. */
+      html { background: #000; }
+      #cv { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; color: #d6d9e0;
+        font: 16px/1.6 system-ui, -apple-system, 'Segoe UI', sans-serif; opacity: 0; animation: cv-in 0.4s 4s forwards; }
+      #cv a { color: #19e6ff; }
+      #cv h1 { font-size: 1.7rem; line-height: 1.25; color: #fff; }
+      #cv h2 { margin-top: 2.4rem; font-size: 1.2rem; color: #fff; }
+      #cv h3 { margin-bottom: 0.2rem; font-size: 1rem; color: #fff; }
+      #cv li { margin-bottom: 0.9rem; }
+      #cv dt { margin-top: 0.9rem; font-weight: 600; color: #fff; }
+      #cv dd { margin: 0.2rem 0 0; }
+      @keyframes cv-in { to { opacity: 1; } }
+      .app #cv { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+        clip-path: inset(50%); white-space: nowrap; animation: none; }
+    </style>
+    <noscript>
+      <style>
+        html, body { height: auto !important; overflow: auto !important; }
+        #cv { opacity: 1; animation: none; }
+      </style>
+    </noscript>
   </head>
   <body>
     <div id="root"></div>
+    <!--seo:body-->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
