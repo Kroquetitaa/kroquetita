@@ -73,6 +73,7 @@ const UI = {
     talkEnd: 'Vale',
     quests: 'Encargos',
     education: 'Formación',
+    appliedAt: 'Aplicado en',
     questNew: 'Nuevo encargo',
     questDone: 'Encargo completado',
     bossName: 'Bug en producción',
@@ -138,6 +139,7 @@ const UI = {
     talkEnd: 'OK',
     quests: 'Errands',
     education: 'Education',
+    appliedAt: 'Applied at',
     questNew: 'New errand',
     questDone: 'Errand complete',
     bossName: 'Bug in production',
@@ -224,6 +226,10 @@ export const MEDALS: Record<Achievement, { title: Localized; hint: Localized }> 
     title: { es: 'Promoción 2029', en: 'Class of 2029' },
     hint: { es: 'Sube hasta el último libro de la biblioteca', en: 'Climb to the last book in the library' },
   },
+  wrecker: {
+    title: { es: 'Lo rompo todo', en: 'Break everything' },
+    hint: { es: 'Rompe cada cosa de la sala de romper', en: 'Break every item in the break room' },
+  },
   hired: {
     title: { es: 'Contratado', en: 'Hired' },
     hint: { es: 'Hay un comando en el terminal…', en: 'There is a command in the terminal…' },
@@ -274,6 +280,17 @@ export const QUEST_TEXT: Record<QuestId, { title: Localized; offer: Localized; t
     thanks: {
       es: '¿Estaba encendido? Perfecto. Eso era todo.',
       en: 'Was it switched on? Perfect. That was all.',
+    },
+  },
+  librarian: {
+    title: { es: 'Sube al último libro', en: 'Climb to the last book' },
+    offer: {
+      es: 'Hazme un favor: sube hasta el último libro. Dicen que arriba hay un birrete, y yo tengo vértigo.',
+      en: 'Do me a favour: climb to the last book. They say there is a graduation cap up there, and I get vertigo.',
+    },
+    thanks: {
+      es: '¡Has llegado arriba! Promoción de 2029… si aprueba, claro.',
+      en: 'You made it to the top! Class of 2029… if he passes, that is.',
     },
   },
   intern: {

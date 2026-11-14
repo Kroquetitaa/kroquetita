@@ -291,6 +291,16 @@ function StudyCard() {
         </div>
       </div>
       {study.note && <p className="career__summary study__note">{study.note[lang]}</p>}
+      <ul className="career__lines">
+        {study.learned[lang].map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+      {study.appliedAt && (
+        <p className="study__applied">
+          {t.appliedAt} <b>{study.appliedAt}</b>
+        </p>
+      )}
     </section>
   )
 }

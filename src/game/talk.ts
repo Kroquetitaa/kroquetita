@@ -22,6 +22,7 @@ const QUEST_OF: Partial<Record<TalkerId, QuestId>> = {
   guide: 'guide',
   qa: 'qa',
   sysadmin: 'sysadmin',
+  librarian: 'librarian',
 }
 /** A quién se le ha oído ya dar las gracias por su encargo */
 const thanked: Partial<Record<TalkerId, boolean>> = {}

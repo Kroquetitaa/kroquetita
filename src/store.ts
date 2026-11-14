@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { stages, type Lang } from './data/career'
+import { education } from './data/education'
 import { world } from './world/layout'
 
 /** 'tour': la cámara recorre sola las cajas, sin jugar */
@@ -24,14 +25,19 @@ export const ACHIEVEMENTS = [
   'boss',
   'speedrun',
   'graduate',
+  'wrecker',
 ] as const
 export type Achievement = (typeof ACHIEVEMENTS)[number]
 export type CameraMode = 'wide' | 'chase'
 
 /** Encargos que piden los personajes (los textos están en i18n) */
-export const QUESTS = ['recruiter', 'guide', 'qa', 'sysadmin', 'intern'] as const
+export const QUESTS = ['recruiter', 'guide', 'qa', 'sysadmin', 'intern', 'librarian'] as const
 export type QuestId = (typeof QUESTS)[number]
 export type QuestState = 'idle' | 'active' | 'done'
+
+/** Cosas que se pueden romper en la sala de la derecha (los textos van en la propia escena) */
+export const SMASHABLES = ['tests', 'network', 'gauss', 'dice', 'graph', 'prs', 'legacy'] as const
+export type Smashable = (typeof SMASHABLES)[number]
 
 /** Vidas del jefe final y tiempo (s) por debajo del cual la contrarreloj da medalla */
 export const BOSS_HP = 3
@@ -88,6 +94,11 @@ interface GameState {
   bossHp: number
   /** Libro de la biblioteca (formación) sobre el que está el jugador, o null */
   study: number | null
+  /** Ya se ha subido alguna vez al último libro */
+  topBook: boolean
+  /** Qué cosas de la sala de romper se han roto ya, y cuántas veces en total */
+  smashed: Smashable[]
+  smashCount: number
   /** Encargos de los personajes, y lo que hace falta para seguirlos */
   quests: Record<QuestId, QuestState>
   questBase: number
@@ -136,6 +147,8 @@ interface GameState {
   setReady: () => void
   setProgress: (value: number) => void
   setStudy: (index: number | null) => void
+  /** Se ha roto algo en la sala de romper */
+  smash: (id: Smashable) => void
   spawnBoss: () => void
   hitBoss: () => void
   startQuest: (id: QuestId) => void
@@ -179,7 +192,10 @@ export const useGame = create<GameState>((set, get) => ({
   boss: 'none',
   bossHp: BOSS_HP,
   study: null,
-  quests: { recruiter: 'idle', guide: 'idle', qa: 'idle', sysadmin: 'idle', intern: 'idle' },
+  topBook: false,
+  smashed: [],
+  smashCount: 0,
+  quests: { recruiter: 'idle', guide: 'idle', qa: 'idle', sysadmin: 'idle', intern: 'idle', librarian: 'idle' },
   questBase: 0,
   visited: [],
   summitReached: false,
@@ -210,7 +226,21 @@ export const useGame = create<GameState>((set, get) => ({
   runId: 0,
   setReady: () => set({ ready: true, progress: 1 }),
   setProgress: (value) => set((s) => (value > s.progress ? { progress: Math.min(1, value) } : s)),
-  setStudy: (study) => set((s) => (s.study === study ? s : { study })),
+  setStudy: (study) => {
+    if (get().study === study) return
+    set({ study })
+    if (study === education.length - 1) {
+      set({ topBook: true })
+      get().completeQuest('librarian')
+    }
+  },
+  smash: (id) => {
+    set((s) => ({
+      smashCount: s.smashCount + 1,
+      smashed: s.smashed.includes(id) ? s.smashed : [...s.smashed, id],
+    }))
+    if (SMASHABLES.every((item) => get().smashed.includes(item))) get().unlock('wrecker')
+  },
   spawnBoss: () => set((s) => (s.boss === 'none' ? { boss: 'active', bossHp: BOSS_HP } : s)),
   hitBoss: () => {
     const { boss, bossHp } = get()
@@ -228,6 +258,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (id === 'qa') set({ questBase: s.bugs })
     // Puede que ya esté hecho antes de que te lo pidan.
     if (id === 'recruiter' && s.summitReached) get().completeQuest(id)
+    if (id === 'librarian' && s.topBook) get().completeQuest(id)
     if (id === 'guide' && s.visited.length >= world.blocks.length) get().completeQuest(id)
   },
   completeQuest: (id) => {

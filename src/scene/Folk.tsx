@@ -133,6 +133,24 @@ function Puppet({ kit, color, accent, parts }: { kit: Kit; color: string; accent
               <meshStandardMaterial color="#c9862e" roughness={0.8} />
             </mesh>
           )}
+          {kit === 'librarian' && (
+            <>
+              {/* Pelo canoso, gafas de media luna y bigote */}
+              <mesh position={[0, 0.2, -0.04]}>
+                <boxGeometry args={[0.48, 0.12, 0.44]} />
+                <meshStandardMaterial color="#c9ccd3" roughness={0.9} />
+              </mesh>
+              {[-0.1, 0.1].map((x) => (
+                <mesh key={x} position={[x, -0.01, 0.21]} material={neon}>
+                  <ringGeometry args={[0.05, 0.068, 16, 1, Math.PI, Math.PI]} />
+                </mesh>
+              ))}
+              <mesh position={[0, -0.14, 0.205]}>
+                <boxGeometry args={[0.22, 0.05, 0.02]} />
+                <meshStandardMaterial color="#c9ccd3" roughness={0.9} />
+              </mesh>
+            </>
+          )}
           {kit === 'pochita' && (
             <>
               {/* Melena con coleta alta y un lazo */}
@@ -236,6 +254,18 @@ function Puppet({ kit, color, accent, parts }: { kit: Kit; color: string; accent
             <mesh position={[0.3, -0.2, 0.14]} material={PAPER}>
               <cylinderGeometry args={[0.06, 0.05, 0.12, 12]} />
             </mesh>
+          )}
+          {/* El bibliotecario abraza un libro */}
+          {kit === 'librarian' && (
+            <group position={[0, -0.14, 0.17]} rotation-x={-0.25}>
+              <mesh>
+                <boxGeometry args={[0.3, 0.38, 0.08]} />
+                <meshStandardMaterial color="#8b1e2d" roughness={0.6} />
+              </mesh>
+              <mesh position-z={0.042} material={neon}>
+                <planeGeometry args={[0.16, 0.04]} />
+              </mesh>
+            </group>
           )}
           {/* Pochita lleva pompones de animadora */}
           {kit === 'pochita' &&

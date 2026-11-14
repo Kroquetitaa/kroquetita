@@ -6,7 +6,7 @@ import type { Localized } from './career'
  * algunos hacen algo: abrir LinkedIn, cambiar el clima, empezar el recorrido…
  */
 
-export type TalkerId = 'recruiter' | 'sysadmin' | 'qa' | 'guide' | 'joseba' | 'pochita'
+export type TalkerId = 'recruiter' | 'sysadmin' | 'qa' | 'guide' | 'joseba' | 'pochita' | 'librarian'
 
 export interface Talker {
   id: TalkerId
@@ -244,6 +244,36 @@ talkers.push({
         'Yesterday we ate at six in the evening because of the gas fees.',
         'But it is on record forever. Nobody can take that from us.',
       ],
+    },
+  ],
+})
+
+/** El bibliotecario: cuida la biblioteca de formación, a la izquierda del mapa. */
+talkers.push({
+  id: 'librarian',
+  name: { es: 'Bibliotecario', en: 'Librarian' },
+  color: '#6b4f3a',
+  accent: '#ffd60a',
+  position: [-40.4, 7.6],
+  facing: 0.9,
+  scripts: [
+    {
+      es: [
+        'Chsss. Esto es una biblioteca. Bueno, son ocho libros, pero muy grandes.',
+        'Cada libro es un título de Sergio. Van por orden: el más antiguo, abajo.',
+        'Písalos y se abren. Por dentro pone lo que aprendió, y un hilo de luz te lleva a donde lo usó.',
+        'Y no saltes con los zapatos sucios.',
+      ],
+      en: [
+        'Shhh. This is a library. Well, it is eight books, but very big ones.',
+        'Each book is one of Sergio\'s qualifications. In order: the oldest at the bottom.',
+        'Step on them and they open. Inside is what he learned, and a thread of light leads to where he used it.',
+        'And no jumping with dirty shoes.',
+      ],
+    },
+    {
+      es: ['¿Otra vez tú? Los libros no se devuelven solos.', 'Silencio, que estoy leyendo la documentación. Alguien tiene que hacerlo.'],
+      en: ['You again? Books do not return themselves.', 'Quiet, I am reading the documentation. Somebody has to.'],
     },
   ],
 })
