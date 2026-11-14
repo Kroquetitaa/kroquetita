@@ -1,16 +1,28 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { bindKeyboard } from './game/input'
-import { Experience } from './scene/Experience'
 import { useGame } from './store'
 import { Overlay } from './ui/Overlay'
 
+// El motor 3D pesa mucho más que el resto: se pide ya, pero en un paquete
+// aparte, para que la portada (texto y botones) aparezca sin esperarlo.
+const engine = import('./scene/Experience')
+const Experience = lazy(() =>
+  engine.then((module) => {
+    useGame.getState().setProgress(0.45)
+    return { default: module.Experience }
+  }),
+)
+
 export default function App() {
   useEffect(() => bindKeyboard(() => useGame.getState().mode === 'play'), [])
+  useEffect(() => useGame.getState().setProgress(0.08), [])
 
   return (
     <>
       <div className="stage">
-        <Experience />
+        <Suspense fallback={null}>
+          <Experience />
+        </Suspense>
       </div>
       <Overlay />
     </>

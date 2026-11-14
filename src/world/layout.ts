@@ -1,4 +1,6 @@
 import { monthIndex, monthsOf, NOW, stages, type Stage } from '../data/career'
+import { education } from '../data/education'
+import { lab } from './lab'
 
 /**
  * El mundo: una caja por etapa, en dos filas, sobre un suelo abierto donde
@@ -114,6 +116,185 @@ function arc(from: Vec3, to: Vec3): Launcher {
       from[1] + vy * top - 0.5 * GRAVITY * top * top,
       from[2] + (dz / time) * top,
     ],
+  }
+}
+
+/** Pseudoaleatorio estable 0..1: la biblioteca sale idéntica en cada carga. */
+const vary = (index: number, salt: number) => {
+  const s = Math.sin(index * 12.9898 + salt * 78.233) * 43758.5453
+  return s - Math.floor(s)
+}
+
+/**
+ * Biblioteca (formación), a la izquierda del todo: una pila de libros gigantes
+ * que hace de escalera, uno por título, del más antiguo (en el suelo) al más
+ * reciente (arriba). El primer tramo sube hacia la izquierda y el segundo
+ * vuelve hacia la derecha, algo más atrás: así ningún libro tapa el hueco en
+ * el que se aterriza y todos los lomos (cara +Z) se ven desde delante.
+ */
+function library(count: number) {
+  /** Borde derecho y lomo del primer libro */
+  const right0 = -41.2
+  const front0 = 5.6
+  /** Lo que se retrasa el segundo tramo: el pasillo que queda libre delante */
+  const aisle = 1.55
+  /** Libros del primer tramo */
+  const turn = Math.ceil(count / 2)
+  /** Grosor medio: con más o menos títulos, la cima queda siempre rondando los 5,8 */
+  const girth = Math.min(0.72, Math.max(0.64, 5.9 / count))
+
+  const books: Box[] = []
+  let base = 0
+  let right = right0
+  let left = right0
+  let front = front0
+  for (let i = 0; i < count; i++) {
+    const length = round(4 + vary(i, 1) * 0.45)
+    const depth = round(2.75 + vary(i, 2) * 0.3)
+    const thick = round(girth - 0.03 + vary(i, 3) * 0.06)
+    /** Trozo del libro de debajo que queda libre para aterrizar */
+    const tread = round(1.35 + vary(i, 4) * 0.12)
+    if (i === 0) {
+      left = right - length
+    } else if (i < turn) {
+      // Primer tramo: cada libro deja libre el extremo derecho del anterior.
+      right = round(right - tread)
+      left = right - length
+      front = round(front - 0.05)
+    } else {
+      // Segundo tramo: deja libre el extremo izquierdo (y, al girar, el pasillo de delante).
+      left = round(left + tread)
+      right = left + length
+      front = round(front - (i === turn ? aisle : 0.05))
+    }
+    books.push({
+      center: [round((left + right) / 2), base + thick / 2, round(front - depth / 2)],
+      size: [length, thick, depth],
+    })
+    base = round(base + thick)
+  }
+
+  const shelf = (x: number, height: number): Box => ({ center: [x, height / 2, -7.2], size: [3.6, height, 0.8] })
+  const lectern = (x: number, z: number): Box => ({ center: [x, 0.55, z], size: [0.9, 1.1, 0.6] })
+  const arch: Vec3 = [-38, 0, 4.4]
+  return {
+    /** Punto del suelo desde el que crece todo al aparecer */
+    origin: [-46, 0, 2] as Vec3,
+    /** Un libro por título, en el orden de `education`: su caja es también su colisión */
+    books,
+    /** Altura de la cima de la pila */
+    top: base,
+    /** Estanterías del fondo */
+    shelves: [shelf(-51.85, 5), shelf(-47.95, 5.5), shelf(-44.05, 5.5), shelf(-40.15, 5)],
+    /** Atriles con un libro abierto (la colisión es el mueble entero): lejos de los lomos, para no taparlos */
+    lecterns: [lectern(-42.6, 10.6), lectern(-49.6, 10.2), lectern(-53, 3.4)],
+    /** Arco de entrada (sin colisión), girado para dar a la vez al resto del mapa y a la cámara */
+    arch: { position: arch, yaw: Math.PI / 4 },
+    /** Baldosas de luz: del borde del mapa al pie del primer libro, pasando bajo el arco */
+    path: Array.from({ length: 8 }, (_, i): Vec3 => [-34.4 - i * 0.9, 0, arch[2]]),
+    /** Poste indicador (sin colisión), ya dentro de la zona de siempre */
+    signpost: [-33.2, 0, 10.2] as Vec3,
+  }
+}
+
+/**
+ * Sala de romper, a la derecha del todo: once cosas de lo aprendido (tests,
+ * redes neuronales, estadística, grafos, datos…) que se rompen cada una a su
+ * manera y se recomponen solas. Aquí van su sitio y sus colisiones; cómo se
+ * rompe cada una lo decide la propia sala, que anula la colisión de lo que
+ * está roto y la restaura al recomponerlo.
+ */
+function breakRoom() {
+  const solid = (center: Vec3, size: Vec3) => ({ center, size, collider: toAABB({ center, size }) })
+  /** El recinto: lo que abarca la valla */
+  const area = { minX: 38.5, maxX: 68, minZ: -9, maxZ: 13 }
+  const midX = (area.minX + area.maxX) / 2
+  const midZ = (area.minZ + area.maxZ) / 2
+  const wide = area.maxX - area.minX
+  const deep = area.maxZ - area.minZ
+  /** Entrada: un arco girado para dar a la vez al resto del mapa y a la cámara */
+  const arch: Vec3 = [area.minX, 0, 4]
+  /** Hueco que deja la valla para la entrada (medio ancho, a lo largo de Z) */
+  const gate = 2.6
+  /** Valla baja (se salta) y muro del fondo, algo más alto */
+  const rail = 0.45
+  const girth = 0.16
+  const north = arch[2] - gate - area.minZ
+  const south = area.maxZ - arch[2] - gate
+  const fences: Box[] = [
+    { center: [midX, 0.45, area.minZ], size: [wide, 0.9, 0.2] },
+    { center: [area.maxX, rail / 2, midZ], size: [girth, rail, deep] },
+    { center: [midX, rail / 2, area.maxZ], size: [wide, rail, girth] },
+    { center: [area.minX, rail / 2, area.minZ + north / 2], size: [girth, rail, north] },
+    { center: [area.minX, rail / 2, area.maxZ - south / 2], size: [girth, rail, south] },
+  ]
+
+  // Campana de Gauss: un histograma cuyas barras hacen de escalones (cada una, su colisión).
+  const bell = { center: [51.2, 0, 10.2] as Vec3, pitch: 0.38, depth: 0.9, count: 13 }
+  const middle = (bell.count - 1) / 2
+  const bars = Array.from({ length: bell.count }, (_, i) => {
+    const height = round(0.26 + 2.2 * Math.exp(-((i - middle) ** 2) / (2 * 2.1 ** 2)))
+    return solid(
+      [round(bell.center[0] + (i - middle) * bell.pitch), height / 2, bell.center[2]],
+      [bell.pitch, height, bell.depth],
+    )
+  })
+
+  /** Lado de un dado */
+  const die = 1.1
+
+  // Piñata: cuelga de un pórtico bajo. Medio ancho del pórtico, su altura y lo que mide la cuerda.
+  const gantry = { center: [62.5, 0, 2] as Vec3, half: 2.1, height: 3.8, rope: 1.35 }
+  const post = (side: number) =>
+    solid([gantry.center[0] + side * gantry.half, gantry.height / 2, gantry.center[2]], [0.24, gantry.height, 0.24])
+  /** Pila de llamadas: medidas de un marco, cuántos tiene de entrada y hasta cuántos crece sola */
+  const calls = { center: [66, 0, -5.4] as Vec3, frame: [1.5, 0.36, 1] as Vec3, base: 4, limit: 9 }
+  const callsHeight = calls.base * calls.frame[1]
+  /** Tabla de datos: columnas, filas (la de arriba es la cabecera), tamaño de una celda y altura del zócalo */
+  const sheet = { columns: 6, rows: 8, cell: [0.6, 0.27] as [number, number], foot: 0.18 }
+  const sheetTop = round(sheet.foot + sheet.rows * sheet.cell[1] + 0.06)
+  return {
+    /** Punto del suelo desde el que crece todo al aparecer */
+    origin: [midX, 0, 2] as Vec3,
+    area,
+    arch: { position: arch, yaw: -Math.PI / 4 },
+    /** Baldosas de luz: del borde del mapa de siempre hasta el arco */
+    path: Array.from({ length: 5 }, (_, i): Vec3 => [34.3 + i * 0.9, 0, arch[2]]),
+    /** Poste indicador (sin colisión), ya dentro de la zona de siempre */
+    signpost: [32.6, 0, 10.4] as Vec3,
+    /** Marcador de cosas rotas, contra el muro del fondo (sin colisión) */
+    board: [44.6, 0, area.minZ + 0.3] as Vec3,
+    /** Muro del fondo y vallas: colisión fija */
+    fences,
+    /** Torre de tests unitarios: se embiste corriendo */
+    tests: solid([54.2, 1.96, -5.4], [1.4, 3.92, 1.4]),
+    /** Red neuronal: la colisión es solo la placa del suelo (hay que poder saltar a sus nodos) */
+    network: solid([53.6, 0.03, 2.2], [4.2, 0.06, 1]),
+    /** Campana de Gauss: se pisa la cima */
+    gauss: { ...bell, bars },
+    /** Dados: se les da una patada. No salen de su tapete (`pen`); su colisión viaja con ellos */
+    dice: {
+      size: die,
+      pen: { minX: 42, maxX: 46.6, minZ: 7.6, maxZ: 12.2 },
+      dice: [solid([43.4, die / 2, 9.9], [die, die, die]), solid([44.9, die / 2, 9.3], [die, die, die])],
+    },
+    /** Grafo: cuelga de un poste (la colisión es el poste, que nunca se rompe) */
+    graph: solid([48.4, 2.05, -5.8], [0.3, 4.1, 0.3]),
+    /** Pila de pull requests: se pisa */
+    prs: solid([41.2, 0.7, -0.6], [1.5, 1.4, 1.05]),
+    /** Monolito de código heredado: tres golpes, pisándolo (con doble salto se llega) o embistiéndolo */
+    legacy: solid([42.4, 1.25, -5.6], [2.4, 2.5, 2.4]),
+    /** Piñata de bugs: se le salta encima tres veces (la colisión son los dos postes, que no se rompen) */
+    pinata: { ...gantry, posts: [post(-1), post(1)] },
+    /** Pila de llamadas: se embiste (o se pisa). Su colisión crece y mengua con ella (la mueve la propia pila) */
+    stack: {
+      ...calls,
+      ...solid([calls.center[0], callsHeight / 2, calls.center[2]], [calls.frame[0], callsHeight, calls.frame[2]]),
+    },
+    /** Tabla de datos: se embiste o se le pisa el canto de arriba; el marco se queda en pie */
+    table: { ...sheet, ...solid([60.1, sheetTop / 2, -5.6], [sheet.columns * sheet.cell[0] + 0.2, sheetTop, 0.3]) },
+    /** Sobreajuste: la colisión es solo la base, baja (hay que poder cruzar la curva corriendo o saltar a ella) */
+    overfit: solid([62.3, 0.15, 9.8], [4.8, 0.3, 1.2]),
   }
 }
 
@@ -300,6 +481,11 @@ function build() {
     benches: [bench(-12.5), bench(1.5), bench(13.5)],
   }
 
+  // Biblioteca: la formación, más allá del parque tecnológico de la izquierda.
+  const campus = library(education.length)
+  // Sala de romper: lo aprendido, hecho para romperse, más allá del parque de la derecha.
+  const arcade = breakRoom()
+
   const props = {
     elevator: {
       center: elevatorCenter,
@@ -328,6 +514,10 @@ function build() {
     park,
     /** Mobiliario urbano: el bar y los bancos */
     city,
+    /** Biblioteca de la formación: la escalera de libros y lo que la rodea */
+    campus,
+    /** Sala de romper: siete cosas de lo aprendido que se rompen y se recomponen */
+    arcade,
   }
 
   // Línea de tiempo en el suelo, delante de las cajas: un eje con los años y
@@ -396,6 +586,22 @@ function build() {
     ...park.keys.map((k) => k.collider),
     toAABB(city.bar),
     ...city.benches.map(toAABB),
+    ...campus.books.map(toAABB),
+    ...campus.shelves.map(toAABB),
+    ...campus.lecterns.map(toAABB),
+    ...arcade.fences.map(toAABB),
+    arcade.tests.collider,
+    arcade.network.collider,
+    ...arcade.gauss.bars.map((bar) => bar.collider),
+    ...arcade.dice.dice.map((die) => die.collider),
+    arcade.graph.collider,
+    arcade.prs.collider,
+    arcade.legacy.collider,
+    ...arcade.pinata.posts.map((post) => post.collider),
+    arcade.stack.collider,
+    arcade.table.collider,
+    arcade.overfit.collider,
+    ...lab.colliders,
   ]
 
   return {
@@ -419,7 +625,14 @@ function build() {
     plaza: { minX: x0 - 14, maxX: -x0 + 15, minZ: front + 3.4, maxZ: front + 11 },
     /** Encuadre de la portada */
     view: { position: [-10, 15.5, 62] as Vec3, look: [-4.5, 9.2, 0] as Vec3, halfWidth: 33.5 },
-    bounds: { minX: x0 - 19, maxX: -x0 + 19, minZ: ROW_Z[1] - 9, maxZ: front + 13 },
+    // Por la izquierda llegan hasta pasada la biblioteca; por la derecha, hasta pasada la sala de romper;
+    // hacia la cámara, hasta el fondo de la sala de conceptos.
+    bounds: {
+      minX: campus.origin[0] - 10,
+      maxX: Math.max(-x0 + 19, arcade.area.maxX + 1),
+      minZ: ROW_Z[1] - 9,
+      maxZ: Math.max(front + 13, lab.maxZ),
+    },
   }
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { durationOf, periodOf, profile, stages, type Lang, type Stage } from '../data/career'
+import { education } from '../data/education'
 import { sfx } from '../game/audio'
 import { body } from '../game/state'
 import { MEDALS, useLang, useUI } from '../i18n'
@@ -43,6 +44,7 @@ const HELP: Record<Lang, Array<[string, string]>> = {
     ['whoami', 'quién soy'],
     ['ls', 'lista de empresas'],
     ['cat cv', 'toda la trayectoria'],
+    ['cat formacion', 'estudios y cursos'],
     ['cat <empresa>', 'detalle de una etapa'],
     ['cd <empresa>', 'teletransporte a su caja'],
     ['skills', 'tecnologías'],
@@ -58,6 +60,7 @@ const HELP: Record<Lang, Array<[string, string]>> = {
     ['whoami', 'who I am'],
     ['ls', 'list of companies'],
     ['cat cv', 'the whole career'],
+    ['cat education', 'studies and courses'],
     ['cat <company>', 'details of one stage'],
     ['cd <company>', 'teleport to its box'],
     ['skills', 'technologies'],
@@ -99,7 +102,7 @@ function run(input: string, lang: Lang): Line[] | 'clear' {
       return [out(`${profile.name} — ${profile.headline.join(' ')}`, 'ok')]
     case 'ls':
     case 'dir':
-      return [out(stages.map((s) => `${slug(s.title)}/`).join('  ')), out('cv.txt  contact.txt', 'dim')]
+      return [out(stages.map((s) => `${slug(s.title)}/`).join('  ')), out('cv.txt  formacion.txt  contact.txt', 'dim')]
     case 'cat':
     case 'info': {
       const target = args.replace(/\.txt$/, '').toLowerCase()
@@ -114,6 +117,10 @@ function run(input: string, lang: Lang): Line[] | 'clear' {
         )
       }
       if (target === 'contact' || target === 'contacto') return run('contact', lang)
+      if (target === 'formacion' || target === 'formación' || target === 'education') {
+        return education.map((study) => out(`${study.period[lang]}
+   ${study.title[lang]} — ${study.school}`))
+      }
       const index = findStage(args)
       if (index < 0) return [out(es ? `cat: ${args || '?'}: no existe. Prueba con ls` : `cat: ${args || '?'}: no such file. Try ls`, 'error')]
       game.setStage(index, true)

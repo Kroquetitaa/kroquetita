@@ -1,11 +1,15 @@
+import { syncSeo } from '../seo/sync'
 import { useEffect, useRef, useState } from 'react'
 import { durationOf, linesOf, periodOf, profile, stages, type Lang } from '../data/career'
+import { concepts } from '../data/concepts'
+import { education } from '../data/education'
 import { isAudioRunning, setMuted, sfx, unlockAudio } from '../game/audio'
 import { setMusicIntensity } from '../game/music'
 import { input, isTyping } from '../game/input'
 import { interact, scriptOf, talkerById } from '../game/talk'
-import { MEDALS, ui, useLang, useUI } from '../i18n'
-import { ACHIEVEMENTS, useGame } from '../store'
+import { MEDALS, QUEST_TEXT, ui, useLang, useUI } from '../i18n'
+import { ACHIEVEMENTS, BOSS_HP, QUESTS, useGame } from '../store'
+import { world } from '../world/layout'
 import { Terminal } from './Terminal'
 
 const Icon = {
@@ -207,12 +211,209 @@ function StagePanel({ hidden }: { hidden: boolean }) {
   )
 }
 
+/** Topes de cada fase de la carga: motor 3D, escena, logos y shaders. */
+const STAGES = [0.45, 0.6, 0.85, 1]
+
+/**
+ * Barra de carga. Avanza con hitos reales (llega el motor, se monta la escena,
+ * cargan los logos, compilan los shaders) y, entre uno y otro, va subiendo
+ * despacio hasta el tope de la fase para que nunca parezca parada.
+ */
 function Loader() {
   const t = useUI()
+  const progress = useGame((s) => s.progress)
+  const stage = STAGES.findIndex((cap) => progress < cap)
+  const index = stage === -1 ? STAGES.length - 1 : stage
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const game = useGame.getState()
+      const cap = (STAGES.find((value) => game.progress < value) ?? 1) - 0.03
+      if (game.progress < cap) game.setProgress(game.progress + 0.006)
+    }, 220)
+    return () => window.clearInterval(timer)
+  }, [])
+
   return (
-    <div className="loader" role="status">
-      <span className="loader__ring" />
-      <span className="loader__label">{t.loading}</span>
+    <div className="loader" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
+      <span className="loader__bar">
+        <i style={{ transform: `scaleX(${progress})` }} />
+      </span>
+      <span className="loader__label">
+        {t.loading[index]} <b>{Math.round(progress * 100)}%</b>
+      </span>
+    </div>
+  )
+}
+
+const clock = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60)
+  const rest = seconds - minutes * 60
+  return `${String(minutes).padStart(2, '0')}:${rest.toFixed(1).padStart(4, '0')}`
+}
+
+/** Cronómetro de la contrarreloj: corre desde la primera moneda hasta la última. */
+function RunTimer() {
+  const runStart = useGame((s) => s.runStart)
+  const runTime = useGame((s) => s.runTime)
+  const [, tick] = useState(0)
+  useEffect(() => {
+    if (runStart === null || runTime !== null) return
+    const timer = window.setInterval(() => tick((n) => n + 1), 100)
+    return () => window.clearInterval(timer)
+  }, [runStart, runTime])
+  if (runStart === null) return null
+  const seconds = runTime ?? (performance.now() - runStart) / 1000
+  return <span className={`coins__time ${runTime !== null ? 'is-final' : ''}`}>{clock(seconds)}</span>
+}
+
+/** Ficha del título sobre cuyo libro está el jugador, en la biblioteca de formación. */
+function StudyCard() {
+  const index = useGame((s) => (s.mode === 'play' ? s.study : null))
+  const lang = useLang()
+  const t = useUI()
+  if (index === null) return null
+  const study = education[index]
+  if (!study) return null
+  return (
+    <section
+      className="career study"
+      style={{ '--accent': study.color } as React.CSSProperties}
+      aria-label={t.education}
+      key={index}
+    >
+      <div className="career__body">
+        <div>
+          <p className="career__part">{study.kind[lang]}</p>
+          <h2>{study.school}</h2>
+          <p className="career__role">{study.title[lang]}</p>
+          <p className="career__period">
+            {study.period[lang]} · {index + 1} / {education.length}
+          </p>
+        </div>
+      </div>
+      {study.note && <p className="career__summary study__note">{study.note[lang]}</p>}
+      <ul className="career__lines">
+        {study.learned[lang].map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+      {study.appliedAt && (
+        <p className="study__applied">
+          {t.appliedAt} <b>{study.appliedAt}</b>
+        </p>
+      )}
+    </section>
+  )
+}
+
+/** Cartela de la instalación de la sala de conceptos en cuya plataforma está el jugador. */
+function ConceptCard() {
+  const index = useGame((s) => (s.mode === 'play' ? s.concept : null))
+  const seen = useGame((s) => s.seenConcepts.length)
+  const lang = useLang()
+  const t = useUI()
+  if (index === null) return null
+  const concept = concepts[index]
+  if (!concept) return null
+  return (
+    <section
+      className="career study"
+      style={{ '--accent': concept.color } as React.CSSProperties}
+      aria-label={t.concepts}
+      key={index}
+    >
+      <div className="career__body">
+        <div>
+          <p className="career__part">{concept.tag[lang]}</p>
+          <h2>{concept.title[lang]}</h2>
+        </div>
+      </div>
+      <p className="career__summary study__note">{concept.explain[lang]}</p>
+      <p className="study__applied">
+        {concept.action[lang]}{' '}
+        <b>
+          {seen} / {concepts.length}
+        </b>
+      </p>
+    </section>
+  )
+}
+
+/** Vidas del jefe final, mientras dura la pelea. */
+function BossBar() {
+  const active = useGame((s) => s.boss === 'active' && s.mode === 'play')
+  const hp = useGame((s) => s.bossHp)
+  const t = useUI()
+  if (!active) return null
+  return (
+    <div className="boss" role="status">
+      <span>{t.bossName}</span>
+      <ol aria-label={`${hp} / ${BOSS_HP}`}>
+        {Array.from({ length: BOSS_HP }, (_, i) => (
+          <li key={i} className={i < hp ? 'is-on' : ''} />
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+/** Lista de encargos pedidos por los personajes, con su avance. */
+function QuestList() {
+  const quests = useGame((s) => s.quests)
+  const playing = useGame((s) => s.mode === 'play')
+  const bugs = useGame((s) => s.bugs - s.questBase)
+  const visited = useGame((s) => s.visited.length)
+  // En el móvil la ficha de un libro o de un concepto ocupa este mismo sitio: la lista se aparta.
+  const covered = useGame((s) => s.study !== null || s.concept !== null)
+  const lang = useLang()
+  const t = useUI()
+  const listed = QUESTS.filter((id) => quests[id] !== 'idle')
+  if (!playing || listed.length === 0) return null
+  const progress = (id: (typeof QUESTS)[number]) => {
+    if (quests[id] === 'done') return ''
+    if (id === 'qa') return `${Math.min(3, Math.max(0, bugs))}/3`
+    if (id === 'guide') return `${visited}/${world.blocks.length}`
+    return ''
+  }
+  return (
+    <section className={covered ? 'quests is-covered' : 'quests'} aria-label={t.quests}>
+      <h2>{t.quests}</h2>
+      <ul>
+        {listed.map((id) => (
+          <li key={id} className={quests[id] === 'done' ? 'is-done' : ''}>
+            <i aria-hidden="true" />
+            <span>{QUEST_TEXT[id].title[lang]}</span>
+            <b>{progress(id)}</b>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+/** Aviso de encargo nuevo o completado. */
+function QuestToast() {
+  const last = useGame((s) => s.lastQuest)
+  const lang = useLang()
+  const t = useUI()
+  const [shown, setShown] = useState<typeof last>(null)
+
+  useEffect(() => {
+    if (!last) return
+    setShown(last)
+    if (last.kind === 'done') sfx.ding()
+    const timer = window.setTimeout(() => setShown(null), 3600)
+    return () => window.clearTimeout(timer)
+  }, [last])
+
+  if (!shown) return null
+  return (
+    <div className={`medal-toast quest-toast ${shown.kind === 'done' ? 'is-done' : ''}`} role="status" key={shown.at}>
+      <p>
+        <small>{shown.kind === 'done' ? t.questDone : t.questNew}</small>
+        {QUEST_TEXT[shown.id].title[lang]}
+      </p>
     </div>
   )
 }
@@ -425,7 +626,7 @@ function LanguageSwitch() {
   const setLang = useGame((s) => s.setLang)
 
   useEffect(() => {
-    document.documentElement.lang = lang
+    syncSeo(lang)
   }, [lang])
 
   const options: Array<{ code: Lang; label: string; name: string }> = [
@@ -458,6 +659,9 @@ export function Overlay() {
   const muted = useGame((s) => s.muted)
   const terminal = useGame((s) => s.terminal)
   const medalCount = useGame((s) => s.medals.length)
+  const runTime = useGame((s) => s.runTime)
+  const best = useGame((s) => s.best)
+  const record = useGame((s) => s.record)
   const [showMedals, setShowMedals] = useState(false)
   const party = useGame((s) => s.party)
   const crash = useGame((s) => s.crash)
@@ -613,6 +817,7 @@ export function Overlay() {
           </span>
         )}
         {caffeinated && <span className="coins__boost">{t.coffee}</span>}
+        <RunTimer />
       </div>
 
       {inMeeting && playing && (
@@ -627,6 +832,18 @@ export function Overlay() {
         <div className="win" role="status">
           <p className="win__title">{t.winTitle}</p>
           <p className="win__text">{t.winText(total)}</p>
+          {runTime !== null && (
+            <p className="win__time">
+              {t.time} <b>{clock(runTime)}</b>
+              {best !== null && (
+                <>
+                  {' · '}
+                  {t.best} <b>{clock(best)}</b>
+                </>
+              )}
+              {record && <em>{t.newRecord}</em>}
+            </p>
+          )}
           <div className="win__actions">
             <button type="button" onClick={restart}>
               {t.playAgain}
@@ -661,6 +878,11 @@ export function Overlay() {
       )}
 
       <Dialogue />
+      <BossBar />
+      <StudyCard />
+      <ConceptCard />
+      <QuestList />
+      <QuestToast />
       <MedalToast />
       {showMedals && <MedalsPanel onClose={() => setShowMedals(false)} />}
       <Terminal />

@@ -5,7 +5,9 @@ import * as THREE from 'three'
 import { body } from '../game/state'
 import { useGame } from '../store'
 import { world } from '../world/layout'
+import { Arcade } from './Arcade'
 import { Blocks } from './Blocks'
+import { Campus } from './Campus'
 import { City } from './City'
 import { Detail } from './Detail'
 import { introProgress } from './intro'
@@ -171,6 +173,8 @@ export function World() {
       <Props />
       <TechPark />
       <City />
+      <Campus />
+      <Arcade />
       <NPCs />
       <Pads />
       <PointerLight />

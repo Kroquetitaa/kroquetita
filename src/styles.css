@@ -1921,3 +1921,277 @@ body {
     animation: none;
   }
 }
+
+/* ---------- Barra de carga ---------- */
+
+.loader__bar {
+  display: block;
+  width: min(280px, 60vw);
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.loader__bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #19e6ff, #3df2b0);
+  box-shadow: 0 0 12px rgba(25, 230, 255, 0.7);
+  transform-origin: left;
+  transition: transform 0.35s ease-out;
+}
+
+.loader__label b {
+  margin-left: 4px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* ---------- Contrarreloj ---------- */
+
+.coins__time {
+  padding-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.coins__time.is-final {
+  color: #ffc933;
+}
+
+.win__time {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.win__time b {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+
+.win__time em {
+  display: block;
+  margin-top: 4px;
+  font-style: normal;
+  font-weight: 600;
+  color: #ffc933;
+}
+
+/* ---------- Jefe final ---------- */
+
+.boss {
+  position: absolute;
+  /* Arriba del todo, sobre el contador de monedas: así no pisa el cartel de victoria */
+  top: calc(var(--gutter) - 6px);
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  margin-inline: auto;
+  padding: 7px 14px;
+  border: 1px solid rgba(255, 70, 60, 0.7);
+  border-radius: 999px;
+  background: rgba(22, 6, 8, 0.8);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 30px rgba(255, 50, 40, 0.3);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ff8a80;
+  animation: stage-in 0.3s ease both;
+}
+
+.boss ol {
+  display: flex;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.boss li {
+  width: 26px;
+  height: 8px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.14);
+  transition: background 0.3s;
+}
+
+.boss li.is-on {
+  background: #ff4b3e;
+  box-shadow: 0 0 10px rgba(255, 75, 62, 0.8);
+}
+
+/* ---------- Encargos ---------- */
+
+.quests {
+  position: absolute;
+  top: calc(var(--gutter) + 52px);
+  left: var(--gutter);
+  width: min(250px, calc(100% - 2 * var(--gutter) - 56px));
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(8, 10, 15, 0.6);
+  backdrop-filter: blur(8px);
+  animation: stage-in 0.3s ease both;
+}
+
+.quests h2 {
+  margin: 0 0 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.quests ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quests li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.3;
+}
+
+.quests li i {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+}
+
+.quests li span {
+  flex: 1;
+}
+
+.quests li b {
+  font-size: 11.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.quests li.is-done {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.quests li.is-done span {
+  text-decoration: line-through;
+}
+
+.quests li.is-done i {
+  border-color: #3df2b0;
+  background: #3df2b0;
+}
+
+.quest-toast {
+  top: calc(var(--gutter) + 150px);
+  padding: 9px 20px;
+  border-color: rgba(25, 230, 255, 0.6);
+  background: rgba(6, 12, 16, 0.84);
+  box-shadow: 0 0 40px rgba(25, 230, 255, 0.2);
+}
+
+.quest-toast small {
+  color: #19e6ff;
+}
+
+.quest-toast.is-done {
+  border-color: rgba(61, 242, 176, 0.7);
+}
+
+.quest-toast.is-done small {
+  color: #3df2b0;
+}
+
+@media (max-width: 720px), (orientation: portrait) {
+  .quests {
+    top: calc(var(--gutter) + 96px);
+    width: min(210px, calc(100% - 2 * var(--gutter) - 56px));
+    padding: 8px 10px;
+  }
+
+  .quests li {
+    font-size: 11.5px;
+  }
+
+  .quests.is-covered {
+    display: none;
+  }
+
+  .boss {
+    top: calc(var(--gutter) + 318px);
+  }
+
+  .quest-toast {
+    top: calc(var(--gutter) + 260px);
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .quests {
+    display: none;
+  }
+
+  .boss {
+    top: calc(var(--gutter) + 44px);
+  }
+}
+
+/* ---------- Ficha de formación (biblioteca) ---------- */
+
+.study {
+  width: min(400px, calc(100% - 2 * var(--gutter)));
+  animation: stage-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.study .career__body {
+  min-height: 0;
+  animation: none;
+}
+
+.study__note {
+  margin: 8px 0 0;
+}
+
+/* En táctil, la ficha va arriba para no pisar los mandos */
+@media (pointer: coarse) {
+  .study {
+    top: calc(var(--gutter) + 96px);
+    bottom: auto;
+    width: calc(100% - 2 * var(--gutter) - 56px);
+  }
+}
+
+.study__applied {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.study__applied b {
+  font-weight: 600;
+  color: var(--accent);
+}

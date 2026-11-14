@@ -563,7 +563,7 @@ function Landing() {
     const game = useGame.getState()
     if (game.mode !== 'play' || !body.grounded) return
     // Llegar a la cima tiene premio.
-    if (body.pos[1] > world.top - 0.1) game.unlock('summit')
+    if (body.pos[1] > world.top - 0.1 && !(game.summitReached && game.boss !== 'none')) game.reachSummit()
     for (const block of world.blocks) {
       if (
         Math.abs(body.pos[1] - block.height) < 0.1 &&
@@ -574,6 +574,7 @@ function Landing() {
           game.setStage(block.index, true)
           sfx.hologram()
         }
+        game.visit(block.index)
         return
       }
     }

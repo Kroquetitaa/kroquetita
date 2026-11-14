@@ -3,9 +3,18 @@ import { useFrame } from '@react-three/fiber'
 import { Billboard, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import fontBold from '@fontsource/poppins/files/poppins-latin-600-normal.woff?url'
-import { internLines, internName, talkers, type Talker, type TalkerId } from '../data/folk'
+import {
+  internLines,
+  internName,
+  josebaShouts,
+  pochitaCoin,
+  pochitaShouts,
+  talkers,
+  type Talker,
+  type TalkerId,
+} from '../data/folk'
 import { body } from '../game/state'
-import { currentLang, useLang } from '../i18n'
+import { currentLang, QUEST_TEXT, useLang } from '../i18n'
 import { useGame } from '../store'
 import { world } from '../world/layout'
 import { Detail } from './Detail'
@@ -124,6 +133,84 @@ function Puppet({ kit, color, accent, parts }: { kit: Kit; color: string; accent
               <meshStandardMaterial color="#c9862e" roughness={0.8} />
             </mesh>
           )}
+          {kit === 'librarian' && (
+            <>
+              {/* Pelo canoso, gafas de media luna y bigote */}
+              <mesh position={[0, 0.2, -0.04]}>
+                <boxGeometry args={[0.48, 0.12, 0.44]} />
+                <meshStandardMaterial color="#c9ccd3" roughness={0.9} />
+              </mesh>
+              {[-0.1, 0.1].map((x) => (
+                <mesh key={x} position={[x, -0.01, 0.21]} material={neon}>
+                  <ringGeometry args={[0.05, 0.068, 16, 1, Math.PI, Math.PI]} />
+                </mesh>
+              ))}
+              <mesh position={[0, -0.14, 0.205]}>
+                <boxGeometry args={[0.22, 0.05, 0.02]} />
+                <meshStandardMaterial color="#c9ccd3" roughness={0.9} />
+              </mesh>
+            </>
+          )}
+          {kit === 'pochita' && (
+            <>
+              {/* Melena con coleta alta y un lazo */}
+              <mesh position={[0, 0.2, -0.04]}>
+                <boxGeometry args={[0.5, 0.16, 0.48]} />
+                <meshStandardMaterial color="#3b2416" roughness={0.85} />
+              </mesh>
+              <mesh position={[0, -0.05, -0.23]}>
+                <boxGeometry args={[0.46, 0.4, 0.08]} />
+                <meshStandardMaterial color="#3b2416" roughness={0.85} />
+              </mesh>
+              <mesh position={[0, 0.34, -0.2]} rotation-x={-0.5}>
+                <boxGeometry args={[0.14, 0.3, 0.14]} />
+                <meshStandardMaterial color="#3b2416" roughness={0.85} />
+              </mesh>
+              <mesh position={[0, 0.3, -0.12]} material={neon}>
+                <boxGeometry args={[0.24, 0.07, 0.06]} />
+              </mesh>
+              {/* Coloretes */}
+              {[-0.15, 0.15].map((x) => (
+                <mesh key={x} position={[x, -0.06, 0.203]}>
+                  <planeGeometry args={[0.07, 0.045]} />
+                  <meshBasicMaterial color="#ff8fb3" toneMapped={false} />
+                </mesh>
+              ))}
+            </>
+          )}
+          {kit === 'joseba' && (
+            <>
+              {/* Pelo revuelto: un casco y tres mechones rebeldes */}
+              <mesh position={[0, 0.23, -0.02]}>
+                <boxGeometry args={[0.48, 0.12, 0.46]} />
+                <meshStandardMaterial color="#2a1b12" roughness={0.9} />
+              </mesh>
+              {[
+                [-0.14, 0.33, 0.06, 0.3],
+                [0.02, 0.36, -0.06, -0.2],
+                [0.15, 0.32, 0.02, 0.5],
+              ].map(([x, y, z, tilt]) => (
+                <mesh key={x} position={[x, y, z]} rotation-z={tilt}>
+                  <boxGeometry args={[0.1, 0.14, 0.1]} />
+                  <meshStandardMaterial color="#2a1b12" roughness={0.9} />
+                </mesh>
+              ))}
+              {/* Gafas de pasta con cristales que brillan */}
+              {[-0.1, 0.1].map((x) => (
+                <group key={x} position={[x, 0.03, 0.208]}>
+                  <mesh material={INK}>
+                    <planeGeometry args={[0.17, 0.15]} />
+                  </mesh>
+                  <mesh position-z={0.002} material={neon}>
+                    <planeGeometry args={[0.12, 0.1]} />
+                  </mesh>
+                </group>
+              ))}
+              <mesh position={[0, 0.03, 0.208]} material={INK}>
+                <planeGeometry args={[0.06, 0.03]} />
+              </mesh>
+            </>
+          )}
         </Detail>
       </group>
       <Detail>
@@ -167,6 +254,51 @@ function Puppet({ kit, color, accent, parts }: { kit: Kit; color: string; accent
             <mesh position={[0.3, -0.2, 0.14]} material={PAPER}>
               <cylinderGeometry args={[0.06, 0.05, 0.12, 12]} />
             </mesh>
+          )}
+          {/* El bibliotecario abraza un libro */}
+          {kit === 'librarian' && (
+            <group position={[0, -0.14, 0.17]} rotation-x={-0.25}>
+              <mesh>
+                <boxGeometry args={[0.3, 0.38, 0.08]} />
+                <meshStandardMaterial color="#8b1e2d" roughness={0.6} />
+              </mesh>
+              <mesh position-z={0.042} material={neon}>
+                <planeGeometry args={[0.16, 0.04]} />
+              </mesh>
+            </group>
+          )}
+          {/* Pochita lleva pompones de animadora */}
+          {kit === 'pochita' &&
+            [-0.29, 0.29].map((x) => (
+              <mesh key={x} position={[x, -0.3, 0.04]} material={neon}>
+                <icosahedronGeometry args={[0.13, 0]} />
+              </mesh>
+            ))}
+          {kit === 'joseba' && (
+            <>
+              <group position={[-0.02, -0.16, 0.2]} rotation-x={-0.9}>
+                <mesh material={DARK}>
+                  <boxGeometry args={[0.36, 0.26, 0.02]} />
+                </mesh>
+                <mesh position-z={-0.012} rotation-y={Math.PI} material={neon}>
+                  <planeGeometry args={[0.1, 0.1]} />
+                </mesh>
+                {[
+                  [-0.11, 0.07, '#ff4d8d'],
+                  [0.1, -0.06, '#ffd60a'],
+                  [0.11, 0.08, '#2f7bff'],
+                ].map(([x, y, color]) => (
+                  <mesh key={color} position={[x as number, y as number, -0.012]} rotation-y={Math.PI}>
+                    <planeGeometry args={[0.07, 0.06]} />
+                    <meshBasicMaterial color={color as string} toneMapped={false} />
+                  </mesh>
+                ))}
+              </group>
+              <mesh position={[0.3, -0.24, 0.12]}>
+                <cylinderGeometry args={[0.045, 0.045, 0.16, 12]} />
+                <meshStandardMaterial color="#19e6ff" emissive="#19e6ff" emissiveIntensity={0.6} roughness={0.3} />
+              </mesh>
+            </>
           )}
         </group>
         {/* Detalle luminoso en el pecho */}
@@ -261,6 +393,10 @@ function TalkerNPC({ talker }: { talker: Talker }) {
   const arms = useRef<THREE.Group>(null)
   const holder = useRef<THREE.Group>(null)
   const turn = useRef(talker.facing)
+  // Joseba suelta ideas a voces cuando pasas cerca; Pochita te anima (y celebra cada moneda).
+  const shouts = useRef({ next: 6, line: 0, coins: 0 })
+  const shouter = talker.id === 'joseba' || talker.id === 'pochita'
+  const [bubble, setBubble] = useState({ text: '', shownAt: 0 })
   const [x, z] = talker.position
 
   useFrame(({ clock }, delta) => {
@@ -277,6 +413,21 @@ function TalkerNPC({ talker }: { talker: Talker }) {
       if (game.near !== talker.id && !game.talk) game.setNear(talker.id)
     } else if (game.near === talker.id) game.setNear(null)
     if (game.talk?.id === talker.id && (!reachable || dist > LEAVE_RANGE)) game.setTalk(null)
+    if (shouter && game.mode === 'play' && !game.talk) {
+      const cheer = talker.id === 'pochita'
+      const coins = game.collected.length
+      if (cheer && coins > shouts.current.coins && dist < 26) {
+        const lines = pochitaCoin[currentLang()]
+        setBubble({ text: lines[coins % lines.length], shownAt: performance.now() })
+        shouts.current.next = t + 6
+      } else if (reachable && dist < (cheer ? 11 : 8) && t > shouts.current.next) {
+        const lines = (cheer ? pochitaShouts : josebaShouts)[currentLang()]
+        setBubble({ text: lines[shouts.current.line % lines.length], shownAt: performance.now() })
+        shouts.current.line++
+        shouts.current.next = t + (cheer ? 5 : 8) + Math.random() * 6
+      }
+      shouts.current.coins = coins
+    }
 
     // Se gira hacia el jugador cuando está cerca; si no, vuelve a su postura.
     const goal = reachable && dist < 6 ? Math.atan2(dx, dz) : talker.facing
@@ -289,7 +440,15 @@ function TalkerNPC({ talker }: { talker: Talker }) {
       root.current.position.y = talking ? Math.abs(Math.sin(t * 7)) * 0.05 : Math.sin(t * 1.6 + x) * 0.015
     }
     if (head.current) head.current.rotation.z = talking ? Math.sin(t * 6) * 0.08 : Math.sin(t * 0.9 + x) * 0.04
-    if (arms.current) arms.current.rotation.x = talking ? Math.sin(t * 8) * 0.35 : Math.sin(t * 1.4 + z) * 0.06
+    const cheering = talker.id === 'pochita' && reachable && dist < 11
+    if (arms.current) {
+      arms.current.rotation.x = cheering
+        ? -2.4 + Math.sin(t * 9) * 0.45
+        : talking
+          ? Math.sin(t * 8) * 0.35
+          : Math.sin(t * 1.4 + z) * 0.06
+    }
+    if (root.current && cheering && !talking) root.current.position.y = Math.abs(Math.sin(t * 6)) * 0.09
   })
 
   return (
@@ -303,6 +462,11 @@ function TalkerNPC({ talker }: { talker: Talker }) {
         {talker.id === 'guide' && <Flag accent={talker.accent} />}
         {talker.id === 'recruiter' && <Banner accent={talker.accent} />}
       </Detail>
+      {shouter && (
+        <group position-y={0.45} scale={1.15}>
+          <Bubble text={bubble.text} shownAt={bubble.shownAt} />
+        </group>
+      )}
     </group>
   )
 }
@@ -384,14 +548,28 @@ function Intern() {
     const s = state.current
     const t = clock.elapsedTime
     const dt = Math.min(delta, 1 / 20)
-    const playing = useGame.getState().mode === 'play'
+    const game = useGame.getState()
+    const playing = game.mode === 'play'
     const onFloor = body.pos[1] < 0.6
     const dx = body.pos[0] - s.x
     const dz = body.pos[2] - s.z
     const dist = Math.hypot(dx, dz)
 
     // Empieza a seguirte al pasar cerca y lo deja si te alejas mucho o subes.
-    if (playing && onFloor && dist < 5) s.following = true
+    if (playing && onFloor && dist < 5 && !s.following) {
+      s.following = true
+      // La primera vez que se te pega, te pide un café.
+      if (game.quests.intern === 'idle') {
+        game.startQuest('intern')
+        setBubble({ text: QUEST_TEXT.intern.offer[currentLang()], shownAt: performance.now() })
+        s.nextLine = t + 9
+      }
+    }
+    if (game.quests.intern === 'active' && playing && dist < 1.9 && performance.now() < game.boostUntil) {
+      game.completeQuest('intern')
+      setBubble({ text: QUEST_TEXT.intern.thanks[currentLang()], shownAt: performance.now() })
+      s.nextLine = t + 9
+    }
     if (!playing || dist > 16) s.following = false
     const chasing = s.following && onFloor
 
@@ -459,9 +637,28 @@ function Intern() {
   )
 }
 
+/** Vigila el encargo del sysadmin: que te subas encima del servidor de PROD. */
+function QuestWatch() {
+  useFrame(() => {
+    const game = useGame.getState()
+    if (game.mode !== 'play' || game.quests.sysadmin !== 'active' || !body.grounded) return
+    const { center, size } = world.props.server
+    const top = center[1] + size[1] / 2
+    if (
+      Math.abs(body.pos[1] - top) < 0.15 &&
+      Math.abs(body.pos[0] - center[0]) < size[0] / 2 &&
+      Math.abs(body.pos[2] - center[2]) < size[2] / 2
+    ) {
+      game.completeQuest('sysadmin')
+    }
+  })
+  return null
+}
+
 export function Folk() {
   return (
     <>
+      <QuestWatch />
       {talkers.map((talker) => (
         <TalkerNPC key={talker.id} talker={talker} />
       ))}
