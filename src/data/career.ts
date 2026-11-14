@@ -141,6 +141,15 @@ export const stages: Stage[] = [
     logo: '/logos/sportian.webp',
   },
   {
+    title: 'Izertis',
+    role: 'Blockchain and AI Engineer',
+    period: '2026',
+    months: 6,
+    color: '#e8454f',
+    part: 'BLOCKCHAIN E IA',
+    logo: '/logos/izertis.jpg',
+  },
+  {
     title: 'Santander',
     role: 'Data Solutions Architecture Senior Associate',
     period: '2026',
