@@ -1,0 +1,4 @@
+# Lo demás (orden de compilación y carpeta publicada) está en la configuración del sitio en Netlify.
+# Las funciones de `netlify/functions` usan @netlify/blobs, que pide Node 22.
+[build.environment]
+  NODE_VERSION = "22"

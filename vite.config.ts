@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import { devApi } from './dev/api'
 import type { Lang } from './src/data/career'
 import { cvHtml, headHtml, llmsFullTxt, llmsTxt, robotsTxt, sitemapXml } from './src/seo/content'
 
@@ -53,6 +54,7 @@ function seo(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), seo()],
+  // `devApi` atiende /api/* en desarrollo con un almacén en memoria; en la web publicada lo hacen las funciones de Netlify.
+  plugins: [react(), seo(), devApi()],
   server: { port: 5173, strictPort: true },
 })

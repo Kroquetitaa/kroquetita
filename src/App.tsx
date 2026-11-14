@@ -16,10 +16,11 @@ const Experience = lazy(() =>
 export default function App() {
   useEffect(() => bindKeyboard(() => useGame.getState().mode === 'play'), [])
   useEffect(() => useGame.getState().setProgress(0.08), [])
+  const retro = useGame((s) => s.retro)
 
   return (
     <>
-      <div className="stage">
+      <div className={retro ? 'stage is-retro' : 'stage'}>
         <Suspense fallback={null}>
           <Experience />
         </Suspense>

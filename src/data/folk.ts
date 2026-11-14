@@ -6,7 +6,19 @@ import type { Localized } from './career'
  * algunos hacen algo: abrir LinkedIn, cambiar el clima, empezar el recorrido…
  */
 
-export type TalkerId = 'recruiter' | 'sysadmin' | 'qa' | 'guide' | 'joseba' | 'pochita' | 'librarian'
+export type TalkerId =
+  | 'recruiter'
+  | 'sysadmin'
+  | 'qa'
+  | 'guide'
+  | 'joseba'
+  | 'pochita'
+  | 'librarian'
+  | 'alex'
+  | 'dani'
+  | 'josete'
+  | 'cristian'
+  | 'pablo'
 
 export interface Talker {
   id: TalkerId
@@ -382,6 +394,146 @@ export const josebaShouts: Localized<string[]> = {
     'Sergio! Come here, listen to this!',
   ],
 }
+
+/**
+ * El equipo: compañeros de trabajo de verdad, en un corrillo entre la plaza y
+ * la sala de conceptos. Lo que dicen aquí son bromas escritas para el juego,
+ * no citas suyas: cuando cada uno mande su frase, se cambia en este fichero.
+ */
+export const teamSpot: [number, number] = [21.6, 21.2]
+
+talkers.push(
+  {
+    id: 'alex',
+    name: { es: 'Alex · CEO', en: 'Alex · CEO' },
+    color: '#1f2430',
+    accent: '#ffd60a',
+    position: [21.6, 18.5],
+    facing: 0,
+    scripts: [
+      {
+        es: [
+          'Soy Alex, el CEO. Sí, el jefe de Sergio.',
+          'Me dijo: «es un portfolio». Yo veo un videojuego.',
+          'Los dos tenemos razón, que es como acaban nuestras reuniones.',
+        ],
+        en: [
+          'I am Alex, the CEO. Yes, Sergio\'s boss.',
+          'He told me: "it is a portfolio". I see a video game.',
+          'We are both right, which is how our meetings usually end.',
+        ],
+      },
+      {
+        es: ['¿Otra vuelta? Aquí sigo, de reunión en reunión.', 'Esta, al menos, tiene monedas.'],
+        en: ['Another lap? Still here, going from meeting to meeting.', 'At least this one has coins.'],
+      },
+    ],
+  },
+  {
+    id: 'dani',
+    name: { es: 'Dani', en: 'Dani' },
+    color: '#2f7bff',
+    accent: '#19e6ff',
+    position: [16.4, 18.7],
+    facing: 0.35,
+    scripts: [
+      {
+        es: [
+          'Soy Dani. Trabajo con Sergio.',
+          'Tú le dices «una cosita rápida» y vuelve con tres agentes y un grafo.',
+          'Lo peor es que luego funciona.',
+        ],
+        en: [
+          'I am Dani. I work with Sergio.',
+          'You ask for "one quick thing" and you get three agents and a graph back.',
+          'The worst part is that it then works.',
+        ],
+      },
+      {
+        es: ['Un consejo: no le preguntes por los embeddings antes del café.', 'Después tampoco, que se anima y ya no para.'],
+        en: ['A tip: do not ask about embeddings before coffee.', 'Not after it either. That only gets the talk going.'],
+      },
+    ],
+  },
+  {
+    id: 'josete',
+    name: { es: 'Josete', en: 'Josete' },
+    color: '#3b7a57',
+    accent: '#3df2b0',
+    position: [19, 19.7],
+    facing: 0.15,
+    scripts: [
+      {
+        es: [
+          'Josete, encantado.',
+          'Yo soy el que dice «eso no entra en este sprint».',
+          'Y Sergio, el que lo acaba metiendo. Llevamos así una temporada y nos va bien.',
+        ],
+        en: [
+          'Josete, nice to meet you.',
+          'I am the one who says "that does not fit in this sprint".',
+          'And Sergio is the one who fits it in anyway. It has worked for a while now.',
+        ],
+      },
+      {
+        es: ['¿Has roto ya algo en la sala de la derecha?', 'Yo voy cuando falla el pipeline. Voy bastante.'],
+        en: ['Have you broken anything in the room on the right yet?', 'I go there when the pipeline fails. I go a lot.'],
+      },
+    ],
+  },
+  {
+    id: 'cristian',
+    name: { es: 'Cristian', en: 'Cristian' },
+    color: '#7a3b6b',
+    accent: '#ff4d8d',
+    position: [24.2, 19.7],
+    facing: -0.15,
+    scripts: [
+      {
+        es: [
+          'Cristian. Si algo de aquí va rápido, es cosa mía.',
+          'Si va lento, es de Sergio. Es broma. Más o menos.',
+          'Pregúntale cuántas pestañas tiene abiertas. Yo dejé de contar en cien.',
+        ],
+        en: [
+          'Cristian. If anything here runs fast, that was me.',
+          'If it runs slow, that was Sergio. Kidding. More or less.',
+          'Ask about the number of open tabs. I stopped counting at a hundred.',
+        ],
+      },
+      {
+        es: ['Prueba la contrarreloj, que ahora hay tabla de récords.', 'Yo no pienso decir mi tiempo.'],
+        en: ['Try the time trial. There is a leaderboard now.', 'I am not telling you my time.'],
+      },
+    ],
+  },
+  {
+    id: 'pablo',
+    name: { es: 'Pablo', en: 'Pablo' },
+    color: '#b5542b',
+    accent: '#ff8a1e',
+    position: [26.8, 18.7],
+    facing: -0.35,
+    scripts: [
+      {
+        es: [
+          'Soy Pablo. Yo venía a por café y me han puesto de personaje.',
+          'Ya que estoy: Sergio explica la IA con croquetas. Y se entiende.',
+          'No me preguntes por qué croquetas. Nadie lo sabe.',
+        ],
+        en: [
+          'I am Pablo. I came for coffee and ended up as a character.',
+          'While I am here: Sergio explains AI with croquettes. And it makes sense.',
+          'Do not ask me why croquettes. Nobody knows.',
+        ],
+      },
+      {
+        es: ['Al otro lado de la plaza hay una máquina para entrenar un modelo.', 'Yo lo sobreajusté a la primera. Con orgullo.'],
+        en: ['Across the plaza there is a machine for training a model.', 'I overfitted it on my first try. Proudly.'],
+      },
+    ],
+  },
+)
 
 /** Lo que va soltando el becario mientras te sigue */
 export const internLines: Localized<string[]> = {

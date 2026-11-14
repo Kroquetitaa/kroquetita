@@ -1,6 +1,7 @@
 import { monthIndex, monthsOf, NOW, stages, type Stage } from '../data/career'
 import { education } from '../data/education'
 import { lab } from './lab'
+import { trainStation } from './zones'
 
 /**
  * El mundo: una caja por etapa, en dos filas, sobre un suelo abierto donde
@@ -602,6 +603,11 @@ function build() {
     arcade.table.collider,
     arcade.overfit.collider,
     ...lab.colliders,
+    // Máquina del minijuego «entrena tu modelo», entre la plaza y la sala de conceptos.
+    toAABB({
+      center: [trainStation.position[0], trainStation.size[1] / 2, trainStation.position[2]],
+      size: trainStation.size,
+    }),
   ]
 
   return {

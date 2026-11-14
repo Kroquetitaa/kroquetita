@@ -25,7 +25,9 @@ export function CameraRig() {
   useFrame((state, delta) => {
     // Solo en desarrollo: permite fijar la cámara a mano desde la consola.
     if (import.meta.env.DEV && (window as unknown as { __freezeCamera?: boolean }).__freezeCamera) return
-    const { mode, camera: cameraMode, stage } = useGame.getState()
+    const { mode, camera: cameraMode, stage, panel } = useGame.getState()
+    // En el modo foto la cámara la lleva el propio modo foto.
+    if (panel === 'photo') return
     const dt = Math.min(delta, 1 / 20)
     const aspect = state.size.width / state.size.height
     const portrait = aspect < 1
@@ -95,7 +97,7 @@ export function CameraRig() {
       // la cámara acompaña del todo.
       const far = portrait ? 0 : Math.min(0, px + 30) + Math.max(0, px - 30)
       // Hacia delante (sala de conceptos) la cámara retrocede con el jugador para no quedarse encima.
-      const deep = Math.max(0, pz - 19)
+      const deep = Math.max(0, pz - 15.5)
       goalPos.set(
         px * follow - (portrait ? 0 : 2) + far * 0.7,
         7 + py * 0.6 + deep * 0.12,
@@ -104,7 +106,7 @@ export function CameraRig() {
       goalLook.set(px * (portrait ? 0.96 : 0.7) + far * 0.5, 2.6 + py * 0.7, pz * 0.25 + deep * 0.72)
       // Dentro de la sala ya no interesa el plano general de las cajas: la cámara pasa a un plano
       // propio, más alto y centrado en el jugador y en la instalación que tiene delante.
-      const room = Math.min(1, deep / 8)
+      const room = Math.min(1, deep / 3)
       const inLab = room * room * (3 - 2 * room)
       if (inLab > 0) {
         roomPos.set(px * (portrait ? 0.96 : 0.86), 9.5 + py * 0.6, pz + 15 * Math.min(fit, 1.5))

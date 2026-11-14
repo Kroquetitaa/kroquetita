@@ -1,0 +1,494 @@
+/* ---------- Modo foto ---------- */
+
+/* Mientras dura, el resto de la interfaz desaparece (la cortina, ya abierta, tampoco vuelve).
+   Se libra el aviso de logro: la primera foto da medalla y tiene gracia verla. */
+.overlay.is-photo > *:not(.photo):not(.medal-toast) {
+  visibility: hidden;
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Velo de color de los filtros cálido y frío: cubre el lienzo entero, también bajo el notch */
+.photo__wash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Vista previa del marco: las mismas proporciones con las que luego se pinta en la foto
+   (fracciones del lado corto), así que lo que se ve es lo que sale */
+.photo__frame {
+  position: fixed;
+  inset: 0;
+  container-type: size;
+  pointer-events: none;
+}
+
+.photo__frame i {
+  position: absolute;
+  inset: 0;
+  border-style: solid;
+  border-color: var(--photo-paper);
+  border-width: calc(var(--photo-side) * 1vmin) calc(var(--photo-side) * 1vmin) calc(var(--photo-foot) * 1vmin);
+}
+
+.photo__frame span {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  height: calc(var(--photo-foot) * 1vmin);
+  font-size: calc(var(--photo-text) * 1vmin);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: var(--photo-spacing);
+  /* La última letra también lleva su separación: se compensa para que quede centrado */
+  text-indent: var(--photo-spacing);
+  color: var(--photo-ink);
+}
+
+/* Con unidades de contenedor el marco se mide sobre el lienzo de verdad, no sobre la ventana
+   (en el móvil no coinciden cuando asoma la barra del navegador) */
+@supports (width: 1cqmin) {
+  .photo__frame i {
+    border-width: calc(var(--photo-side) * 1cqmin) calc(var(--photo-side) * 1cqmin) calc(var(--photo-foot) * 1cqmin);
+  }
+
+  .photo__frame span {
+    height: calc(var(--photo-foot) * 1cqmin);
+    font-size: calc(var(--photo-text) * 1cqmin);
+  }
+}
+
+/* Ayuda: solo con ratón y teclado, y si cabe */
+.photo .photo__hint {
+  position: absolute;
+  top: var(--gutter);
+  right: 0;
+  left: 0;
+  display: none;
+  width: fit-content;
+  margin-inline: auto;
+}
+
+@media (pointer: fine) and (min-width: 900px) {
+  .photo .photo__hint {
+    display: flex;
+  }
+}
+
+/* ----- Panel ----- */
+
+.photo__panel {
+  position: absolute;
+  right: 0;
+  bottom: var(--gutter);
+  left: 0;
+  width: min(600px, calc(100% - 2 * var(--gutter)));
+  margin-inline: auto;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  background: rgba(8, 10, 15, 0.74);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+  animation: stage-in 0.3s ease both;
+}
+
+.photo__settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 18px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.photo__slider {
+  display: grid;
+  min-width: 0;
+}
+
+.photo__slider span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.photo__slider b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  color: #fff;
+}
+
+.photo__slider input {
+  width: 100%;
+  height: 30px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.photo__slider input::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.photo__slider input::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.photo__slider input::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+  /* Centrado sobre el carril: (4 − 22) / 2 */
+  margin-top: -9px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.photo__slider input::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.photo__slider input:focus-visible {
+  outline: none;
+}
+
+.photo__slider input:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(25, 230, 255, 0.45);
+}
+
+.photo__slider input:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px rgba(25, 230, 255, 0.45);
+}
+
+/* Marco y filtros en una fila: el marco se queda fijo y los filtros se deslizan */
+.photo__looks {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.photo__filters {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  min-width: 0;
+  padding: 2px 22px 2px 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  /* Se desvanece por la derecha: señal de que hay más filtros */
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent);
+}
+
+.photo__filters::-webkit-scrollbar {
+  display: none;
+}
+
+.photo__chip {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 6px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+
+.photo__chip:hover,
+.photo__chip:focus-visible {
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #fff;
+  outline: none;
+}
+
+.photo__chip:focus-visible {
+  box-shadow: 0 0 0 2px rgba(25, 230, 255, 0.6);
+}
+
+.photo__chip.is-on {
+  border-color: #fff;
+  background: #fff;
+  color: #0a0b0f;
+}
+
+/* Icono del marco: una foto con su pie */
+.photo__chip--frame i {
+  width: 13px;
+  height: 12px;
+  border: 1.5px solid currentColor;
+  border-bottom-width: 4px;
+  border-radius: 2px;
+}
+
+/* ----- Botones: plegar y restablecer · disparo · compartir y salir ----- */
+
+.photo__actions {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.photo__actions > div {
+  display: flex;
+  gap: 8px;
+}
+
+.photo__actions > div:last-child {
+  justify-content: flex-end;
+}
+
+.photo__btn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition:
+    border-color 0.25s,
+    color 0.25s,
+    opacity 0.25s;
+}
+
+.photo__btn:hover,
+.photo__btn:focus-visible {
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #fff;
+  outline: none;
+}
+
+.photo__btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(25, 230, 255, 0.6);
+}
+
+.photo__btn.is-on {
+  border-color: rgba(25, 230, 255, 0.7);
+  color: #19e6ff;
+}
+
+.photo__btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.photo__btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Disparador: un aro con el botón dentro, como el de una cámara */
+.photo__shoot {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    box-shadow 0.25s,
+    opacity 0.25s;
+}
+
+.photo__shoot::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.12s ease;
+}
+
+.photo__shoot:hover,
+.photo__shoot:focus-visible {
+  box-shadow: 0 0 24px rgba(25, 230, 255, 0.55);
+  outline: none;
+}
+
+.photo__shoot:focus-visible {
+  outline: 2px solid #19e6ff;
+  outline-offset: 3px;
+}
+
+.photo__shoot:active::before {
+  transform: scale(0.84);
+}
+
+.photo__shoot:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Aviso de foto guardada, sobre el panel */
+.photo__saved {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  left: 0;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 7px 16px;
+  border: 1px solid rgba(61, 242, 176, 0.6);
+  border-radius: 999px;
+  background: rgba(6, 14, 12, 0.84);
+  backdrop-filter: blur(8px);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #8ff7d3;
+  animation: stage-in 0.25s ease both;
+}
+
+/* Destello del obturador */
+.photo__flash {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  animation: photo-flash 0.45s ease-out;
+}
+
+@keyframes photo-flash {
+  from {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Con el dedo, los filtros piden algo más de sitio */
+@media (pointer: coarse) {
+  .photo__chip {
+    min-height: 38px;
+  }
+}
+
+/* Vertical o estrecho: panel compacto pegado abajo, a todo el ancho */
+@media (max-width: 720px), (orientation: portrait) {
+  .photo__panel {
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    padding: 8px 10px 10px;
+    border-radius: 16px;
+  }
+
+  .photo__settings {
+    gap: 2px 14px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+
+  .photo__slider span {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+  }
+
+  .photo__shoot {
+    width: 58px;
+    height: 58px;
+  }
+}
+
+/* Móvil apaisado: no hay altura, así que el panel pasa a una columna a la derecha */
+@media (max-height: 520px) and (orientation: landscape) {
+  .photo__panel {
+    right: var(--gutter);
+    bottom: 8px;
+    left: auto;
+    width: 290px;
+    margin: 0;
+    padding: 8px 10px;
+  }
+
+  .photo__settings {
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+  }
+
+  .photo__shoot {
+    width: 54px;
+    height: 54px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Sin destello: la foto se confirma con el sonido y el aviso */
+  .photo__flash {
+    display: none;
+  }
+
+  .photo__panel,
+  .photo__saved {
+    animation: none;
+  }
+
+  .photo__shoot::before {
+    transition: none;
+  }
+}

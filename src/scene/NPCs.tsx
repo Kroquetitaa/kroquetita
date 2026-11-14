@@ -658,7 +658,9 @@ function ProjectManager() {
     const game = useGame.getState()
     const inMeeting = performance.now() < game.meetingUntil
     // Un salto no le despista; subirse a un bloque, sí.
-    const reachable = game.mode === 'play' && body.pos[1] < 2.2 && !inMeeting
+    // Tampoco molesta con un panel abierto (mapa, foto, minijuego), en plena conversación o ante la máquina.
+    const busy = game.panel !== null || game.talk !== null || game.station !== null
+    const reachable = game.mode === 'play' && body.pos[1] < 2.2 && !inMeeting && !busy
     const near = reachable ? distanceToPlayer(s.x, s.z) : Infinity
     let moving = false
 
