@@ -748,3 +748,16 @@ body {
     transition-duration: 0.01s;
   }
 }
+
+/* En pantallas estrechas la marca se compacta para caber en una línea */
+@media (max-width: 720px) {
+  .brand p {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+  }
+
+  .brand:hover p,
+  .brand.is-active p {
+    letter-spacing: 0.22em;
+  }
+}
