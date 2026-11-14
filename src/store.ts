@@ -16,6 +16,10 @@ interface GameState {
   wonAt: number | null
   /** Modo fiesta (código Konami): neones arcoíris y gravedad lunar */
   party: boolean
+  /** Etapa resaltada en el cristal y ampliada en la ficha */
+  stage: number
+  /** Hasta cuándo (performance.now) se pausa el avance automático de etapas */
+  stageHold: number
   /** Error de despliegue en pantalla (botón DEPLOY), o null */
   crash: { id: number; title: string; detail: string } | null
   /** Cambia en cada reinicio para recolocar al jugador */
@@ -27,6 +31,8 @@ interface GameState {
   toggleMuted: () => void
   toggleParty: () => void
   setCrash: (crash: GameState['crash']) => void
+  /** `manual`: lo eligió el usuario, así que el avance automático espera un rato */
+  setStage: (index: number, manual?: boolean) => void
   collect: (id: number) => void
   restart: () => void
 }
@@ -40,6 +46,8 @@ export const useGame = create<GameState>((set) => ({
   total: world.coins.length,
   wonAt: null,
   party: false,
+  stage: 0,
+  stageHold: 0,
   crash: null,
   runId: 0,
   setReady: () => set({ ready: true }),
@@ -49,6 +57,14 @@ export const useGame = create<GameState>((set) => ({
   toggleMuted: () => set((s) => ({ muted: !s.muted })),
   toggleParty: () => set((s) => ({ party: !s.party })),
   setCrash: (crash) => set({ crash }),
+  setStage: (index, manual) =>
+    set((s) => {
+      const count = world.cards.length
+      return {
+        stage: ((index % count) + count) % count,
+        stageHold: manual ? performance.now() + 14000 : s.stageHold,
+      }
+    }),
   collect: (id) =>
     set((s) => {
       if (s.collected.includes(id)) return s

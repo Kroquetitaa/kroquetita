@@ -17,7 +17,7 @@ import { uParty, uTime } from './materials/shaders'
 const SUN: [number, number, number] = (() => {
   const az = (28 * Math.PI) / 180
   const el = (54 * Math.PI) / 180
-  const d = 34
+  const d = 52
   return [Math.sin(az) * Math.cos(el) * d, Math.sin(el) * d, Math.cos(az) * Math.cos(el) * d]
 })()
 
@@ -50,7 +50,7 @@ function Lights() {
         shadow-bias={-0.0004}
         shadow-normalBias={0.03}
       >
-        <orthographicCamera attach="shadow-camera" args={[-24, 24, 26, -10, 1, 90]} />
+        <orthographicCamera attach="shadow-camera" args={[-36, 36, 34, -22, 1, 130]} />
       </directionalLight>
       <spotLight
         ref={blue}

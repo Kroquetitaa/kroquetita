@@ -146,7 +146,7 @@ function Burst({ count = 28 }: { count?: number }) {
   return <points geometry={geometry} material={material} frustumCulled={false} />
 }
 
-/** Premio final: una moneda gigante que aparece girando ante el procesador. */
+/** Premio final: una moneda gigante que aparece girando sobre la torre. */
 function Trophy({ shared }: { shared: Shared }) {
   const group = useRef<THREE.Group>(null)
   const light = useRef<THREE.PointLight>(null)
@@ -162,7 +162,7 @@ function Trophy({ shared }: { shared: Shared }) {
     const k = Math.min(1, t / 1.4)
     const pop = 1 - Math.pow(1 - k, 3) * Math.cos(k * Math.PI * 2.5)
     const clock = state.clock.elapsedTime
-    g.scale.setScalar(pop * 2.8)
+    g.scale.setScalar(pop * 4)
     g.position.y = ty + Math.sin(clock * 1.4) * 0.3
     g.rotation.y = clock * 1.5 + (1 - k) * 9
     if (light.current) light.current.intensity = pop * 260

@@ -1,9 +1,10 @@
 import { stages, type Stage } from '../data/career'
 
 /**
- * El mundo es una placa base: cada etapa es un chip con su rótulo, colocados
- * sobre una pista en espiral que acaba en el procesador central (la etapa
- * actual). Todo se genera a partir de `stages`.
+ * El mundo es un PC de torre abierta, en vertical: la bandeja con los
+ * componentes al fondo y un panel de cristal delante. Sobre el cristal van
+ * las etapas de la trayectoria, cada una señalando a un componente.
+ * Alrededor, en el suelo, se juega.
  */
 
 /** Caja alineada a los ejes: [x, y, z] mínimos y máximos. */
@@ -14,31 +15,9 @@ export interface AABB {
 
 type Vec3 = [number, number, number]
 
-/** Rótulo vertical de una etapa (se apoya en el borde trasero de su chip). */
-export interface Block {
-  stage: Stage
-  index: number
-  /** 0 = recibe luz propia (fila delantera y procesador); 1 = no */
-  row: number
-  /** Centro en X y Z; la base está en y = 0 */
-  x: number
-  z: number
-  width: number
-  depth: number
-  height: number
-  /** Posición del logo respecto al centro de la cara superior */
-  emblem: Vec3
-  /** Altura (desde el suelo) de la tira de neón de la cara frontal */
-  stripY: number
-  /** Es el procesador central (la última etapa) */
-  cpu: boolean
-}
-
 export interface Box {
   center: Vec3
   size: Vec3
-  /** Índice de la etapa con la que emerge en la animación de entrada */
-  owner: number
 }
 
 export interface Coin {
@@ -52,22 +31,37 @@ export interface Pad {
   power: number
 }
 
-/** Chip normal: ancho y fondo. El procesador es cuadrado y mayor. */
-const CHIP_W = 4.2
-const CHIP_D = 3.2
-const CPU_SIDE = 5.6
-const PANEL_D = 0.4
-const PANEL_H = 2.05
-
-/** La pista: un rectángulo que se cierra en espiral hacia el centro. */
-const X = 12
-const FRONT = 6
-const BACK = -10
-const MID = (FRONT + BACK) / 2
+/** Tarjeta de una etapa sobre el cristal. */
+export interface Card {
+  stage: Stage
+  index: number
+  /** Centro sobre el cristal */
+  x: number
+  y: number
+  scale: number
+  /** Punto del componente al que señala (detrás del cristal) */
+  anchor: Vec3
+  /** Es la etapa actual */
+  current: boolean
+}
 
 const GRAVITY = 16
 
-const toAABB = (b: Omit<Box, 'owner'>): AABB => ({
+/** Medidas de la torre. El cristal mira a +Z. */
+const LEFT = -16
+const RIGHT = 16
+const BOTTOM = 1.2
+const TOP = 25.2
+const TRAY_Z = -4.6
+const GLASS_Z = 1.2
+/** Altura transitable de la tapa superior */
+const ROOF = 25.6
+
+/** Tamaño base de una tarjeta. */
+export const CARD_W = 7
+export const CARD_H = 2.5
+
+const toAABB = (b: Box): AABB => ({
   min: [b.center[0] - b.size[0] / 2, b.center[1] - b.size[1] / 2, b.center[2] - b.size[2] / 2],
   max: [b.center[0] + b.size[0] / 2, b.center[1] + b.size[1] / 2, b.center[2] + b.size[2] / 2],
 })
@@ -75,219 +69,145 @@ const toAABB = (b: Omit<Box, 'owner'>): AABB => ({
 function build() {
   const n = stages.length
 
-  // Los chips se reparten a distancias iguales por los tres primeros tramos.
-  const legs: Array<[[number, number], [number, number]]> = [
-    [[-X, FRONT], [X, FRONT]],
-    [[X, FRONT], [X, BACK]],
-    [[X, BACK], [-X, BACK]],
-  ]
-  const lengths = legs.map(([a, b]) => Math.hypot(b[0] - a[0], b[1] - a[1]))
-  const total = lengths.reduce((sum, l) => sum + l, 0)
-  const along = (d: number): [number, number] => {
-    for (let i = 0; i < legs.length; i++) {
-      if (d <= lengths[i] + 1e-6 || i === legs.length - 1) {
-        const t = Math.min(1, d / lengths[i])
-        const [a, b] = legs[i]
-        return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]
-      }
-      d -= lengths[i]
-    }
-    return legs[0][0]
+  // ---------- Componentes, colocados como en una torre real
+  const pc = {
+    left: LEFT,
+    right: RIGHT,
+    bottom: BOTTOM,
+    top: TOP,
+    trayZ: TRAY_Z,
+    glassZ: GLASS_Z,
+    roof: ROOF,
+    /** Placa base, arriba a la izquierda */
+    board: { center: [-7.5, 18, TRAY_Z + 0.03] as Vec3, size: [14, 12.8] as [number, number] },
+    cpu: [-7.6, 19] as [number, number],
+    ram: [-3.9, -3.28, -2.66, -2.04],
+    /** Gráfica, montada en horizontal bajo la placa */
+    gpu: { center: [-7.1, 9.1, TRAY_Z + 1.9] as Vec3, size: [13.8, 3.2, 1.4] as Vec3 },
+    /** Fuente de alimentación, abajo a la izquierda */
+    psu: { center: [-10.2, 3.9, TRAY_Z + 2.05] as Vec3, size: [7.5, 4.8, 4] as Vec3 },
+    ssd: { center: [-3.2, 2.6, TRAY_Z + 1.55] as Vec3, size: [4, 1.8, 3] as Vec3 },
+    /** Depósito de la refrigeración: cilindro vertical en el centro */
+    reservoir: { x: 3, z: TRAY_Z + 2.2, bottom: 4.6, top: 17.8, radius: 1.25 },
+    /** Radiador a la derecha con tres ventiladores en columna */
+    radiator: { x: 10.6, ys: [20.4, 13.2, 6], radius: 3.4 },
   }
 
-  const chips: Box[] = []
-  const blocks: Block[] = stages.map((stage, i) => {
-    const cpu = i === n - 1
-    const [x, z] = cpu ? [0, MID] : along(n > 2 ? (i * total) / (n - 2) : 0)
-    const width = cpu ? CPU_SIDE : CHIP_W
-    const depth = cpu ? CPU_SIDE : CHIP_D
-    // Cada chip es un poco más alto que el anterior: se nota el avance.
-    const base = cpu ? 1.4 : Math.round((0.5 + i * 0.07) * 100) / 100
-    chips.push({ center: [x, base / 2, z], size: [width, base, depth], owner: i })
+  // Puntos a los que señalan las tarjetas, en orden de arranque del equipo:
+  // fuente → disco → bomba → ventiladores → depósito → memoria → gráfica → CPU.
+  const anchors: Vec3[] = [
+    [-7.6, 4.3, pc.psu.center[2] + 2],
+    [-3.2, 2.6, pc.ssd.center[2] + 1.5],
+    [3, 3.7, pc.reservoir.z + 1.4],
+    [pc.radiator.x, pc.radiator.ys[2], TRAY_Z + 1.4],
+    [pc.radiator.x, pc.radiator.ys[1], TRAY_Z + 1.4],
+    [pc.radiator.x, pc.radiator.ys[0], TRAY_Z + 1.4],
+    [3, 16, pc.reservoir.z + 1.25],
+    [-3, 20.6, TRAY_Z + 2.2],
+    [-7.1, 9.1, pc.gpu.center[2] + 0.9],
+  ]
+  const cpuAnchor: Vec3 = [pc.cpu[0], pc.cpu[1], TRAY_Z + 1.2]
+
+  // Tarjetas por el perímetro del cristal: fila de abajo (izquierda a derecha),
+  // lateral derecho, fila de arriba (derecha a izquierda) y, a la izquierda,
+  // la etapa actual. El centro queda libre para ver el equipo.
+  const m = n - 1
+  const side = m >= 5 ? 1 : 0
+  const below = Math.ceil((m - side) / 2)
+  const above = m - side - below
+  const edge = RIGHT - CARD_W / 2 - 0.5
+  const spread = (count: number, k: number) => (count <= 1 ? 0 : -edge + (2 * edge * k) / (count - 1))
+  const midY = (BOTTOM + TOP) / 2
+  const slots: Array<[number, number]> = []
+  for (let k = 0; k < below; k++) slots.push([spread(below, k), BOTTOM + CARD_H / 2 + 0.6])
+  for (let k = 0; k < side; k++) slots.push([edge, midY])
+  for (let k = 0; k < above; k++) slots.push([-spread(above, k), TOP - CARD_H / 2 - 0.6])
+
+  const cards: Card[] = stages.map((stage, i) => {
+    const current = i === n - 1
+    const [x, y] = current ? [-edge + 0.75, midY] : slots[i]
     return {
       stage,
       index: i,
-      row: cpu || z > 0 ? 0 : 1,
       x,
-      z: z - depth / 2 + PANEL_D / 2,
-      width,
-      depth: PANEL_D,
-      height: base + PANEL_H + (cpu ? 0.3 : 0),
-      emblem: [0, 1.35, 0],
-      stripY: base + 0.14,
-      cpu,
-    }
-  })
-  const cpu = chips[n - 1]
-
-  // Patillas metálicas en el frente y los laterales de cada chip.
-  const pins: Box[] = []
-  chips.forEach((chip, owner) => {
-    const [x, , z] = chip.center
-    const [w, , d] = chip.size
-    const nx = Math.floor(w / 0.5)
-    const nz = Math.floor(d / 0.5)
-    for (let k = 0; k < nx; k++) {
-      const px = x - w / 2 + (w / nx) * (k + 0.5)
-      pins.push({ center: [px, 0.05, z + d / 2 + 0.1], size: [0.16, 0.08, 0.28], owner })
-    }
-    for (let k = 0; k < nz; k++) {
-      const pz = z - d / 2 + (d / nz) * (k + 0.5)
-      pins.push({ center: [x - w / 2 - 0.1, 0.05, pz], size: [0.28, 0.08, 0.16], owner })
-      pins.push({ center: [x + w / 2 + 0.1, 0.05, pz], size: [0.28, 0.08, 0.16], owner })
+      y,
+      scale: current ? 1.2 : 1,
+      anchor: current ? cpuAnchor : anchors[i % anchors.length],
+      current,
     }
   })
 
-  // La pista principal: entra por la izquierda, rodea la placa y llega al procesador.
-  const route: Array<[number, number]> = [
-    [-X - 4.5, FRONT],
-    [X, FRONT],
-    [X, BACK],
-    [-X, BACK],
-    [-X, MID],
-    [0, MID],
-  ]
-  const path: Vec3[] = route.map(([x, z]) => [x, 0.05, z])
-  const traces: Box[] = []
-  for (let i = 1; i < route.length; i++) {
-    const [ax, az] = route[i - 1]
-    const [bx, bz] = route[i]
-    traces.push({
-      center: [(ax + bx) / 2, 0.035, (az + bz) / 2],
-      size: [Math.abs(bx - ax) + 0.22, 0.04, Math.abs(bz - az) + 0.22],
-      owner: Math.min(n - 1, i * 2),
-    })
+  // ---------- Zona de juego alrededor de la torre
+  const body: Box = {
+    center: [0, ROOF / 2, (TRAY_Z + GLASS_Z) / 2 - 0.3],
+    size: [RIGHT - LEFT + 0.6, ROOF, GLASS_Z - TRAY_Z + 1.4],
   }
+  const feet: Box[] = [-12.5, 12.5].map((x) => ({ center: [x, 0.25, -1.5], size: [1.4, 0.5, 10] }))
 
-  // Ascensor junto al procesador y el mirador al que sube.
-  const lookout = 7.5
-  const elevatorSize: Vec3 = [2.2, 0.25, 2.2]
-  const elevatorCenter: Vec3 = [cpu.center[0] + CPU_SIDE / 2 + elevatorSize[0] / 2 + 0.1, elevatorSize[1] / 2, MID]
-  const mirador: Box = {
-    center: [elevatorCenter[0] + elevatorSize[0] / 2 + 1.5 + 0.08, lookout - 0.125, MID],
-    size: [3, 0.25, 3],
-    owner: n - 1,
-  }
+  const elevatorSize: Vec3 = [2.4, 0.25, 2.6]
+  const elevatorCenter: Vec3 = [RIGHT + 0.3 + elevatorSize[0] / 2 + 0.1, elevatorSize[1] / 2, -1.9]
 
-  // Monedas: una sobre cada chip, otras por la pista y la última en el mirador.
-  const coinSpots: Vec3[] = [
-    ...chips.map((c, i): Vec3 =>
-      i === n - 1
-        ? [c.center[0] + 1.7, c.size[1] + 0.75, c.center[2] + 1.4]
-        : [c.center[0] + 1.2, c.size[1] + 0.75, c.center[2] + 0.5],
-    ),
-    [X, 0.75, (FRONT + MID) / 2],
-    [X, 0.75, (BACK + MID) / 2],
-    [-X, 0.75, (BACK + MID) / 2],
-    [-X / 2 - 0.4, 0.75, MID],
-    [mirador.center[0], lookout + 0.75, MID],
-  ]
-  const coins: Coin[] = coinSpots.map((position, id) => ({ id, position }))
-
-  // Trampolines: uno suave junto a la salida y otro que sube hasta el mirador.
-  const pads: Pad[] = [
-    { position: [-X - 5.5, 0, 1.5], radius: 0.8, power: 10.5 },
-    {
-      position: [mirador.center[0], 0, MID + 3.7],
-      radius: 0.8,
-      power: Math.sqrt(2 * GRAVITY * (lookout + 1.5)),
-    },
-  ]
-
-  // ---------- Interior del ordenador: la placa vive dentro de una caja
-  const pc = {
-    /** Paredes de la caja (el frente es el cristal: queda abierto a la cámara) */
-    walls: { minX: -34, maxX: 35, minZ: -24, maxZ: 20, height: 17 },
-    /** Tarjeta gráfica, de canto tras la fila trasera */
-    gpu: { center: [0, 1.9, -16.6], size: [18, 3.8, 1.3], owner: 0 } as Box,
-    /** Módulos de memoria a la derecha de la placa */
-    ram: [18.4, 19.5, 20.6, 21.7].map(
-      (x): Box => ({ center: [x, 1.3, -5.5], size: [0.36, 2.6, 7], owner: 0 }),
-    ),
-    /** Fuente de alimentación, en la esquina trasera izquierda */
-    psu: { center: [-24.5, 1.9, -16.5], size: [9, 3.8, 6], owner: 0 } as Box,
-    /** Jaula de discos, delante a la izquierda */
-    drives: { center: [-24, 1.05, 4], size: [4.6, 2.1, 3.4], owner: 0 } as Box,
-    /** Depósito de la refrigeración líquida: [x, z], radio y altura */
-    reservoir: { position: [26.5, -14] as [number, number], radius: 1.3, height: 8 },
-    /** Radiador con tres ventiladores en la pared del fondo */
-    radiator: { xs: [-7, 1.5, 10], y: 5.3, radius: 3.5 },
-    /** Condensadores repartidos por la placa: [x, z, altura] */
-    capacitors: [
-      [-6, 2, 0.9], [-4.8, 2, 1.2], [-6, 0.8, 0.9],
-      [-7.6, -6.2, 1.2], [-6.4, -6.2, 0.9],
-      [7.2, -6.6, 0.9], [8.4, -6.6, 1.2], [7.2, -5.4, 0.9],
-      [1.9, 2.9, 1.2], [15.4, 1.6, 0.9], [15.4, 2.8, 1.2],
-    ] as Array<[number, number, number]>,
-  }
-  const capacitorBoxes = pc.capacitors.map(([x, z, h]) =>
-    toAABB({ center: [x, h / 2, z], size: [0.72, h, 0.72] }),
-  )
-  const reservoirBox = toAABB({
-    center: [pc.reservoir.position[0], pc.reservoir.height / 2, pc.reservoir.position[1]],
-    size: [pc.reservoir.radius * 2, pc.reservoir.height, pc.reservoir.radius * 2],
-  })
-
-  // Atrezo con el que se juega: botón de despliegue, servidor de producción y pato.
-  const server: Box = { center: [20.5, 1.3, 6], size: [1.7, 2.6, 1.7], owner: 0 }
   const props = {
     elevator: {
       center: elevatorCenter,
       size: elevatorSize,
-      /** Altura a la que sube: la del mirador */
-      top: lookout,
+      /** Altura a la que sube: la azotea de la torre */
+      top: ROOF,
       /** Su colisión se mueve cada frame (la actualiza el propio ascensor) */
       collider: toAABB({ center: elevatorCenter, size: elevatorSize }),
     },
-    mirador,
-    button: { center: [17, 0.25, 10.5] as Vec3, size: [1.4, 0.5, 1.4] as Vec3 },
+    button: { center: [22.5, 0.25, 9.5] as Vec3, size: [1.4, 0.5, 1.4] as Vec3 },
     /** Servidor de producción: lo que revienta al pulsar DEPLOY */
-    server,
-    duck: [-2, 0, 10.5] as Vec3,
+    server: { center: [26.5, 1.3, 5.5], size: [1.7, 2.6, 1.7] } as Box,
+    duck: [5, 0, 10] as Vec3,
   }
 
+  // Monedas: un arco por delante, dos tras la torre y cinco en la azotea.
+  const coinSpots: Vec3[] = [
+    [-24, 0.75, 6],
+    [-17, 0.75, 11],
+    [-10, 0.75, 7],
+    [-3, 0.75, 11.5],
+    [5, 0.75, 6.5],
+    [12, 0.75, 11],
+    [19, 0.75, 6.5],
+    [27, 0.75, 11],
+    [-8, 0.75, -9.5],
+    [8, 0.75, -9.5],
+    ...[-12, -6, 0, 6, 12].map((x): Vec3 => [x, ROOF + 0.75, -1.9]),
+  ]
+  const coins: Coin[] = coinSpots.map((position, id) => ({ id, position }))
+
+  // Trampolines: uno suave junto a la salida y otro que lanza hasta la azotea.
+  const pads: Pad[] = [
+    { position: [-28, 0, 5], radius: 0.8, power: 10.5 },
+    { position: [LEFT - 3.2, 0, -1.9], radius: 0.9, power: Math.sqrt(2 * GRAVITY * (ROOF + 1.6)) },
+  ]
+
   const colliders: AABB[] = [
-    ...chips.map(toAABB),
-    ...blocks.map((b) =>
-      toAABB({ center: [b.x, b.height / 2, b.z], size: [b.width, b.height, b.depth] }),
-    ),
-    toAABB(mirador),
-    toAABB(pc.gpu),
-    ...pc.ram.map(toAABB),
-    toAABB(pc.psu),
-    toAABB(pc.drives),
-    ...capacitorBoxes,
-    reservoirBox,
-    toAABB(server),
+    toAABB(body),
+    ...feet.map(toAABB),
     toAABB(props.button),
+    toAABB(props.server),
     props.elevator.collider,
   ]
 
-  const spawn: Vec3 = [-X - 4.5, 0, FRONT + 3.5]
-
   return {
-    blocks,
-    chips,
-    pins,
-    traces,
+    pc,
+    cards,
+    feet,
     coins,
     pads,
     props,
-    pc,
-    path,
     colliders,
-    spawn,
-    /** Rectángulo de la placa (para dibujarla y dejar libre su interior) */
-    board: { minX: -X - 3.6, maxX: X + 11.4, minZ: BACK - 8.2, maxZ: FRONT + 3.2 },
-    /** Núcleo de IA: flota sobre el procesador */
-    core: [cpu.center[0], 8.8, MID - 0.5] as Vec3,
+    spawn: [-22, 0, 9.5] as Vec3,
     /** Donde aparece el trofeo al completar las monedas */
-    trophy: [cpu.center[0], 5, MID + CPU_SIDE / 2 + 2] as Vec3,
-    /** Altura aproximada de la escena (cámara, polvo y fuegos artificiales) */
-    top: 9,
-    /** Encuadre de la portada */
-    view: { position: [-5, 24, 42] as Vec3, look: [-3, 0.8, -3] as Vec3, halfWidth: 25.5 },
-    bounds: { minX: -31, maxX: 32, minZ: BACK - 11.5, maxZ: FRONT + 8 },
+    trophy: [0, ROOF + 5, -1.9] as Vec3,
+    /** Altura de la escena (polvo y fuegos artificiales) */
+    top: ROOF,
+    /** Encuadre de la portada: tres cuartos, con la torre a la derecha */
+    view: { position: [-22, 16, 57] as Vec3, look: [-9.5, 14.4, -1] as Vec3, halfWidth: 29.5 },
+    bounds: { minX: -33, maxX: 33, minZ: -13, maxZ: 17 },
   }
 }
 

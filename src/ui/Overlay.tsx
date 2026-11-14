@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { profile } from '../data/career'
+import { profile, stages } from '../data/career'
 import { setMuted, sfx, unlockAudio } from '../game/audio'
 import { setMusicIntensity } from '../game/music'
 import { input } from '../game/input'
@@ -82,6 +82,70 @@ function Brand() {
         <span className="brand__author">{text.slice(split + 4)}</span>
       </p>
     </header>
+  )
+}
+
+/**
+ * Ficha de la etapa activa: amplía, con texto nítido, la tarjeta que está
+ * resaltada en el cristal. Avanza sola en orden cronológico y se puede
+ * recorrer con las flechas, los puntos o pasando el ratón por el cristal.
+ */
+function StagePanel({ hidden }: { hidden: boolean }) {
+  const index = useGame((s) => s.stage)
+  const setStage = useGame((s) => s.setStage)
+  const stage = stages[index]
+
+  useEffect(() => {
+    if (hidden) return
+    const timer = window.setInterval(() => {
+      const game = useGame.getState()
+      if (performance.now() > game.stageHold) game.setStage(game.stage + 1)
+    }, 3800)
+    return () => window.clearInterval(timer)
+  }, [hidden])
+
+  return (
+    <section
+      className={`career ${hidden ? 'is-hidden' : ''}`}
+      style={{ '--accent': stage.color } as React.CSSProperties}
+      aria-hidden={hidden}
+      aria-label="Trayectoria"
+    >
+      <div className="career__body" key={index}>
+        {stage.logo && <img src={stage.logo} alt="" />}
+        <div>
+          {stage.part && <p className="career__part">{stage.part}</p>}
+          <h2>{stage.title}</h2>
+          <p className="career__role">{stage.role}</p>
+          <p className="career__period">{stage.period}</p>
+        </div>
+      </div>
+      <div className="career__nav">
+        <button type="button" onClick={() => setStage(index - 1, true)} aria-label="Etapa anterior" tabIndex={hidden ? -1 : 0}>
+          ‹
+        </button>
+        <ol>
+          {stages.map((s, i) => (
+            <li key={s.title}>
+              <button
+                type="button"
+                className={i === index ? 'is-active' : ''}
+                onClick={() => setStage(i, true)}
+                aria-label={s.title}
+                aria-current={i === index}
+                tabIndex={hidden ? -1 : 0}
+              />
+            </li>
+          ))}
+        </ol>
+        <button type="button" onClick={() => setStage(index + 1, true)} aria-label="Etapa siguiente" tabIndex={hidden ? -1 : 0}>
+          ›
+        </button>
+        <span>
+          {index + 1} / {stages.length}
+        </span>
+      </div>
+    </section>
   )
 }
 
@@ -248,6 +312,9 @@ export function Overlay() {
           unlockAudio()
           game.play()
         }
+        // En la portada, las flechas recorren la trayectoria.
+        if (e.code === 'ArrowRight') game.setStage(game.stage + 1, true)
+        if (e.code === 'ArrowLeft') game.setStage(game.stage - 1, true)
         return
       }
       if (e.code === 'Escape') game.exit()
@@ -270,6 +337,7 @@ export function Overlay() {
       <Brand />
 
       <Hero hidden={playing} />
+      <StagePanel hidden={playing || !ready} />
 
       {!ready && <Loader />}
 

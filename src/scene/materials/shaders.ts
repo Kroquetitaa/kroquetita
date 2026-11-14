@@ -143,49 +143,6 @@ export function createDustMaterial() {
   })
 }
 
-/** Textura procedural de piedra/hormigón: grano y vetas suaves en un canvas. */
-export function createStoneTexture(size = 256) {
-  const canvas = document.createElement('canvas')
-  canvas.width = canvas.height = size
-  const ctx = canvas.getContext('2d')!
-  ctx.fillStyle = '#c4c4c4'
-  ctx.fillRect(0, 0, size, size)
-
-  // Semilla fija para que la textura sea idéntica en cada carga.
-  let seed = 1337
-  const rand = () => {
-    seed = (seed * 16807) % 2147483647
-    return seed / 2147483647
-  }
-
-  for (let i = 0; i < 26; i++) {
-    const x = rand() * size
-    const y = rand() * size
-    const r = 30 + rand() * 90
-    const g = ctx.createRadialGradient(x, y, 0, x, y, r)
-    const v = rand() > 0.5 ? 255 : 0
-    g.addColorStop(0, `rgba(${v},${v},${v},0.09)`)
-    g.addColorStop(1, `rgba(${v},${v},${v},0)`)
-    ctx.fillStyle = g
-    ctx.fillRect(0, 0, size, size)
-  }
-
-  const image = ctx.getImageData(0, 0, size, size)
-  for (let i = 0; i < image.data.length; i += 4) {
-    const n = (rand() - 0.5) * 20
-    image.data[i] += n
-    image.data[i + 1] += n
-    image.data[i + 2] += n
-  }
-  ctx.putImageData(image, 0, 0)
-
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping
-  texture.colorSpace = THREE.SRGBColorSpace
-  texture.anisotropy = 4
-  return texture
-}
-
 /** Rejilla tenue sobre el suelo con ondas que se expanden desde `uCenter`. */
 export function createGridMaterial(color: string) {
   return new THREE.ShaderMaterial({
@@ -583,64 +540,6 @@ export function createCoreMaterial() {
   })
 }
 
-/**
- * Superficie de la placa base: rectángulo redondeado con pistas decorativas,
- * vías y un borde serigrafiado. `rect` = [minX, minZ, maxX, maxZ] en mundo.
- */
-export function createBoardMaterial(rect: [number, number, number, number]) {
-  return new THREE.ShaderMaterial({
-    uniforms: { uTime, uParty, uRect: { value: new THREE.Vector4(...rect) } },
-    vertexShader: /* glsl */ `
-      varying vec3 vWorld;
-      void main() {
-        vec4 world = modelMatrix * vec4(position, 1.0);
-        vWorld = world.xyz;
-        gl_Position = projectionMatrix * viewMatrix * world;
-      }
-    `,
-    fragmentShader: /* glsl */ `
-      uniform float uTime;
-      uniform float uParty;
-      uniform vec4 uRect;
-      varying vec3 vWorld;
-      float hash(vec2 p) {
-        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-      }
-      void main() {
-        vec2 p = vWorld.xz;
-        // Distancia con signo a un rectángulo de esquinas redondeadas.
-        vec2 center = (uRect.xy + uRect.zw) * 0.5;
-        vec2 half_ = (uRect.zw - uRect.xy) * 0.5;
-        vec2 q = abs(p - center) - half_ + 1.4;
-        float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - 1.4;
-        float inside = smoothstep(0.05, -0.05, d);
-        float border = smoothstep(0.1, 0.0, abs(d + 0.3));
-
-        // Cada celda lleva una pista horizontal, una vertical o nada.
-        vec2 grid = p / 1.2;
-        vec2 cell = floor(grid);
-        vec2 f = fract(grid) - 0.5;
-        float h = hash(cell);
-        float lines = smoothstep(0.05, 0.02, abs(f.y)) * step(h, 0.36)
-                    + smoothstep(0.05, 0.02, abs(f.x)) * step(0.64, h);
-        float via = smoothstep(0.17, 0.1, length(f)) * step(0.84, hash(cell + 7.3));
-        // La corriente "fluye" en diagonal por las pistas.
-        float flow = 0.5 + 0.5 * sin(uTime * 1.6 - (p.x + p.y) * 0.5 + h * 6.2831);
-
-        vec3 copper = mix(vec3(0.05, 0.6, 0.52), vec3(1.0, 0.62, 0.15), uParty);
-        float a = inside * (lines * 0.2 * flow + via * 0.3 + 0.04) + border * 0.55;
-        gl_FragColor = vec4(copper * a * 1.5, a);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    polygonOffset: true,
-    polygonOffsetFactor: -6,
-    toneMapped: false,
-  })
-}
-
 /** Iluminación RGB: un arcoíris que fluye a lo largo de la pieza (uv.x). */
 export function createRgbMaterial(phase = 0, speed = 0.25) {
   return new THREE.ShaderMaterial({
@@ -758,4 +657,130 @@ export function createPipeMaterial() {
     `,
     toneMapped: false,
   })
+}
+
+/** Cristal templado: casi invisible, con el canto iluminado y reflejos diagonales. */
+export function createGlassMaterial(size: [number, number]) {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime, uSize: { value: new THREE.Vector2(size[0], size[1]) } },
+    vertexShader: vertex,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      uniform vec2 uSize;
+      varying vec2 vUv;
+      void main() {
+        vec2 p = vUv * uSize;
+        vec2 inset = min(p, uSize - p);
+        float border = min(inset.x, inset.y);
+        float edge = smoothstep(0.13, 0.0, border);
+        float bevel = smoothstep(0.7, 0.0, border) * 0.12;
+        // Dos reflejos que se deslizan muy despacio por el panel.
+        float d = (p.x + p.y * 0.6) * 0.085 - uTime * 0.018;
+        float wide = smoothstep(0.4, 0.5, fract(d)) * smoothstep(0.64, 0.5, fract(d));
+        float thin = smoothstep(0.47, 0.5, fract(d * 2.3 + 0.3)) * smoothstep(0.53, 0.5, fract(d * 2.3 + 0.3));
+        float a = 0.018 + wide * 0.03 + thin * 0.02 + bevel + edge * 0.6;
+        gl_FragColor = vec4(vec3(0.62, 0.82, 1.0) * a * 1.25, a);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    toneMapped: false,
+  })
+}
+
+/** Textura de la placa base: máscara oscura, pistas de cobre, vías y serigrafía. */
+export function createPcbTexture(size: [number, number]) {
+  const W = 1024
+  const H = Math.round((W * size[1]) / size[0])
+  const canvas = document.createElement('canvas')
+  canvas.width = W
+  canvas.height = H
+  const ctx = canvas.getContext('2d')!
+  ctx.fillStyle = '#0a151a'
+  ctx.fillRect(0, 0, W, H)
+
+  // Semilla fija: la placa es idéntica en cada carga.
+  let seed = 2024
+  const rand = () => {
+    seed = (seed * 16807) % 2147483647
+    return seed / 2147483647
+  }
+
+  // Haces de pistas con un quiebro a 45 grados, rematados en una vía.
+  ctx.lineWidth = 2
+  for (let i = 0; i < 90; i++) {
+    const lines = 2 + Math.floor(rand() * 5)
+    const horizontal = rand() > 0.5
+    const x = rand() * W
+    const y = rand() * H
+    const first = 40 + rand() * 180
+    const jog = 20 + rand() * 60
+    const second = 40 + rand() * 200
+    const sign = rand() > 0.5 ? 1 : -1
+    ctx.strokeStyle = `rgba(50, 160, 148, ${0.22 + rand() * 0.25})`
+    for (let l = 0; l < lines; l++) {
+      const o = l * 7
+      ctx.beginPath()
+      if (horizontal) {
+        ctx.moveTo(x, y + o)
+        ctx.lineTo(x + first, y + o)
+        ctx.lineTo(x + first + jog, y + o + jog * sign)
+        ctx.lineTo(x + first + jog + second, y + o + jog * sign)
+      } else {
+        ctx.moveTo(x + o, y)
+        ctx.lineTo(x + o, y + first)
+        ctx.lineTo(x + o + jog * sign, y + first + jog)
+        ctx.lineTo(x + o + jog * sign, y + first + jog + second)
+      }
+      ctx.stroke()
+    }
+  }
+  for (let i = 0; i < 320; i++) {
+    const x = rand() * W
+    const y = rand() * H
+    ctx.fillStyle = 'rgba(200, 170, 90, 0.75)'
+    ctx.beginPath()
+    ctx.arc(x, y, 3.2, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#0a151a'
+    ctx.beginPath()
+    ctx.arc(x, y, 1.3, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // Serigrafía: zócalos, ranuras y rótulos.
+  ctx.strokeStyle = 'rgba(225, 232, 240, 0.6)'
+  ctx.fillStyle = 'rgba(225, 232, 240, 0.72)'
+  ctx.lineWidth = 2.5
+  ctx.strokeRect(W * 0.34, H * 0.26, W * 0.31, H * 0.34)
+  for (let i = 0; i < 4; i++) ctx.strokeRect(W * (0.735 + i * 0.045), H * 0.14, W * 0.03, H * 0.58)
+  for (let i = 0; i < 3; i++) ctx.strokeRect(W * 0.08, H * (0.79 + i * 0.065), W * 0.6, H * 0.03)
+  ctx.font = 'bold 26px ui-monospace, Menlo, Consolas, monospace'
+  ctx.fillText('KROQUETITA AI-BOARD', W * 0.08, H * 0.74)
+  ctx.font = '15px ui-monospace, Menlo, Consolas, monospace'
+  ctx.fillText('REV 5.2  ·  MADE WITH THREE.JS', W * 0.08, H * 0.765)
+  ctx.fillText('CPU_SOCKET', W * 0.34, H * 0.245)
+  ctx.fillText('DIMM_A1 A2 B1 B2', W * 0.735, H * 0.125)
+  ctx.fillText('PCIE_X16', W * 0.69, H * 0.812)
+  ctx.fillText('ATX_PWR', W * 0.9, H * 0.36)
+  ctx.fillText('CPU_FAN  AIO_PUMP', W * 0.34, H * 0.635)
+
+  // Taladros de montaje con su corona dorada.
+  for (const [u, v] of [[0.03, 0.04], [0.97, 0.04], [0.03, 0.96], [0.97, 0.96], [0.5, 0.04], [0.5, 0.96]]) {
+    ctx.fillStyle = 'rgba(214, 178, 92, 0.9)'
+    ctx.beginPath()
+    ctx.arc(W * u, H * v, 13, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#05080a'
+    ctx.beginPath()
+    ctx.arc(W * u, H * v, 6.5, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.anisotropy = 8
+  return texture
 }
