@@ -73,15 +73,17 @@ export function voxelize(
   const w = Math.max(1, Math.round(iw * scale))
   const h = Math.max(1, Math.round(ih * scale))
 
+  // Se dibuja la imagen completa y se lee solo el recorte: usar el rectángulo
+  // de origen de drawImage falla con los SVG que no declaran tamaño propio.
   const canvas = document.createElement('canvas')
-  canvas.width = w
-  canvas.height = h
+  canvas.width = Math.max(w, Math.round(fullW * scale))
+  canvas.height = Math.max(h, Math.round(fullH * scale))
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
   if (!ctx) return null
-  ctx.drawImage(image, sx, sy, iw, ih, 0, 0, w, h)
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
   let data: Uint8ClampedArray
   try {
-    data = ctx.getImageData(0, 0, w, h).data
+    data = ctx.getImageData(Math.round(sx * scale), Math.round(sy * scale), w, h).data
   } catch {
     return null
   }

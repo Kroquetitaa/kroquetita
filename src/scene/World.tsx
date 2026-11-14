@@ -20,6 +20,8 @@ import {
   createScanMaterial,
   createStoneTexture,
 } from './materials/shaders'
+import { Props } from './Props'
+import { Scenery } from './Scenery'
 import { VoxelLogo } from './VoxelLogo'
 
 const FLAT = -Math.PI / 2
@@ -445,6 +447,8 @@ export function World() {
         <meshStandardMaterial color="#8a7f78" roughness={0.7} metalness={0.1} map={stone} />
       </Boxes>
       <Runners />
+      <Scenery />
+      <Props />
       <Pads />
       <PointerLight />
       <SpawnPortal />

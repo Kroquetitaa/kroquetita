@@ -19,6 +19,8 @@ export interface Stage {
 }
 
 export const profile = {
+  /** Marca de la cabecera: «brand by name» */
+  brand: 'Kroquetita',
   name: 'Sergio Fuentes',
   headline: ['Head of AI /', 'VP of AI and Software Engineering'],
   intro: [

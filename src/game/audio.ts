@@ -73,6 +73,21 @@ export const sfx = {
   secret() {
     ;[392, 523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, f, 0.12, 'square', 0.05, i * 0.07))
   },
+  quack() {
+    tone(820, 520, 0.09, 'sawtooth', 0.06)
+    tone(700, 420, 0.13, 'sawtooth', 0.06, 0.1)
+  },
+  button() {
+    tone(320, 140, 0.14, 'square', 0.07)
+  },
+  rocket() {
+    tone(55, 420, 2.4, 'sawtooth', 0.06)
+    tone(40, 130, 2.6, 'triangle', 0.14)
+  },
+  ding() {
+    tone(1319, 1319, 0.5, 'sine', 0.06)
+    tone(1760, 1760, 0.6, 'sine', 0.04, 0.12)
+  },
   firework() {
     tone(1400, 300, 0.5, 'sine', 0.03)
     tone(90, 40, 0.35, 'triangle', 0.1, 0.02)

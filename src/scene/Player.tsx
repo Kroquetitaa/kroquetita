@@ -4,6 +4,7 @@ import { Billboard, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import fontMedium from '@fontsource/poppins/files/poppins-latin-500-normal.woff?url'
 import { sfx } from '../game/audio'
+import { onPlayerSay } from '../game/events'
 import { input } from '../game/input'
 import { stepBody } from '../game/physics'
 import { body, respawn } from '../game/state'
@@ -145,7 +146,7 @@ function createBoltTexture() {
 }
 
 /** Bocadillo de cómic sobre la cabeza. */
-function Bubble({ text, shownAt }: { text: string; shownAt: number }) {
+export function Bubble({ text, shownAt }: { text: string; shownAt: number }) {
   const group = useRef<THREE.Group>(null)
   const background = useRef<THREE.Mesh>(null)
   const tail = useRef<THREE.Mesh>(null)
@@ -261,6 +262,16 @@ export function Player() {
     a.nextQuip = now + 4500
     setBubble({ text: list[pick], shownAt: now })
   }
+
+  // Frases que le piden otros objetos del escenario (el cohete, el ascensor…).
+  useEffect(
+    () =>
+      onPlayerSay((text) => {
+        anim.current.nextQuip = performance.now() + 4500
+        setBubble({ text, shownAt: performance.now() })
+      }),
+    [],
+  )
 
   // Al completar todas las monedas, lo celebra.
   useEffect(

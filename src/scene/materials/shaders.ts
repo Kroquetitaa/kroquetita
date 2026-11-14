@@ -564,3 +564,138 @@ export function createPadMaterial(color: string) {
     toneMapped: false,
   })
 }
+
+/** Rascacielos lejanos (instanciados): ventanas que se encienden y apagan. */
+export function createTowerMaterial() {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime },
+    vertexShader: /* glsl */ `
+      varying vec3 vWorld;
+      varying vec3 vFace;
+      varying float vSeed;
+      void main() {
+        vec4 world = modelMatrix * instanceMatrix * vec4(position, 1.0);
+        vWorld = world.xyz;
+        vFace = normal;
+        vSeed = fract(instanceMatrix[3].x * 0.137 + instanceMatrix[3].z * 0.731);
+        gl_Position = projectionMatrix * viewMatrix * world;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      varying vec3 vWorld;
+      varying vec3 vFace;
+      varying float vSeed;
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+      }
+      void main() {
+        vec3 col = vec3(0.012, 0.014, 0.022);
+        if (abs(vFace.y) < 0.5) {
+          vec2 wall = abs(vFace.z) > 0.5 ? vWorld.xy : vWorld.zy;
+          vec2 grid = wall / vec2(1.1, 1.3);
+          vec2 cell = floor(grid);
+          vec2 f = fract(grid);
+          float window = step(0.25, f.x) * step(f.x, 0.75) * step(0.3, f.y) * step(f.y, 0.75);
+          float seed = hash(cell + vSeed * 91.0);
+          // Cada ventana cambia de estado a su ritmo.
+          float lit = step(0.72, fract(seed + floor(uTime * 0.12 + seed * 7.0) * 0.37));
+          vec3 tint = mix(vec3(0.25, 0.6, 1.0), vec3(1.0, 0.55, 0.2), step(0.8, hash(cell.yx + vSeed)));
+          col += tint * window * lit * 0.32;
+        }
+        col *= smoothstep(150.0, 60.0, length(vWorld.xz));
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `,
+    toneMapped: false,
+  })
+}
+
+/** Frontal de un armario de servidores: filas de LED parpadeando. */
+export function createRackMaterial(seed: number) {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime, uSeed: { value: seed } },
+    vertexShader: vertex,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      uniform float uSeed;
+      varying vec2 vUv;
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+      }
+      void main() {
+        vec2 grid = vUv * vec2(6.0, 14.0);
+        vec2 cell = floor(grid);
+        vec2 f = fract(grid) - 0.5;
+        float led = smoothstep(0.24, 0.1, length(f));
+        float h = hash(cell + uSeed);
+        float blink = step(0.45, fract(h * 13.0 + uTime * (0.4 + h * 3.0)));
+        vec3 color = mix(vec3(0.1, 1.0, 0.45), vec3(1.0, 0.45, 0.1), step(0.86, h));
+        // Rejillas de ventilación entre filas de luces.
+        float slot = step(0.5, fract(vUv.y * 7.0)) * 0.03;
+        float a = led * blink * step(h, 0.72);
+        gl_FragColor = vec4(color * a * 2.0 + vec3(slot), 1.0);
+      }
+    `,
+    toneMapped: false,
+  })
+}
+
+/** Esfera del núcleo de IA: brilla más en el contorno (fresnel) y late. */
+export function createCoreMaterial() {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime, uParty },
+    vertexShader: /* glsl */ `
+      varying vec3 vNormal;
+      varying vec3 vView;
+      void main() {
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vNormal = normalize(normalMatrix * normal);
+        vView = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      uniform float uParty;
+      varying vec3 vNormal;
+      varying vec3 vView;
+      void main() {
+        float facing = clamp(dot(normalize(vNormal), normalize(vView)), 0.0, 1.0);
+        float rim = pow(1.0 - facing, 2.5);
+        float pulse = 0.75 + 0.25 * sin(uTime * 1.7);
+        vec3 cold = mix(vec3(0.08, 0.35, 1.0), vec3(0.6, 0.9, 1.0), rim);
+        vec3 gold = mix(vec3(1.0, 0.5, 0.1), vec3(1.0, 0.9, 0.5), rim);
+        vec3 col = mix(cold, gold, uParty) * (0.3 + rim * 2.4) * pulse;
+        gl_FragColor = vec4(col, 0.35 + rim * 0.65);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    toneMapped: false,
+  })
+}
+
+/** Estela de una estrella fugaz: fina y brillante en la cabeza. */
+export function createStreakMaterial() {
+  return new THREE.ShaderMaterial({
+    uniforms: { uAlpha: { value: 0 } },
+    vertexShader: vertex,
+    fragmentShader: /* glsl */ `
+      uniform float uAlpha;
+      varying vec2 vUv;
+      void main() {
+        float along = pow(clamp(vUv.x, 0.0, 1.0), 3.0);
+        float across = smoothstep(0.5, 0.0, abs(vUv.y - 0.5));
+        float a = along * across * uAlpha;
+        gl_FragColor = vec4(vec3(0.8, 0.9, 1.0) * a * 2.5, a);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    fog: false,
+    toneMapped: false,
+  })
+}

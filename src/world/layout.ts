@@ -201,12 +201,54 @@ function build() {
     { position: [lastFront.x + 3.6, 0, front - 1], radius: 0.8, power: Math.sqrt(2 * 16 * (lastFront.height + 1.6)) },
   ]
 
+  // ---------- Atrezo: ascensor a la cima, armarios de servidores y botón de despliegue
+  const lastBlock = blocks[n - 1]
+  const right = lastFront.x + BLOCK_W / 2
+  // El ascensor va pegado al último bloque, por su lado exterior.
+  const outer = lastBlock.row % 2 === 1 ? -1 : 1
+  const elevatorSize: Vec3 = [2.2, 0.25, 2.2]
+  const elevatorCenter: Vec3 = [
+    lastBlock.x + outer * (BLOCK_W / 2 + elevatorSize[0] / 2 + 0.08),
+    elevatorSize[1] / 2,
+    lastBlock.z - (lastBlock.row === 0 ? 1 : 0),
+  ]
+  const rackSize: Vec3 = [1, 2.3, 0.9]
+  const racks: Box[] = [
+    ...[0, 1.1, 2.2].map((dx): Box => ({
+      center: [x0 - BLOCK_W / 2 - 9.1 + dx, rackSize[1] / 2, -4.5],
+      size: rackSize,
+      owner: 0,
+    })),
+    ...[0, 1.1, 2.2].map((dx): Box => ({
+      center: [right + 5 + dx, rackSize[1] / 2, -4],
+      size: rackSize,
+      owner: 0,
+    })),
+  ]
+  const props = {
+    elevator: {
+      center: elevatorCenter,
+      size: elevatorSize,
+      /** Altura a la que sube: la del último bloque */
+      top: lastBlock.height,
+      /** Su colisión se mueve cada frame (la actualiza el propio ascensor) */
+      collider: toAABB({ center: elevatorCenter, size: elevatorSize }),
+    },
+    racks,
+    button: { center: [right + 4.6, 0.25, front + 4.2] as Vec3, size: [1.4, 0.5, 1.4] as Vec3 },
+    rocket: [right + 8, 0, front + 0.5] as Vec3,
+    duck: [first.x + 9, 0, front + 5] as Vec3,
+  }
+
   const colliders: AABB[] = [
     ...blocks.map((b) =>
       toAABB({ center: [b.x, b.height / 2, b.z], size: [b.width, b.height, b.depth] }),
     ),
     ...steps.map(toAABB),
     ...ledges.map(toAABB),
+    ...racks.map(toAABB),
+    toAABB(props.button),
+    props.elevator.collider,
   ]
 
   const rows = blocks[n - 1].row + 1
@@ -220,6 +262,7 @@ function build() {
     ledges,
     coins,
     pads,
+    props,
     path,
     colliders,
     spawn,
@@ -228,7 +271,7 @@ function build() {
     rows,
     bounds: {
       minX: x0 - 14,
-      maxX: -x0 + 10,
+      maxX: -x0 + 14,
       minZ: -(rows - 1) * BLOCK_D - BLOCK_D / 2 - 2.5,
       maxZ: 12,
     },

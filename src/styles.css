@@ -68,6 +68,8 @@ body {
   position: absolute;
   top: var(--gutter);
   left: var(--gutter);
+  pointer-events: auto;
+  cursor: default;
 }
 
 .brand p {
@@ -76,6 +78,71 @@ body {
   font-weight: 500;
   letter-spacing: 0.35em;
   text-transform: uppercase;
+  white-space: pre;
+  transition:
+    letter-spacing 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+    text-shadow 0.4s;
+}
+
+.brand__name {
+  font-weight: 600;
+}
+
+.brand__by {
+  font-weight: 300;
+  text-transform: lowercase;
+  color: var(--muted);
+}
+
+.brand__author {
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* Subrayado de neón que se dibuja al pasar el ratón */
+.brand::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0.35em;
+  bottom: -8px;
+  height: 2px;
+  background: linear-gradient(90deg, #19e6ff, #3df2b0, #ffd60a, #ff6a2b, #ff4d6d);
+  box-shadow: 0 0 14px rgba(25, 230, 255, 0.7);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.brand:hover::after,
+.brand.is-active::after {
+  transform: scaleX(1);
+}
+
+.brand:hover p,
+.brand.is-active p {
+  letter-spacing: 0.42em;
+  text-shadow: 0 0 18px rgba(25, 230, 255, 0.55);
+}
+
+/* Barrido de color por las letras mientras se descifran */
+.brand.is-active .brand__name,
+.brand.is-active .brand__author {
+  background: linear-gradient(90deg, #fff 0%, #19e6ff 30%, #ff6a2b 55%, #fff 80%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: brand-sweep 0.9s linear;
+}
+
+@keyframes brand-sweep {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
 }
 
 /* ---------- Hero ---------- */
@@ -519,7 +586,9 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .pill--action,
   .win,
-  .win__title {
+  .win__title,
+  .brand.is-active .brand__name,
+  .brand.is-active .brand__author {
     animation: none;
   }
 

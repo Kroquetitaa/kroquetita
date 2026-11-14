@@ -37,6 +37,54 @@ const Icon = {
   ),
 }
 
+const GLYPHS = '01<>/{}[]#$%&*+=?ABCDEFKQRSXZ'
+
+/**
+ * Marca de la cabecera. Al pasar el ratón las letras se "descifran" de
+ * izquierda a derecha, como en un terminal, mientras un barrido de color
+ * recorre el texto.
+ */
+function Brand() {
+  const full = `${profile.brand} by ${profile.name}`
+  const [text, setText] = useState(full)
+  const [active, setActive] = useState(false)
+  const frame = useRef(0)
+
+  const scramble = () => {
+    cancelAnimationFrame(frame.current)
+    setActive(true)
+    const start = performance.now()
+    const duration = 900
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / duration)
+      // Cada letra se fija cuando el barrido la alcanza; antes, baila.
+      const settled = Math.floor(progress * (full.length + 4))
+      let out = ''
+      for (let i = 0; i < full.length; i++) {
+        if (full[i] === ' ' || i < settled - 4) out += full[i]
+        else out += GLYPHS[Math.floor(Math.random() * GLYPHS.length)]
+      }
+      setText(progress < 1 ? out : full)
+      if (progress < 1) frame.current = requestAnimationFrame(tick)
+      else setActive(false)
+    }
+    frame.current = requestAnimationFrame(tick)
+  }
+
+  useEffect(() => () => cancelAnimationFrame(frame.current), [])
+
+  const split = profile.brand.length
+  return (
+    <header className={`brand ${active ? 'is-active' : ''}`} onPointerEnter={scramble} aria-label={full}>
+      <p aria-hidden="true">
+        <span className="brand__name">{text.slice(0, split)}</span>
+        <span className="brand__by">{text.slice(split, split + 4)}</span>
+        <span className="brand__author">{text.slice(split + 4)}</span>
+      </p>
+    </header>
+  )
+}
+
 function Loader() {
   return (
     <div className="loader" role="status">
@@ -218,9 +266,7 @@ export function Overlay() {
     <div className="overlay">
       <div className={`curtain ${ready ? 'is-open' : ''}`} />
 
-      <header className="brand">
-        <p>{profile.name}</p>
-      </header>
+      <Brand />
 
       <Hero hidden={playing} />
 
