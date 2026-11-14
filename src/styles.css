@@ -203,9 +203,9 @@ body {
 .hero {
   position: absolute;
   left: var(--gutter);
-  top: 50%;
+  /* Arriba, y no centrado: la ficha de la etapa necesita la mitad inferior */
+  top: clamp(92px, 17vh, 220px);
   max-width: min(600px, calc(100vw - 2 * var(--gutter)));
-  transform: translateY(-50%);
   transition:
     opacity 0.6s ease,
     transform 0.6s ease;
@@ -223,7 +223,7 @@ body {
 
 .hero.is-hidden {
   opacity: 0;
-  transform: translateY(-50%) translateX(-24px);
+  transform: translateX(-24px);
   pointer-events: none;
 }
 
@@ -290,7 +290,7 @@ body {
   position: absolute;
   left: var(--gutter);
   bottom: var(--gutter);
-  width: min(430px, calc(100vw - 2 * var(--gutter)));
+  width: min(500px, calc(100vw - 2 * var(--gutter)));
   padding: 16px 18px 12px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-left: 3px solid var(--accent);
@@ -316,7 +316,7 @@ body {
   display: flex;
   align-items: center;
   gap: 14px;
-  min-height: 92px;
+  min-height: 72px;
   animation: stage-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
@@ -372,20 +372,45 @@ body {
   list-style: none;
 }
 
+.career__summary {
+  margin: 0 0 9px;
+  font-size: 12.5px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.86);
+}
+
 .career__stack {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
+  scrollbar-width: none;
 }
 
 .career__stack li {
-  padding: 3px 9px;
+  flex: none;
+  padding: 2px 8px;
   border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
   border-radius: 999px;
   background: color-mix(in srgb, var(--accent) 16%, transparent);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+
+/* Solo se usa en pantallas pequeñas, donde el detalle va plegado */
+.career__toggle {
+  display: none;
+  margin-top: 6px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 .career__lines {
@@ -1731,5 +1756,57 @@ body {
   .medals,
   .terminal {
     animation: none;
+  }
+}
+
+/* ---------- Ficha con detalle: cuándo se pliega ---------- */
+
+/* Escritorio con poca altura: los logros se quedan para «Ver más» */
+@media (max-height: 680px) and (min-width: 721px) and (orientation: landscape) {
+  .career:not(.is-expanded) .career__lines {
+    display: none;
+  }
+
+  .career__toggle {
+    display: inline-block;
+  }
+}
+
+/* Vertical o estrecho: resumen recortado y tecnologías en una fila que se desliza */
+@media (max-width: 720px), (orientation: portrait) {
+  .career:not(.is-expanded) .career__summary {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .career:not(.is-expanded) .career__stack {
+    flex-wrap: nowrap;
+    margin-right: -14px;
+    padding-right: 14px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+  }
+
+  .career:not(.is-expanded) .career__lines {
+    display: none;
+  }
+
+  .career__toggle {
+    display: inline-block;
+  }
+
+  .career__body {
+    min-height: 0;
+  }
+}
+
+/* Móvil apaisado: no hay sitio para el detalle */
+@media (max-height: 520px) and (orientation: landscape) {
+  .career__toggle {
+    display: none;
   }
 }

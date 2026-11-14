@@ -31,8 +31,10 @@ export interface Stage {
   part?: Localized
   /** Disciplina: elige el mini-escenario animado de la caja */
   discipline: Discipline
-  /** Tecnologías: salen como etiquetas al abrirse la caja */
+  /** Tecnologías, herramientas y lenguajes: salen como etiquetas en la ficha */
   stack: string[]
+  /** Resumen de la etapa, en una o dos frases */
+  summary?: Localized
   /** Dos o tres logros (frases cortas); salen en la ficha lateral */
   highlights?: Localized<string[]>
   /** Logo en /public/logos; se convierte en un emblema 3D de vóxeles */
@@ -133,7 +135,7 @@ export const profile = {
 }
 
 // De la más antigua a la más reciente. La última es la etapa actual: la torre más alta.
-// `stack` es provisional (sale de la lista de conocimientos) y faltan los `highlights`.
+// `stack`, `summary` y `highlights` están redactados a partir del puesto: revísalos y corrígelos.
 export const stages: Stage[] = [
   {
     title: 'Plexus Tech',
@@ -143,7 +145,36 @@ export const stages: Stage[] = [
     color: '#19e6ff',
     part: { es: 'EL ARRANQUE', en: 'THE START' },
     discipline: 'fullstack',
-    stack: ['React', 'Node'],
+    stack: [
+      'JavaScript',
+      'TypeScript',
+      'React',
+      'Node.js',
+      'Express',
+      'PostgreSQL',
+      'REST',
+      'Docker',
+      'Git',
+      'Jest',
+      'Jira',
+      'Scrum',
+    ],
+    summary: {
+      es: 'Mis primeros pasos en consultoría: desarrollo full stack en un equipo ágil, del componente de React al endpoint en Node.',
+      en: 'My first steps in consulting: full-stack development in an agile team, from the React component to the Node endpoint.',
+    },
+    highlights: {
+      es: [
+        'Componentes de React y APIs REST para aplicaciones de cliente',
+        'Pruebas unitarias y revisión de código desde el primer día',
+        'Trabajo en Scrum, con entregas cada dos semanas',
+      ],
+      en: [
+        'React components and REST APIs for client applications',
+        'Unit tests and code review from day one',
+        'Scrum, shipping every two weeks',
+      ],
+    },
     logo: '/logos/plexus.png',
   },
   {
@@ -154,7 +185,36 @@ export const stages: Stage[] = [
     color: '#3df2b0',
     part: { es: 'LAS BASES', en: 'THE FOUNDATIONS' },
     discipline: 'frontend',
-    stack: ['React', 'Next.js'],
+    stack: [
+      'React',
+      'Next.js',
+      'TypeScript',
+      'Redux Toolkit',
+      'Tailwind CSS',
+      'Sass',
+      'Storybook',
+      'Figma',
+      'Webpack',
+      'Jest',
+      'Testing Library',
+      'Cypress',
+    ],
+    summary: {
+      es: 'Frontend a tiempo completo: interfaces rápidas y accesibles con React y Next.js, de la maqueta de Figma a producción.',
+      en: 'Full-time frontend: fast, accessible interfaces with React and Next.js, from the Figma mock-up to production.',
+    },
+    highlights: {
+      es: [
+        'Sistema de diseño documentado en Storybook',
+        'Renderizado en servidor y mejora de las Core Web Vitals',
+        'Pruebas de extremo a extremo con Cypress',
+      ],
+      en: [
+        'Design system documented in Storybook',
+        'Server-side rendering and better Core Web Vitals',
+        'End-to-end tests with Cypress',
+      ],
+    },
     logo: '/logos/dedeeit.jpg',
     logoCrop: [0, 0.14, 1, 0.55],
   },
@@ -166,7 +226,36 @@ export const stages: Stage[] = [
     color: '#ffd60a',
     part: { es: 'COGIENDO RITMO', en: 'PICKING UP PACE' },
     discipline: 'fullstack',
-    stack: ['React', 'Node'],
+    stack: [
+      'TypeScript',
+      'React',
+      'Node.js',
+      'NestJS',
+      'GraphQL',
+      'MongoDB',
+      'Redis',
+      'Docker',
+      'AWS',
+      'GitHub Actions',
+      'Swagger',
+      'Jest',
+    ],
+    summary: {
+      es: 'Producto de punta a punta: API, base de datos y frontend, con el despliegue automatizado.',
+      en: 'Product end to end: API, database and frontend, with automated deployment.',
+    },
+    highlights: {
+      es: [
+        'API en GraphQL con NestJS y MongoDB',
+        'Integración y despliegue continuos con GitHub Actions y Docker',
+        'Caché con Redis para acelerar las consultas más pesadas',
+      ],
+      en: [
+        'GraphQL API with NestJS and MongoDB',
+        'Continuous integration and delivery with GitHub Actions and Docker',
+        'Redis caching to speed up the heaviest queries',
+      ],
+    },
     logo: '/logos/emiral.png',
   },
   {
@@ -177,7 +266,36 @@ export const stages: Stage[] = [
     color: '#2f7bff',
     part: { es: 'APPS MÓVILES', en: 'MOBILE APPS' },
     discipline: 'mobile',
-    stack: ['React Native', 'Swift'],
+    stack: [
+      'React Native',
+      'TypeScript',
+      'Expo',
+      'Swift',
+      'Kotlin',
+      'Redux Toolkit',
+      'React Query',
+      'Firebase',
+      'Fastlane',
+      'Detox',
+      'App Store Connect',
+      'Google Play',
+    ],
+    summary: {
+      es: 'Apps móviles multiplataforma con React Native, con módulos nativos cuando hacía falta.',
+      en: 'Cross-platform mobile apps with React Native, with native modules whenever they were needed.',
+    },
+    highlights: {
+      es: [
+        'Publicación en App Store y Google Play',
+        'Notificaciones push y modo sin conexión',
+        'Módulos nativos en Swift y Kotlin',
+      ],
+      en: [
+        'Releases on the App Store and Google Play',
+        'Push notifications and offline mode',
+        'Native modules in Swift and Kotlin',
+      ],
+    },
     logo: '/logos/sectorea.png',
   },
   {
@@ -188,7 +306,36 @@ export const stages: Stage[] = [
     color: '#ff4d6d',
     part: { es: 'APPS MÓVILES', en: 'MOBILE APPS' },
     discipline: 'mobile',
-    stack: ['React Native', 'Swift'],
+    stack: [
+      'React Native',
+      'TypeScript',
+      'Swift',
+      'SwiftUI',
+      'Kotlin',
+      'GraphQL',
+      'Apollo Client',
+      'Reanimated',
+      'Firebase',
+      'Sentry',
+      'Bitrise',
+      'Jest',
+    ],
+    summary: {
+      es: 'App de consumo: rendimiento, animaciones fluidas y versiones nuevas cada poco tiempo.',
+      en: 'A consumer app: performance, smooth animations and frequent releases.',
+    },
+    highlights: {
+      es: [
+        'Optimización del arranque y de las listas largas',
+        'Animaciones a 60 fps con Reanimated',
+        'Monitorización con Sentry y entregas automáticas con Bitrise',
+      ],
+      en: [
+        'Faster start-up and long lists',
+        '60 fps animations with Reanimated',
+        'Monitoring with Sentry and automated releases with Bitrise',
+      ],
+    },
     logo: '/logos/pepper.svg',
   },
   {
@@ -199,7 +346,36 @@ export const stages: Stage[] = [
     color: '#ff9f1c',
     part: { es: 'PRIMER EQUIPO A CARGO', en: 'FIRST TEAM TO LEAD' },
     discipline: 'lead',
-    stack: ['React Native', 'Node'],
+    stack: [
+      'React Native',
+      'TypeScript',
+      'Node.js',
+      'NestJS',
+      'PostgreSQL',
+      'Prisma',
+      'AWS',
+      'Docker',
+      'Terraform',
+      'GitHub Actions',
+      'Stripe',
+      'Sentry',
+    ],
+    summary: {
+      es: 'Mi primer equipo a cargo: arquitectura, hoja de ruta técnica y entrega de la app y de su backend.',
+      en: 'My first team to lead: architecture, technical roadmap and delivery of the app and its backend.',
+    },
+    highlights: {
+      es: [
+        'Definición de la arquitectura y de los estándares de código',
+        'Backend e infraestructura como código en AWS',
+        'Mentoría, revisión de código y selección del equipo',
+      ],
+      en: [
+        'Defined the architecture and the code standards',
+        'Backend and infrastructure as code on AWS',
+        'Mentoring, code review and hiring',
+      ],
+    },
     logo: '/logos/packar.png',
     logoCrop: [0.06, 0.34, 0.36, 0.67],
   },
@@ -211,7 +387,37 @@ export const stages: Stage[] = [
     color: '#8b5cf6',
     part: { es: 'FRONTEND Y MÓVIL', en: 'FRONTEND AND MOBILE' },
     discipline: 'frontend',
-    stack: ['React', 'Next.js', 'React Native'],
+    stack: [
+      'React',
+      'Next.js',
+      'TypeScript',
+      'React Native',
+      'Expo',
+      'Three.js',
+      'React Three Fiber',
+      'Tailwind CSS',
+      'Zustand',
+      'TanStack Query',
+      'Vite',
+      'Playwright',
+      'Storybook',
+    ],
+    summary: {
+      es: 'Web y móvil a la vez: productos con React y Next.js, apps con React Native y experiencias 3D en el navegador.',
+      en: 'Web and mobile at once: products with React and Next.js, apps with React Native and 3D experiences in the browser.',
+    },
+    highlights: {
+      es: [
+        'Librería de componentes compartida entre web y móvil',
+        'Experiencias interactivas en 3D con Three.js',
+        'Pruebas de extremo a extremo con Playwright',
+      ],
+      en: [
+        'Component library shared between web and mobile',
+        'Interactive 3D experiences with Three.js',
+        'End-to-end tests with Playwright',
+      ],
+    },
     logo: '/logos/tyris.png',
   },
   {
@@ -222,7 +428,37 @@ export const stages: Stage[] = [
     color: '#22d3ee',
     part: { es: 'LIDERAZGO', en: 'LEADERSHIP' },
     discipline: 'lead',
-    stack: ['React', 'Node'],
+    stack: [
+      'TypeScript',
+      'React',
+      'Next.js',
+      'Node.js',
+      'NestJS',
+      'Kafka',
+      'PostgreSQL',
+      'Redis',
+      'Kubernetes',
+      'AWS',
+      'Terraform',
+      'Datadog',
+      'GitHub Actions',
+    ],
+    summary: {
+      es: 'Liderazgo técnico en producto digital para el deporte: equipos, arquitectura y plataformas preparadas para picos de tráfico.',
+      en: 'Technical leadership in digital products for sport: teams, architecture and platforms ready for traffic peaks.',
+    },
+    highlights: {
+      es: [
+        'Microservicios y arquitectura orientada a eventos con Kafka',
+        'Observabilidad y objetivos de nivel de servicio',
+        'Hoja de ruta técnica y mentoría del equipo',
+      ],
+      en: [
+        'Microservices and event-driven architecture with Kafka',
+        'Observability and service level objectives',
+        'Technical roadmap and team mentoring',
+      ],
+    },
     logo: '/logos/sportian.webp',
   },
   {
@@ -234,20 +470,80 @@ export const stages: Stage[] = [
     color: '#e8454f',
     part: { es: 'BLOCKCHAIN E IA', en: 'BLOCKCHAIN AND AI' },
     discipline: 'blockchain',
-    stack: ['Blockchain', 'Python', 'LLM'],
+    stack: [
+      'Solidity',
+      'Hardhat',
+      'Ethers.js',
+      'Hyperledger Fabric',
+      'IPFS',
+      'Python',
+      'FastAPI',
+      'LangChain',
+      'OpenAI API',
+      'Hugging Face',
+      'PyTorch',
+      'Docker',
+      'Azure',
+    ],
+    summary: {
+      es: 'Donde se cruzan blockchain e IA: contratos inteligentes, identidad digital y los primeros sistemas con LLM.',
+      en: 'Where blockchain meets AI: smart contracts, digital identity and the first LLM-based systems.',
+    },
+    highlights: {
+      es: [
+        'Contratos inteligentes en Solidity, con sus pruebas y auditorías',
+        'Trazabilidad e identidad digital sobre redes permisionadas',
+        'Prototipos de RAG y asistentes con modelos de lenguaje',
+      ],
+      en: [
+        'Smart contracts in Solidity, with their tests and audits',
+        'Traceability and digital identity on permissioned networks',
+        'RAG prototypes and assistants built on language models',
+      ],
+    },
     logo: '/logos/izertis.jpg',
   },
   {
     // Fechas provisionales
     title: 'Santander',
-    role: 'Data Solutions Architecture Senior Associate',
+    role: 'Data Solutions AI Architecture Senior Associate',
     start: '2026-01',
     end: '2026-06',
     yearOnly: true,
     color: '#ec0000',
-    part: { es: 'DATOS A ESCALA', en: 'DATA AT SCALE' },
+    part: { es: 'DATOS E IA A ESCALA', en: 'DATA AND AI AT SCALE' },
     discipline: 'data',
-    stack: ['Python', 'Data Science'],
+    stack: [
+      'Python',
+      'SQL',
+      'Apache Spark',
+      'Databricks',
+      'Delta Lake',
+      'Kafka',
+      'Airflow',
+      'dbt',
+      'Snowflake',
+      'AWS',
+      'Terraform',
+      'MLflow',
+      'Power BI',
+    ],
+    summary: {
+      es: 'Arquitectura de datos e IA a escala bancaria: plataformas, gobierno del dato y pipelines fiables que alimentan los modelos.',
+      en: 'Data and AI architecture at banking scale: platforms, data governance and reliable pipelines that feed the models.',
+    },
+    highlights: {
+      es: [
+        'Diseño de arquitecturas lakehouse preparadas para IA',
+        'Pipelines por lotes y en tiempo real',
+        'Gobierno, calidad y linaje del dato',
+      ],
+      en: [
+        'Lakehouse architectures designed to be AI-ready',
+        'Batch and real-time pipelines',
+        'Data governance, quality and lineage',
+      ],
+    },
     logo: '/logos/santander.png',
   },
   {
@@ -259,7 +555,38 @@ export const stages: Stage[] = [
     color: '#ff6a2b',
     part: { es: 'INTELIGENCIA ARTIFICIAL', en: 'ARTIFICIAL INTELLIGENCE' },
     discipline: 'ai',
-    stack: ['IA', 'LLM', 'NLP', 'Python'],
+    stack: [
+      'Python',
+      'PyTorch',
+      'LangChain',
+      'LangGraph',
+      'Claude API',
+      'OpenAI API',
+      'MCP',
+      'RAG',
+      'pgvector',
+      'FastAPI',
+      'Hugging Face',
+      'vLLM',
+      'Docker',
+      'Kubernetes',
+    ],
+    summary: {
+      es: 'Lidero el equipo que lleva la IA a producción: agentes, RAG y evaluación de modelos.',
+      en: 'I lead the team that takes AI to production: agents, RAG and model evaluation.',
+    },
+    highlights: {
+      es: [
+        'Sistemas multiagente con herramientas propias (MCP)',
+        'RAG con evaluación continua y barreras de seguridad',
+        'Ajuste fino y despliegue de modelos abiertos',
+      ],
+      en: [
+        'Multi-agent systems with their own tools (MCP)',
+        'RAG with continuous evaluation and guardrails',
+        'Fine-tuning and serving of open models',
+      ],
+    },
     logo: '/logos/theaibusiness.png',
   },
 ]

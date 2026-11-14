@@ -67,6 +67,8 @@ const UI = {
     medals: 'Logros',
     medalUnlocked: 'Logro desbloqueado',
     close: 'Cerrar',
+    more: 'Ver más',
+    less: 'Ver menos',
   },
   en: {
     loading: 'Compiling shaders…',
@@ -119,6 +121,8 @@ const UI = {
     medals: 'Achievements',
     medalUnlocked: 'Achievement unlocked',
     close: 'Close',
+    more: 'Show more',
+    less: 'Show less',
   },
 }
 

@@ -74,6 +74,7 @@ const HELP: Record<Lang, Array<[string, string]>> = {
 const describe = (stage: Stage, lang: Lang): Line[] => [
   out(`${stage.title} — ${stage.role}`, 'ok'),
   out(`${periodOf(stage, lang)} · ${durationOf(stage, lang)}`),
+  ...(stage.summary ? [out(stage.summary[lang])] : []),
   out(stage.stack.join(' · '), 'dim'),
   ...(stage.highlights?.[lang] ?? []).map((line) => out(`› ${line}`)),
 ]

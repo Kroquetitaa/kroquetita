@@ -111,6 +111,8 @@ function StagePanel({ hidden }: { hidden: boolean }) {
   const lang = useLang()
   const t = useUI()
   const touring = useGame((s) => s.mode === 'tour')
+  // En pantallas pequeñas el detalle va plegado: se abre con «Ver más».
+  const [expanded, setExpanded] = useState(false)
   const stage = stages[index]
 
   useEffect(() => {
@@ -127,14 +129,14 @@ function StagePanel({ hidden }: { hidden: boolean }) {
         }
         game.setStage(game.stage + 1)
       },
-      touring ? 5200 : 3800,
+      touring ? 8000 : 7000,
     )
     return () => window.clearInterval(timer)
   }, [hidden, touring])
 
   return (
     <section
-      className={`career ${hidden ? 'is-hidden' : ''} ${touring ? 'is-touring' : ''}`}
+      className={`career ${hidden ? 'is-hidden' : ''} ${touring ? 'is-touring' : ''} ${expanded ? 'is-expanded' : ''}`}
       style={{ '--accent': accent } as React.CSSProperties}
       aria-hidden={hidden}
       aria-label={t.career}
@@ -152,6 +154,7 @@ function StagePanel({ hidden }: { hidden: boolean }) {
       </div>
       {/* Lo que guarda la caja: tecnologías y, si los hay, logros */}
       <div className="career__more" key={`more-${index}`}>
+        {stage.summary && <p className="career__summary">{stage.summary[lang]}</p>}
         <ul className="career__stack">
           {stage.stack.map((item) => (
             <li key={item}>{item}</li>
@@ -164,6 +167,15 @@ function StagePanel({ hidden }: { hidden: boolean }) {
             ))}
           </ul>
         )}
+        <button
+          type="button"
+          className="career__toggle"
+          onClick={() => setExpanded((open) => !open)}
+          aria-expanded={expanded}
+          tabIndex={hidden ? -1 : 0}
+        >
+          {expanded ? t.less : t.more}
+        </button>
       </div>
       <div className="career__nav">
         <button type="button" onClick={() => setStage(index - 1, true)} aria-label={t.previousStage} tabIndex={hidden ? -1 : 0}>

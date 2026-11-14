@@ -59,7 +59,7 @@ export function CameraRig() {
       if (portrait) {
         // El texto va arriba: los bloques se encuadran en la mitad inferior.
         goalPos.set(-4 + drift + x * 1.2, view.position[1] + 6 + y, distance)
-        goalLook.set(0, view.look[1] + distance * 0.03, -1)
+        goalLook.set(0, view.look[1] - distance * 0.015, -1)
       } else {
         goalPos.set(view.position[0] + drift + x * 1.8, view.position[1] + y, distance)
         goalLook.set(view.look[0], view.look[1], view.look[2])
