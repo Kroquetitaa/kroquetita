@@ -19,6 +19,7 @@ export const ACHIEVEMENTS = [
   'party',
   'tour',
   'hired',
+  'social',
 ] as const
 export type Achievement = (typeof ACHIEVEMENTS)[number]
 export type CameraMode = 'wide' | 'chase'
@@ -61,6 +62,10 @@ interface GameState {
   daytime: Daytime
   /** Terminal de comandos abierto */
   terminal: boolean
+  /** Personaje que hay al alcance para hablar, conversación en curso y con quién se ha hablado ya */
+  near: string | null
+  talk: { id: string; line: number } | null
+  talked: string[]
   /** Logros conseguidos y el último (para el aviso en pantalla) */
   medals: Achievement[]
   lastMedal: { id: Achievement; at: number } | null
@@ -97,6 +102,9 @@ interface GameState {
   setWeather: (weather: Weather) => void
   setDaytime: (daytime: Daytime) => void
   setTerminal: (open: boolean) => void
+  setNear: (id: string | null) => void
+  setTalk: (talk: GameState['talk']) => void
+  markTalked: (id: string) => void
   unlock: (id: Achievement) => void
   setAccent: (index: number, color: string) => void
   toggleParty: () => void
@@ -119,6 +127,9 @@ export const useGame = create<GameState>((set, get) => ({
   weather: 'auto',
   daytime: 'auto',
   terminal: false,
+  near: null,
+  talk: null,
+  talked: [],
   medals: initialMedals(),
   lastMedal: null,
   accents: stages.map((stage) => stage.color),
@@ -135,8 +146,8 @@ export const useGame = create<GameState>((set, get) => ({
   runId: 0,
   setReady: () => set({ ready: true }),
   play: () => set((s) => (s.ready ? { mode: 'play' } : s)),
-  tour: () => set((s) => (s.ready ? { mode: 'tour', stage: 0, stageHold: 0 } : s)),
-  exit: () => set({ mode: 'intro' }),
+  tour: () => set((s) => (s.ready ? { mode: 'tour', stage: 0, stageHold: 0, talk: null, near: null } : s)),
+  exit: () => set({ mode: 'intro', talk: null, near: null }),
   toggleCamera: () => set((s) => ({ camera: s.camera === 'wide' ? 'chase' : 'wide' })),
   toggleMuted: () => set((s) => ({ muted: !s.muted })),
   setLang: (lang) => {
@@ -150,6 +161,9 @@ export const useGame = create<GameState>((set, get) => ({
   setWeather: (weather) => set({ weather }),
   setDaytime: (daytime) => set({ daytime }),
   setTerminal: (terminal) => set({ terminal }),
+  setNear: (near) => set({ near }),
+  setTalk: (talk) => set({ talk }),
+  markTalked: (id) => set((s) => (s.talked.includes(id) ? s : { talked: [...s.talked, id] })),
   unlock: (id) =>
     set((s) => {
       if (s.medals.includes(id)) return s

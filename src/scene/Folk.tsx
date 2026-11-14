@@ -1,0 +1,471 @@
+import { useMemo, useRef, useState } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { Billboard, Text } from '@react-three/drei'
+import * as THREE from 'three'
+import fontBold from '@fontsource/poppins/files/poppins-latin-600-normal.woff?url'
+import { internLines, internName, talkers, type Talker, type TalkerId } from '../data/folk'
+import { body } from '../game/state'
+import { currentLang, useLang } from '../i18n'
+import { useGame } from '../store'
+import { world } from '../world/layout'
+import { Detail } from './Detail'
+import { introProgress } from './intro'
+import { createNeonMaterial } from './materials/shaders'
+import { Bubble } from './Player'
+
+/**
+ * Gente nueva en la plaza: cuatro personajes con los que se puede hablar
+ * (reclutadora, guía, QA y sysadmin) y un becario que te sigue haciendo
+ * preguntas. Los diálogos se leen en la interfaz; aquí solo va el muñeco y
+ * el aviso de «pulsa E» sobre su cabeza.
+ */
+
+const SKIN = new THREE.MeshStandardMaterial({ color: '#f1d9c5', roughness: 0.7 })
+const INK = new THREE.MeshBasicMaterial({ color: '#14161b' })
+const DARK = new THREE.MeshStandardMaterial({ color: '#1b1e26', roughness: 0.5, metalness: 0.5 })
+const PAPER = new THREE.MeshStandardMaterial({ color: '#f3f4f7', roughness: 0.6 })
+const STEEL = new THREE.MeshStandardMaterial({ color: '#8d95a3', roughness: 0.3, metalness: 0.9 })
+
+/** Radio al que se puede empezar a hablar, y al que se corta la conversación */
+const TALK_RANGE = 2.3
+const LEAVE_RANGE = 3.6
+
+type Kit = TalkerId | 'intern'
+
+/** ¿Hay algún obstáculo a ras de suelo en ese punto? */
+function blocked(x: number, z: number, margin = 0.45) {
+  for (const c of world.colliders) {
+    if (c.min[1] > 0.6) continue
+    if (x > c.min[0] - margin && x < c.max[0] + margin && z > c.min[2] - margin && z < c.max[2] + margin) return true
+  }
+  return false
+}
+
+interface PuppetParts {
+  root: React.RefObject<THREE.Group | null>
+  head: React.RefObject<THREE.Group | null>
+  arms: React.RefObject<THREE.Group | null>
+}
+
+/** El muñeco: cuerpo y cabeza en la capa normal (dan sombra); el resto es detalle. */
+function Puppet({ kit, color, accent, parts }: { kit: Kit; color: string; accent: string; parts: PuppetParts }) {
+  const neon = useMemo(() => createNeonMaterial(accent, 1.5), [accent])
+  const cloth = useMemo(() => new THREE.MeshStandardMaterial({ color, roughness: 0.65 }), [color])
+  return (
+    <group ref={parts.root}>
+      <mesh position-y={0.5} material={cloth} castShadow>
+        <boxGeometry args={[0.42, 0.46, 0.28]} />
+      </mesh>
+      <group ref={parts.head} position-y={0.96}>
+        <mesh material={SKIN} castShadow>
+          <boxGeometry args={[0.44, 0.42, 0.4]} />
+        </mesh>
+        <Detail>
+          {[-0.1, 0.1].map((x) => (
+            <mesh key={x} position={[x, 0.03, 0.202]} material={INK}>
+              <planeGeometry args={[0.06, 0.1]} />
+            </mesh>
+          ))}
+          <mesh position={[0, -0.1, 0.202]} material={INK}>
+            <planeGeometry args={[0.14, 0.025]} />
+          </mesh>
+          {/* Pelo, gorra o capucha, según el personaje */}
+          {kit === 'recruiter' && (
+            <>
+              <mesh position={[0, 0.2, -0.02]}>
+                <boxGeometry args={[0.48, 0.14, 0.46]} />
+                <meshStandardMaterial color="#5a2d1a" roughness={0.8} />
+              </mesh>
+              <mesh position={[0, 0.1, 0]} material={DARK}>
+                <boxGeometry args={[0.5, 0.05, 0.08]} />
+              </mesh>
+              <mesh position={[0.2, -0.08, 0.16]} material={DARK}>
+                <boxGeometry args={[0.03, 0.03, 0.18]} />
+              </mesh>
+            </>
+          )}
+          {kit === 'guide' && (
+            <>
+              <mesh position={[0, 0.24, 0]} material={neon}>
+                <boxGeometry args={[0.46, 0.1, 0.42]} />
+              </mesh>
+              <mesh position={[0, 0.2, 0.28]} material={neon}>
+                <boxGeometry args={[0.4, 0.03, 0.18]} />
+              </mesh>
+            </>
+          )}
+          {kit === 'qa' && (
+            <>
+              <mesh position={[0, 0.22, -0.02]}>
+                <boxGeometry args={[0.46, 0.08, 0.44]} />
+                <meshStandardMaterial color="#22252e" roughness={0.8} />
+              </mesh>
+              {[-0.1, 0.1].map((x) => (
+                <mesh key={x} position={[x, 0.03, 0.21]} material={neon}>
+                  <ringGeometry args={[0.055, 0.075, 16]} />
+                </mesh>
+              ))}
+            </>
+          )}
+          {kit === 'sysadmin' && (
+            <>
+              <mesh position={[0, 0.08, -0.04]} material={cloth}>
+                <boxGeometry args={[0.5, 0.5, 0.4]} />
+              </mesh>
+              <mesh position={[0, -0.19, 0.19]}>
+                <boxGeometry args={[0.3, 0.12, 0.04]} />
+                <meshStandardMaterial color="#3a2a20" roughness={0.9} />
+              </mesh>
+            </>
+          )}
+          {kit === 'intern' && (
+            <mesh position={[0, 0.22, -0.02]}>
+              <boxGeometry args={[0.46, 0.1, 0.44]} />
+              <meshStandardMaterial color="#c9862e" roughness={0.8} />
+            </mesh>
+          )}
+        </Detail>
+      </group>
+      <Detail>
+        {/* Piernas */}
+        {[-0.11, 0.11].map((x) => (
+          <mesh key={x} position={[x, 0.14, 0]} material={DARK}>
+            <boxGeometry args={[0.15, 0.28, 0.2]} />
+          </mesh>
+        ))}
+        {/* Brazos: se mueven al hablar */}
+        <group ref={parts.arms} position-y={0.62}>
+          {[-0.27, 0.27].map((x) => (
+            <mesh key={x} position={[x, -0.1, 0.02]} material={cloth}>
+              <boxGeometry args={[0.1, 0.34, 0.14]} />
+            </mesh>
+          ))}
+          {/* Lo que lleva en la mano */}
+          {kit === 'recruiter' && (
+            <group position={[0.27, -0.22, 0.14]} rotation-x={-0.5}>
+              <mesh material={DARK}>
+                <boxGeometry args={[0.24, 0.3, 0.02]} />
+              </mesh>
+              <mesh position-z={0.012} material={neon}>
+                <planeGeometry args={[0.2, 0.25]} />
+              </mesh>
+            </group>
+          )}
+          {kit === 'qa' && (
+            <group position={[-0.27, -0.2, 0.14]} rotation-x={-0.6}>
+              <mesh material={PAPER}>
+                <boxGeometry args={[0.24, 0.32, 0.02]} />
+              </mesh>
+              {[0.08, 0, -0.08].map((y) => (
+                <mesh key={y} position={[0, y, 0.012]} material={INK}>
+                  <planeGeometry args={[0.16, 0.02]} />
+                </mesh>
+              ))}
+            </group>
+          )}
+          {kit === 'sysadmin' && (
+            <mesh position={[0.3, -0.2, 0.14]} material={PAPER}>
+              <cylinderGeometry args={[0.06, 0.05, 0.12, 12]} />
+            </mesh>
+          )}
+        </group>
+        {/* Detalle luminoso en el pecho */}
+        <mesh position={[0, 0.56, 0.142]} material={neon}>
+          <planeGeometry args={[kit === 'intern' ? 0.1 : 0.2, kit === 'intern' ? 0.14 : 0.05]} />
+        </mesh>
+        {kit === 'intern' && (
+          <mesh position={[0, 0.52, -0.2]}>
+            <boxGeometry args={[0.34, 0.38, 0.14]} />
+            <meshStandardMaterial color="#2f7bff" roughness={0.7} />
+          </mesh>
+        )}
+        {kit === 'sysadmin' && (
+          <group position={[-0.3, 0.42, 0.06]} rotation-z={0.2}>
+            <mesh material={DARK}>
+              <boxGeometry args={[0.04, 0.26, 0.34]} />
+            </mesh>
+            <mesh position-x={-0.022} rotation-y={-Math.PI / 2} material={neon}>
+              <planeGeometry args={[0.28, 0.2]} />
+            </mesh>
+          </group>
+        )}
+      </Detail>
+    </group>
+  )
+}
+
+/** Aviso sobre la cabeza: la tecla para hablar, o puntos suspensivos mientras habla. */
+function Mark({ mode, accent }: { mode: 'off' | 'prompt' | 'talking'; accent: string }) {
+  const group = useRef<THREE.Group>(null)
+  const scale = useRef(0)
+  const touch = useMemo(() => window.matchMedia('(pointer: coarse)').matches, [])
+  useFrame(({ clock }, delta) => {
+    const g = group.current
+    if (!g) return
+    scale.current += ((mode === 'off' ? 0 : 1) - scale.current) * (1 - Math.exp(-12 * delta))
+    g.visible = scale.current > 0.02
+    g.scale.setScalar(Math.max(0.001, scale.current))
+    g.position.y = 1.62 + Math.sin(clock.elapsedTime * 3.2) * 0.04
+  })
+  return (
+    <Billboard ref={group} position={[0, 1.62, 0]} visible={false}>
+      <mesh renderOrder={20}>
+        <circleGeometry args={[0.2, 24]} />
+        <meshBasicMaterial color="#f3f4f7" toneMapped={false} depthTest={false} />
+      </mesh>
+      <mesh renderOrder={20} position-z={-0.001}>
+        <circleGeometry args={[0.235, 24]} />
+        <meshBasicMaterial color={accent} toneMapped={false} depthTest={false} />
+      </mesh>
+      <Text
+        font={fontBold}
+        fontSize={0.22}
+        color="#14161b"
+        anchorX="center"
+        anchorY="middle"
+        renderOrder={21}
+        material-depthTest={false}
+        material-toneMapped={false}
+      >
+        {mode === 'talking' ? '…' : touch ? '!' : 'E'}
+      </Text>
+    </Billboard>
+  )
+}
+
+function Name({ text, accent }: { text: string; accent: string }) {
+  return (
+    <Billboard position={[0, 1.3, 0]}>
+      <Text
+        font={fontBold}
+        fontSize={0.13}
+        color={accent}
+        anchorX="center"
+        anchorY="middle"
+        outlineWidth={0.012}
+        outlineColor="#03040a"
+        material-toneMapped={false}
+      >
+        {text}
+      </Text>
+    </Billboard>
+  )
+}
+
+/** Un personaje con el que se puede hablar. */
+function TalkerNPC({ talker }: { talker: Talker }) {
+  const lang = useLang()
+  const mode = useGame((s) => (s.talk?.id === talker.id ? 'talking' : s.near === talker.id ? 'prompt' : 'off'))
+  const root = useRef<THREE.Group>(null)
+  const head = useRef<THREE.Group>(null)
+  const arms = useRef<THREE.Group>(null)
+  const holder = useRef<THREE.Group>(null)
+  const turn = useRef(talker.facing)
+  const [x, z] = talker.position
+
+  useFrame(({ clock }, delta) => {
+    const t = clock.elapsedTime
+    const game = useGame.getState()
+    if (holder.current) holder.current.scale.setScalar(Math.max(0.001, introProgress(3 + x * 0.01, 0.8)))
+
+    const dx = body.pos[0] - x
+    const dz = body.pos[2] - z
+    const dist = Math.hypot(dx, dz)
+    const reachable = game.mode === 'play' && Math.abs(body.pos[1]) < 1.2
+    // El más cercano dentro del radio es con quien se habla.
+    if (reachable && dist < TALK_RANGE) {
+      if (game.near !== talker.id && !game.talk) game.setNear(talker.id)
+    } else if (game.near === talker.id) game.setNear(null)
+    if (game.talk?.id === talker.id && (!reachable || dist > LEAVE_RANGE)) game.setTalk(null)
+
+    // Se gira hacia el jugador cuando está cerca; si no, vuelve a su postura.
+    const goal = reachable && dist < 6 ? Math.atan2(dx, dz) : talker.facing
+    let diff = goal - turn.current
+    diff = Math.atan2(Math.sin(diff), Math.cos(diff))
+    turn.current += diff * (1 - Math.exp(-5 * delta))
+    const talking = game.talk?.id === talker.id
+    if (root.current) {
+      root.current.rotation.y = turn.current
+      root.current.position.y = talking ? Math.abs(Math.sin(t * 7)) * 0.05 : Math.sin(t * 1.6 + x) * 0.015
+    }
+    if (head.current) head.current.rotation.z = talking ? Math.sin(t * 6) * 0.08 : Math.sin(t * 0.9 + x) * 0.04
+    if (arms.current) arms.current.rotation.x = talking ? Math.sin(t * 8) * 0.35 : Math.sin(t * 1.4 + z) * 0.06
+  })
+
+  return (
+    <group ref={holder} position={[x, 0, z]}>
+      <group scale={0.9}>
+        <Puppet kit={talker.id} color={talker.color} accent={talker.accent} parts={{ root, head, arms }} />
+      </group>
+      <Detail>
+        <Name text={talker.name[lang]} accent={talker.accent} />
+        <Mark mode={mode} accent={talker.accent} />
+        {talker.id === 'guide' && <Flag accent={talker.accent} />}
+        {talker.id === 'recruiter' && <Banner accent={talker.accent} />}
+      </Detail>
+    </group>
+  )
+}
+
+/** Banderín del guía, clavado a su lado. */
+function Flag({ accent }: { accent: string }) {
+  const neon = useMemo(() => createNeonMaterial(accent, 1.4), [accent])
+  const cloth = useRef<THREE.Mesh>(null)
+  useFrame(({ clock }) => {
+    if (cloth.current) cloth.current.rotation.y = Math.sin(clock.elapsedTime * 2.4) * 0.35
+  })
+  return (
+    <group position={[0.55, 0, -0.1]}>
+      <mesh position-y={0.8} material={STEEL}>
+        <cylinderGeometry args={[0.018, 0.018, 1.6, 8]} />
+      </mesh>
+      <mesh ref={cloth} position={[0.18, 1.45, 0]} material={neon}>
+        <planeGeometry args={[0.36, 0.22]} />
+      </mesh>
+    </group>
+  )
+}
+
+/** Cartel enrollable de la reclutadora. */
+function Banner({ accent }: { accent: string }) {
+  const neon = useMemo(() => createNeonMaterial(accent, 1.3), [accent])
+  return (
+    <group position={[-0.75, 0, -0.15]} rotation-y={0.35}>
+      <mesh position-y={0.75} material={DARK}>
+        <boxGeometry args={[0.62, 1.5, 0.03]} />
+      </mesh>
+      <mesh position={[0, 1.5, 0]} material={neon}>
+        <boxGeometry args={[0.66, 0.03, 0.05]} />
+      </mesh>
+      <Text
+        font={fontBold}
+        fontSize={0.15}
+        position={[0, 1.2, 0.02]}
+        color={[2.6, 2.1, 0.5]}
+        anchorX="center"
+        anchorY="middle"
+        material-toneMapped={false}
+      >
+        HIRING
+      </Text>
+      <Text
+        font={fontBold}
+        fontSize={0.085}
+        lineHeight={1.5}
+        position={[0, 0.72, 0.02]}
+        color="#e6e9ef"
+        anchorX="center"
+        anchorY="middle"
+        textAlign="center"
+        material-toneMapped={false}
+      >
+        {'Head of AI\nTech Lead\nFull stack'}
+      </Text>
+    </group>
+  )
+}
+
+const HOME: [number, number] = [-25.5, 8.4]
+
+/**
+ * El becario: si pasas cerca te sigue a todas partes (por el suelo) y va
+ * soltando preguntas. Si subes a las cajas, se queda esperando abajo.
+ */
+function Intern() {
+  const lang = useLang()
+  const root = useRef<THREE.Group>(null)
+  const head = useRef<THREE.Group>(null)
+  const arms = useRef<THREE.Group>(null)
+  const holder = useRef<THREE.Group>(null)
+  const state = useRef({ x: HOME[0], z: HOME[1], heading: 0.6, step: 0, nextLine: 0, line: 0, following: false })
+  const [bubble, setBubble] = useState({ text: '', shownAt: 0 })
+
+  useFrame(({ clock }, delta) => {
+    const s = state.current
+    const t = clock.elapsedTime
+    const dt = Math.min(delta, 1 / 20)
+    const playing = useGame.getState().mode === 'play'
+    const onFloor = body.pos[1] < 0.6
+    const dx = body.pos[0] - s.x
+    const dz = body.pos[2] - s.z
+    const dist = Math.hypot(dx, dz)
+
+    // Empieza a seguirte al pasar cerca y lo deja si te alejas mucho o subes.
+    if (playing && onFloor && dist < 5) s.following = true
+    if (!playing || dist > 16) s.following = false
+    const chasing = s.following && onFloor
+
+    // Destino: a un paso por detrás del jugador, o de vuelta a su sitio.
+    const tx = chasing ? body.pos[0] : HOME[0]
+    const tz = chasing ? body.pos[2] : HOME[1]
+    const gx = tx - s.x
+    const gz = tz - s.z
+    const gap = Math.hypot(gx, gz)
+    const keep = chasing ? 1.5 : 0.3
+    let moving = false
+    if (gap > keep && (chasing || !s.following)) {
+      const speed = chasing ? Math.min(3.4, 1.6 + gap * 0.5) : 1.4
+      const nx = s.x + (gx / gap) * speed * dt
+      const nz = s.z + (gz / gap) * speed * dt
+      // Si hay algo delante, prueba a deslizarse por cada eje.
+      if (!blocked(nx, nz)) {
+        s.x = nx
+        s.z = nz
+        moving = true
+      } else if (!blocked(nx, s.z)) {
+        s.x = nx
+        moving = true
+      } else if (!blocked(s.x, nz)) {
+        s.z = nz
+        moving = true
+      }
+    }
+    const face = Math.atan2(chasing || moving ? gx : dx, chasing || moving ? gz : dz)
+    let turn = face - s.heading
+    turn = Math.atan2(Math.sin(turn), Math.cos(turn))
+    s.heading += turn * (1 - Math.exp(-8 * dt))
+    if (moving) s.step += dt * 11
+
+    if (holder.current) {
+      holder.current.position.set(s.x, 0, s.z)
+      holder.current.scale.setScalar(Math.max(0.001, introProgress(3.2, 0.8)) * 0.74)
+    }
+    if (root.current) {
+      root.current.rotation.y = s.heading
+      root.current.position.y = moving ? Math.abs(Math.sin(s.step)) * 0.07 : Math.sin(t * 1.8) * 0.015
+    }
+    if (head.current) head.current.rotation.z = Math.sin(t * 1.3) * 0.06
+    if (arms.current) arms.current.rotation.x = moving ? Math.sin(s.step) * 0.6 : 0
+
+    // Mientras te sigue de cerca, pregunta cosas cada poco.
+    if (chasing && dist < 4.5 && t > s.nextLine) {
+      const lines = internLines[currentLang()]
+      setBubble({ text: lines[s.line % lines.length], shownAt: performance.now() })
+      s.line++
+      s.nextLine = t + 7 + Math.random() * 5
+    }
+  })
+
+  return (
+    <group ref={holder} position={[HOME[0], 0, HOME[1]]}>
+      <Puppet kit="intern" color="#e8eaf0" accent="#ff9f1c" parts={{ root, head, arms }} />
+      <Detail>
+        <Name text={internName[lang]} accent="#ff9f1c" />
+      </Detail>
+      <group scale={1.3}>
+        <Bubble text={bubble.text} shownAt={bubble.shownAt} />
+      </group>
+    </group>
+  )
+}
+
+export function Folk() {
+  return (
+    <>
+      {talkers.map((talker) => (
+        <TalkerNPC key={talker.id} talker={talker} />
+      ))}
+      <Intern />
+    </>
+  )
+}

@@ -1810,3 +1810,114 @@ body {
     display: none;
   }
 }
+
+/* ---------- Diálogos con los personajes ---------- */
+
+.talk-prompt {
+  position: absolute;
+  right: 0;
+  left: 0;
+  bottom: calc(var(--gutter) + 54px);
+  width: fit-content;
+  margin-inline: auto;
+  pointer-events: auto;
+  animation:
+    stage-in 0.25s ease both,
+    breathe 2.4s ease-in-out infinite;
+}
+
+.dialogue {
+  --accent: #19e6ff;
+  position: absolute;
+  right: 0;
+  left: 0;
+  bottom: calc(var(--gutter) + 54px);
+  display: grid;
+  gap: 4px;
+  width: min(560px, calc(100% - 2 * var(--gutter)));
+  margin-inline: auto;
+  padding: 12px 18px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  border-left: 3px solid var(--accent);
+  border-radius: 14px;
+  background: rgba(8, 10, 15, 0.86);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--accent) 20%, transparent);
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+  animation: stage-in 0.25s ease both;
+}
+
+.dialogue__name {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.dialogue__text {
+  font-size: 15.5px;
+  line-height: 1.45;
+  animation: stage-in 0.3s ease both;
+}
+
+.dialogue__next {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.dialogue__next kbd {
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.16);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: #fff;
+}
+
+.dialogue__next i {
+  margin-left: auto;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+/* En táctil los mandos ocupan la parte baja: el diálogo sube por encima */
+@media (pointer: coarse) {
+  .talk-prompt,
+  .dialogue {
+    bottom: calc(var(--gutter) + 190px);
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .talk-prompt,
+  .dialogue {
+    bottom: auto;
+    top: calc(var(--gutter) + 44px);
+    width: min(460px, 56%);
+  }
+
+  .talk-prompt {
+    width: fit-content;
+  }
+
+  .dialogue__text {
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .talk-prompt,
+  .dialogue,
+  .dialogue__text {
+    animation: none;
+  }
+}

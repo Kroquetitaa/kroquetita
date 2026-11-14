@@ -68,6 +68,9 @@ const UI = {
     medalUnlocked: 'Logro desbloqueado',
     close: 'Cerrar',
     more: 'Ver más',
+    talkTo: (name: string) => `Hablar con ${name}`,
+    talkNext: 'Seguir',
+    talkEnd: 'Vale',
     less: 'Ver menos',
   },
   en: {
@@ -122,6 +125,9 @@ const UI = {
     medalUnlocked: 'Achievement unlocked',
     close: 'Close',
     more: 'Show more',
+    talkTo: (name: string) => `Talk to ${name}`,
+    talkNext: 'Next',
+    talkEnd: 'OK',
     less: 'Show less',
   },
 }
@@ -181,6 +187,10 @@ export const MEDALS: Record<Achievement, { title: Localized; hint: Localized }> 
   tour: {
     title: { es: 'Turista', en: 'Tourist' },
     hint: { es: 'Termina el recorrido', en: 'Finish the tour' },
+  },
+  social: {
+    title: { es: 'Don de gentes', en: 'People person' },
+    hint: { es: 'Habla con todos los personajes', en: 'Talk to every character' },
   },
   hired: {
     title: { es: 'Contratado', en: 'Hired' },

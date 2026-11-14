@@ -6,6 +6,7 @@ import { body } from '../game/state'
 import { useGame } from '../store'
 import { world } from '../world/layout'
 import { Blocks } from './Blocks'
+import { City } from './City'
 import { Detail } from './Detail'
 import { introProgress } from './intro'
 import {
@@ -169,6 +170,7 @@ export function World() {
       <Scenery />
       <Props />
       <TechPark />
+      <City />
       <NPCs />
       <Pads />
       <PointerLight />

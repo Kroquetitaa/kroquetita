@@ -26,6 +26,9 @@ const DAWN = new THREE.Color('#150a1c')
 const STORM = new THREE.Color('#0d0406')
 const scratch = new THREE.Color()
 
+/** 0 = noche cerrada, 1 = pleno amanecer. Lo leen otros shaders (las ventanas de la ciudad se apagan de día). */
+export const uDay = { value: 0 }
+
 const smooth = (edge0: number, edge1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)))
   return t * t * (3 - 2 * t)
@@ -195,6 +198,7 @@ export function Weather() {
     s.storm += ((stormy ? 1 : 0) - s.storm) * (1 - Math.exp(-2.5 * delta))
 
     sky.uniforms.uDay.value = s.day
+    uDay.value = s.day
     sky.uniforms.uStorm.value = s.storm
     rain.material.uniforms.uRain.value = s.rain
     rain.material.uniforms.uStorm.value = s.storm

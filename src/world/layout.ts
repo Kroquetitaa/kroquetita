@@ -290,6 +290,16 @@ function build() {
     keys: [key(left - 13.82, 1.5), key(left - 12.22, 1), key(left - 11.08, 1)],
   }
 
+  // Ciudad: el mobiliario que hace de calle. Solo colisionan el bar y los
+  // bancos (bajos: te puedes subir); farolas, árboles y demás son decorado.
+  const bench = (x: number): Box => ({ center: [x, 0.21, front + 11.2], size: [2.2, 0.42, 0.62] })
+  const city = {
+    /** Quiosco «404 BAR», a la derecha: el mostrador mira a la cámara (+Z) */
+    bar: { center: [right + 13.4, 1.3, -2.2], size: [3, 2.6, 2.2] } as Box,
+    /** Bancos al borde delantero de la plaza: la colisión es el asiento */
+    benches: [bench(-12.5), bench(1.5), bench(13.5)],
+  }
+
   const props = {
     elevator: {
       center: elevatorCenter,
@@ -316,6 +326,8 @@ function build() {
     table: { center: [-6, 0.42, front + 7.4], size: [2.9, 0.84, 2.9] } as Box,
     /** Parque tecnológico de los laterales */
     park,
+    /** Mobiliario urbano: el bar y los bancos */
+    city,
   }
 
   // Línea de tiempo en el suelo, delante de las cajas: un eje con los años y
@@ -382,6 +394,8 @@ function build() {
     toAABB(park.tower),
     toAABB(park.gpu),
     ...park.keys.map((k) => k.collider),
+    toAABB(city.bar),
+    ...city.benches.map(toAABB),
   ]
 
   return {
