@@ -784,3 +784,82 @@ export function createPcbTexture(size: [number, number]) {
   texture.anisotropy = 8
   return texture
 }
+
+/**
+ * Ventilador en marcha, para superponer a uno ya pintado en la textura del
+ * modelo: un aro RGB y el barrido de las aspas, que es lo que da el giro.
+ */
+export function createSpinMaterial(phase = 0, blades = 9, speed = 14) {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uTime,
+      uParty,
+      uAlarm,
+      uPhase: { value: phase },
+      uBlades: { value: blades },
+      uSpeed: { value: speed },
+    },
+    vertexShader: vertex,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      uniform float uParty;
+      uniform float uAlarm;
+      uniform float uPhase;
+      uniform float uBlades;
+      uniform float uSpeed;
+      varying vec2 vUv;
+      void main() {
+        vec2 p = vUv * 2.0 - 1.0;
+        float r = length(p);
+        float angle = atan(p.y, p.x);
+        float turn = uTime * uSpeed * (1.0 + uParty * 1.5);
+        // Aspas: destellos que giran entre el buje y el marco.
+        float sweep = pow(0.5 + 0.5 * sin(angle * uBlades + turn), 4.0);
+        float disc = smoothstep(0.26, 0.34, r) * smoothstep(0.9, 0.8, r);
+        float ring = smoothstep(0.05, 0.0, abs(r - 0.93)) + smoothstep(0.04, 0.0, abs(r - 0.25)) * 0.6;
+        vec3 hue = 0.55 + 0.45 * cos(6.28318 * (angle / 6.28318 + uPhase - uTime * 0.12 + vec3(0.0, 0.33, 0.67)));
+        hue = mix(hue, vec3(1.0, 0.06, 0.04) * (0.4 + step(0.5, fract(uTime * 3.0))), uAlarm);
+        float a = sweep * disc * 0.2 + ring * 0.85;
+        gl_FragColor = vec4(hue * a * 1.6, a);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    toneMapped: false,
+  })
+}
+
+/** Burbujas y brillo del refrigerante, para superponer al depósito del modelo. */
+export function createBubblesMaterial() {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime, uParty, uAlarm },
+    vertexShader: vertex,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      uniform float uParty;
+      uniform float uAlarm;
+      varying vec2 vUv;
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+      }
+      void main() {
+        float swirl = 0.5 + 0.5 * sin((vUv.x * 2.0 + vUv.y * 2.5) * 6.2831 - uTime * 1.4);
+        vec3 liquid = mix(vec3(0.1, 0.7, 1.0), vec3(0.6, 0.25, 1.0), swirl);
+        liquid = mix(liquid, 0.55 + 0.45 * cos(6.28318 * (vUv.y - uTime * 0.3 + vec3(0.0, 0.33, 0.67))), uParty);
+        liquid = mix(liquid, vec3(1.0, 0.1, 0.05), uAlarm);
+        vec2 grid = vec2(vUv.x * 12.0, vUv.y * 8.0 - uTime * 0.8);
+        vec2 cell = floor(grid);
+        vec2 f = fract(grid) - 0.5;
+        float bubble = smoothstep(0.2, 0.07, length(f + (hash(cell) - 0.5) * 0.5)) * step(0.55, hash(cell + 3.1));
+        float ends = smoothstep(0.0, 0.08, vUv.y) * smoothstep(1.0, 0.92, vUv.y);
+        float a = (0.16 + swirl * 0.12 + bubble * 0.7) * ends;
+        gl_FragColor = vec4(liquid * a * 1.2 + vec3(bubble * 0.35 * ends), a);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    toneMapped: false,
+  })
+}

@@ -20,6 +20,8 @@ export function CameraRig() {
   const started = useRef(false)
 
   useFrame((state, delta) => {
+    // Solo en desarrollo: permite fijar la cámara a mano desde la consola.
+    if (import.meta.env.DEV && (window as unknown as { __freezeCamera?: boolean }).__freezeCamera) return
     const { mode, camera: cameraMode } = useGame.getState()
     const dt = Math.min(delta, 1 / 20)
     const aspect = state.size.width / state.size.height

@@ -3,7 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Environment, Lightformer } from '@react-three/drei'
 import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
-import type * as THREE from 'three'
+import * as THREE from 'three'
 import { celebrationTime, useGame } from '../store'
 import { CameraRig } from './CameraRig'
 import { Fireworks } from './Celebration'
@@ -98,6 +98,13 @@ function Runtime() {
     const party = celebrationTime() >= 0 || useGame.getState().party ? 1 : 0
     uParty.value += (party - uParty.value) * (1 - Math.exp(-3 * dt))
   })
+
+  useEffect(() => {
+    // Solo en desarrollo: acceso a la escena desde la consola.
+    if (import.meta.env.DEV) {
+      ;(window as unknown as { __three: unknown }).__three = { gl, scene, camera, THREE }
+    }
+  }, [gl, scene, camera])
 
   useEffect(() => {
     let alive = true

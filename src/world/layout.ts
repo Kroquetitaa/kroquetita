@@ -1,10 +1,10 @@
 import { stages, type Stage } from '../data/career'
 
 /**
- * El mundo es un PC de torre abierta, en vertical: la bandeja con los
- * componentes al fondo y un panel de cristal delante. Sobre el cristal van
- * las etapas de la trayectoria, cada una señalando a un componente.
- * Alrededor, en el suelo, se juega.
+ * El mundo es un PC de torre (un modelo 3D) expuesto en una vitrina: cristal
+ * delante y a los lados, peana y tapa. En el cristal frontal, a ambos lados
+ * del equipo, van las etapas de la trayectoria, cada una señalando a un
+ * componente. Alrededor, en el suelo, se juega.
  */
 
 /** Caja alineada a los ejes: [x, y, z] mínimos y máximos. */
@@ -47,19 +47,69 @@ export interface Card {
 
 const GRAVITY = 16
 
-/** Medidas de la torre. El cristal mira a +Z. */
-const LEFT = -16
-const RIGHT = 16
-const BOTTOM = 1.2
-const TOP = 25.2
-const TRAY_Z = -4.6
-const GLASS_Z = 1.2
-/** Altura transitable de la tapa superior */
-const ROOF = 25.6
+/**
+ * El modelo mide 0,108 × 0,12 × 0,069 en sus unidades; a esta escala queda
+ * de 21,6 de ancho, 24 de alto y 13,8 de fondo, con el interior mirando a +Z.
+ */
+const MODEL_SCALE = 200
+const MODEL_W = 21.6
+const MODEL_H = 24
+const PLINTH = 1
+const MODEL_Z = -1
+/** Hasta dónde llega el modelo por delante y por detrás (medido en el .glb). */
+const MODEL_FRONT = MODEL_Z + 6.8
+const MODEL_BACK = MODEL_Z - 7
 
 /** Tamaño base de una tarjeta. */
 export const CARD_W = 7
 export const CARD_H = 2.5
+const CARD_SCALE = 1.08
+
+/** Vitrina: deja a cada lado del equipo el hueco justo para una columna de tarjetas. */
+const HALF_W = MODEL_W / 2 + CARD_W * CARD_SCALE + 0.5
+const GLASS_Z = MODEL_FRONT + 0.9
+const BACK_Z = MODEL_BACK - 0.7
+const GLASS_TOP = PLINTH + MODEL_H + 1.3
+/** Altura transitable de la tapa */
+const ROOF = GLASS_TOP + 0.6
+
+/**
+ * Componentes del equipo en orden de arranque (el mismo de las etapas):
+ * columna de la tarjeta y posición del componente en el frontal del modelo,
+ * como fracción del ancho (u, desde la izquierda) y del alto (v, desde abajo).
+ */
+const PARTS: Array<{ side: -1 | 1; u: number; v: number; depth: number }> = [
+  { side: -1, u: 0.295, v: 0.255, depth: 3.9 }, // fuente
+  { side: -1, u: 0.16, v: 0.8, depth: 1 }, // placa base
+  { side: 1, u: 0.68, v: 0.17, depth: 5.4 }, // bomba
+  { side: 1, u: 0.835, v: 0.365, depth: 2 }, // ventilador III
+  { side: 1, u: 0.835, v: 0.575, depth: 2 }, // ventilador II
+  { side: 1, u: 0.835, v: 0.785, depth: 2 }, // ventilador I
+  { side: 1, u: 0.676, v: 0.42, depth: 4.9 }, // depósito
+  { side: -1, u: 0.44, v: 0.7, depth: 2.6 }, // memoria
+  { side: -1, u: 0.345, v: 0.555, depth: 4.8 }, // gráfica
+]
+const CPU_PART = { side: -1 as const, u: 0.365, v: 0.8, depth: 3.5 }
+
+/**
+ * Piezas del modelo que llevan un efecto animado encima, medidas sobre el
+ * .glb: u y v como arriba; `depth` es su cara frontal respecto al centro.
+ */
+const FX = {
+  fans: { u: 0.835, vs: [0.785, 0.575, 0.365], radius: 2.3, depth: 1.95 },
+  gpuFans: { us: [0.18, 0.345, 0.5], v: 0.555, radius: 1.5, depth: 4.75 },
+  psuFan: { u: 0.295, v: 0.255, radius: 1.75, depth: 3.86 },
+  /** `depth` del depósito es la de su eje, no la de su cara */
+  reservoir: { u: 0.676, v: 0.405, radius: 0.95, height: 6.2, depth: 3.95 },
+  cpu: { u: 0.365, v: 0.8, depth: 4.15 },
+}
+
+/** Punto del modelo en el mundo, a partir de sus fracciones de ancho y alto. */
+const worldPoint = (u: number, v: number, depth: number): Vec3 => [
+  -MODEL_W / 2 + u * MODEL_W,
+  PLINTH + v * MODEL_H,
+  MODEL_Z + depth,
+]
 
 const toAABB = (b: Box): AABB => ({
   min: [b.center[0] - b.size[0] / 2, b.center[1] - b.size[1] / 2, b.center[2] - b.size[2] / 2],
@@ -69,124 +119,110 @@ const toAABB = (b: Box): AABB => ({
 function build() {
   const n = stages.length
 
-  // ---------- Componentes, colocados como en una torre real
   const pc = {
-    left: LEFT,
-    right: RIGHT,
-    bottom: BOTTOM,
-    top: TOP,
-    trayZ: TRAY_Z,
+    model: { position: [0, PLINTH, MODEL_Z] as Vec3, scale: MODEL_SCALE, width: MODEL_W, height: MODEL_H },
+    plinth: PLINTH,
+    left: -HALF_W,
+    right: HALF_W,
+    glassTop: GLASS_TOP,
     glassZ: GLASS_Z,
+    backZ: BACK_Z,
     roof: ROOF,
-    /** Placa base, arriba a la izquierda */
-    board: { center: [-7.5, 18, TRAY_Z + 0.03] as Vec3, size: [14, 12.8] as [number, number] },
-    cpu: [-7.6, 19] as [number, number],
-    ram: [-3.9, -3.28, -2.66, -2.04],
-    /** Gráfica, montada en horizontal bajo la placa */
-    gpu: { center: [-7.1, 9.1, TRAY_Z + 1.9] as Vec3, size: [13.8, 3.2, 1.4] as Vec3 },
-    /** Fuente de alimentación, abajo a la izquierda */
-    psu: { center: [-10.2, 3.9, TRAY_Z + 2.05] as Vec3, size: [7.5, 4.8, 4] as Vec3 },
-    ssd: { center: [-3.2, 2.6, TRAY_Z + 1.55] as Vec3, size: [4, 1.8, 3] as Vec3 },
-    /** Depósito de la refrigeración: cilindro vertical en el centro */
-    reservoir: { x: 3, z: TRAY_Z + 2.2, bottom: 4.6, top: 17.8, radius: 1.25 },
-    /** Radiador a la derecha con tres ventiladores en columna */
-    radiator: { x: 10.6, ys: [20.4, 13.2, 6], radius: 3.4 },
+    /** Efectos animados: mismas piezas que FX, ya en coordenadas de mundo */
+    fx: {
+      fans: FX.fans.vs.map((v) => worldPoint(FX.fans.u, v, FX.fans.depth)),
+      fanRadius: FX.fans.radius,
+      gpuFans: FX.gpuFans.us.map((u) => worldPoint(u, FX.gpuFans.v, FX.gpuFans.depth)),
+      gpuFanRadius: FX.gpuFans.radius,
+      psuFan: worldPoint(FX.psuFan.u, FX.psuFan.v, FX.psuFan.depth),
+      psuFanRadius: FX.psuFan.radius,
+      reservoir: {
+        center: worldPoint(FX.reservoir.u, FX.reservoir.v, FX.reservoir.depth),
+        radius: FX.reservoir.radius,
+        height: FX.reservoir.height,
+      },
+      cpu: worldPoint(FX.cpu.u, FX.cpu.v, FX.cpu.depth),
+    },
   }
 
-  // Puntos a los que señalan las tarjetas, en orden de arranque del equipo:
-  // fuente → disco → bomba → ventiladores → depósito → memoria → gráfica → CPU.
-  const anchors: Vec3[] = [
-    [-7.6, 4.3, pc.psu.center[2] + 2],
-    [-3.2, 2.6, pc.ssd.center[2] + 1.5],
-    [3, 3.7, pc.reservoir.z + 1.4],
-    [pc.radiator.x, pc.radiator.ys[2], TRAY_Z + 1.4],
-    [pc.radiator.x, pc.radiator.ys[1], TRAY_Z + 1.4],
-    [pc.radiator.x, pc.radiator.ys[0], TRAY_Z + 1.4],
-    [3, 16, pc.reservoir.z + 1.25],
-    [-3, 20.6, TRAY_Z + 2.2],
-    [-7.1, 9.1, pc.gpu.center[2] + 0.9],
-  ]
-  const cpuAnchor: Vec3 = [pc.cpu[0], pc.cpu[1], TRAY_Z + 1.2]
 
-  // Tarjetas por el perímetro del cristal: fila de abajo (izquierda a derecha),
-  // lateral derecho, fila de arriba (derecha a izquierda) y, a la izquierda,
-  // la etapa actual. El centro queda libre para ver el equipo.
-  const m = n - 1
-  const side = m >= 5 ? 1 : 0
-  const below = Math.ceil((m - side) / 2)
-  const above = m - side - below
-  const edge = RIGHT - CARD_W / 2 - 0.5
-  const spread = (count: number, k: number) => (count <= 1 ? 0 : -edge + (2 * edge * k) / (count - 1))
-  const midY = (BOTTOM + TOP) / 2
-  const slots: Array<[number, number]> = []
-  for (let k = 0; k < below; k++) slots.push([spread(below, k), BOTTOM + CARD_H / 2 + 0.6])
-  for (let k = 0; k < side; k++) slots.push([edge, midY])
-  for (let k = 0; k < above; k++) slots.push([-spread(above, k), TOP - CARD_H / 2 - 0.6])
+  // Cada etapa toma un componente; las tarjetas de cada columna se ordenan de
+  // abajo arriba según la altura de su componente, para que las guías no se crucen.
+  const parts = stages.map((_, i) => (i === n - 1 ? CPU_PART : PARTS[i % PARTS.length]))
+  const columnX = HALF_W - (CARD_W * CARD_SCALE) / 2 - 0.35
+  const height = GLASS_TOP - PLINTH
+  const slotY = new Map<number, number>()
+  for (const side of [-1, 1] as const) {
+    const column = parts
+      .map((part, index) => ({ part, index }))
+      .filter((item) => item.part.side === side)
+      .sort((a, b) => a.part.v - b.part.v)
+    column.forEach((item, k) => {
+      slotY.set(item.index, PLINTH + (height * (k + 0.5)) / column.length)
+    })
+  }
 
-  const cards: Card[] = stages.map((stage, i) => {
-    const current = i === n - 1
-    const [x, y] = current ? [-edge + 0.75, midY] : slots[i]
-    return {
-      stage,
-      index: i,
-      x,
-      y,
-      scale: current ? 1.2 : 1,
-      anchor: current ? cpuAnchor : anchors[i % anchors.length],
-      current,
-    }
-  })
+  const cards: Card[] = stages.map((stage, i) => ({
+    stage,
+    index: i,
+    x: parts[i].side * columnX,
+    y: slotY.get(i) ?? PLINTH + height / 2,
+    scale: CARD_SCALE,
+    anchor: worldPoint(parts[i].u, parts[i].v, parts[i].depth),
+    current: i === n - 1,
+  }))
 
-  // ---------- Zona de juego alrededor de la torre
+  // ---------- Zona de juego alrededor de la vitrina
+  const depth = GLASS_Z - BACK_Z
+  const centerZ = (GLASS_Z + BACK_Z) / 2
   const body: Box = {
-    center: [0, ROOF / 2, (TRAY_Z + GLASS_Z) / 2 - 0.3],
-    size: [RIGHT - LEFT + 0.6, ROOF, GLASS_Z - TRAY_Z + 1.4],
+    center: [0, ROOF / 2, centerZ],
+    size: [HALF_W * 2 + 0.7, ROOF, depth + 0.7],
   }
-  const feet: Box[] = [-12.5, 12.5].map((x) => ({ center: [x, 0.25, -1.5], size: [1.4, 0.5, 10] }))
 
   const elevatorSize: Vec3 = [2.4, 0.25, 2.6]
-  const elevatorCenter: Vec3 = [RIGHT + 0.3 + elevatorSize[0] / 2 + 0.1, elevatorSize[1] / 2, -1.9]
+  const elevatorCenter: Vec3 = [HALF_W + 0.35 + elevatorSize[0] / 2 + 0.1, elevatorSize[1] / 2, centerZ]
 
   const props = {
     elevator: {
       center: elevatorCenter,
       size: elevatorSize,
-      /** Altura a la que sube: la azotea de la torre */
+      /** Altura a la que sube: la tapa de la vitrina */
       top: ROOF,
       /** Su colisión se mueve cada frame (la actualiza el propio ascensor) */
       collider: toAABB({ center: elevatorCenter, size: elevatorSize }),
     },
-    button: { center: [22.5, 0.25, 9.5] as Vec3, size: [1.4, 0.5, 1.4] as Vec3 },
+    button: { center: [HALF_W + 7, 0.25, GLASS_Z + 6] as Vec3, size: [1.4, 0.5, 1.4] as Vec3 },
     /** Servidor de producción: lo que revienta al pulsar DEPLOY */
-    server: { center: [26.5, 1.3, 5.5], size: [1.7, 2.6, 1.7] } as Box,
-    duck: [5, 0, 10] as Vec3,
+    server: { center: [HALF_W + 10.5, 1.3, GLASS_Z + 2], size: [1.7, 2.6, 1.7] } as Box,
+    duck: [6, 0, GLASS_Z + 6] as Vec3,
   }
 
-  // Monedas: un arco por delante, dos tras la torre y cinco en la azotea.
+  // Monedas: un arco por delante, dos tras la vitrina y cinco sobre la tapa.
+  const front = GLASS_Z
   const coinSpots: Vec3[] = [
-    [-24, 0.75, 6],
-    [-17, 0.75, 11],
-    [-10, 0.75, 7],
-    [-3, 0.75, 11.5],
-    [5, 0.75, 6.5],
-    [12, 0.75, 11],
-    [19, 0.75, 6.5],
-    [27, 0.75, 11],
-    [-8, 0.75, -9.5],
-    [8, 0.75, -9.5],
-    ...[-12, -6, 0, 6, 12].map((x): Vec3 => [x, ROOF + 0.75, -1.9]),
+    [-27, 0.75, front + 2],
+    [-19, 0.75, front + 6.5],
+    [-11, 0.75, front + 3],
+    [-3, 0.75, front + 7],
+    [5, 0.75, front + 2.5],
+    [13, 0.75, front + 6.5],
+    [21, 0.75, front + 2.5],
+    [29, 0.75, front + 7],
+    [-9, 0.75, BACK_Z - 4],
+    [9, 0.75, BACK_Z - 4],
+    ...[-13, -6.5, 0, 6.5, 13].map((x): Vec3 => [x, ROOF + 0.75, centerZ]),
   ]
   const coins: Coin[] = coinSpots.map((position, id) => ({ id, position }))
 
-  // Trampolines: uno suave junto a la salida y otro que lanza hasta la azotea.
+  // Trampolines: uno suave junto a la salida y otro que lanza hasta la tapa.
   const pads: Pad[] = [
-    { position: [-28, 0, 5], radius: 0.8, power: 10.5 },
-    { position: [LEFT - 3.2, 0, -1.9], radius: 0.9, power: Math.sqrt(2 * GRAVITY * (ROOF + 1.6)) },
+    { position: [-31, 0, front + 1], radius: 0.8, power: 10.5 },
+    { position: [-HALF_W - 3.4, 0, centerZ], radius: 0.9, power: Math.sqrt(2 * GRAVITY * (ROOF + 1.6)) },
   ]
 
   const colliders: AABB[] = [
     toAABB(body),
-    ...feet.map(toAABB),
     toAABB(props.button),
     toAABB(props.server),
     props.elevator.collider,
@@ -195,19 +231,18 @@ function build() {
   return {
     pc,
     cards,
-    feet,
     coins,
     pads,
     props,
     colliders,
-    spawn: [-22, 0, 9.5] as Vec3,
+    spawn: [-25, 0, front + 5.5] as Vec3,
     /** Donde aparece el trofeo al completar las monedas */
-    trophy: [0, ROOF + 5, -1.9] as Vec3,
+    trophy: [0, ROOF + 5, centerZ] as Vec3,
     /** Altura de la escena (polvo y fuegos artificiales) */
     top: ROOF,
-    /** Encuadre de la portada: tres cuartos, con la torre a la derecha */
-    view: { position: [-22, 16, 57] as Vec3, look: [-9.5, 14.4, -1] as Vec3, halfWidth: 29.5 },
-    bounds: { minX: -33, maxX: 33, minZ: -13, maxZ: 17 },
+    /** Encuadre de la portada: tres cuartos, con la vitrina a la derecha */
+    view: { position: [-24, 16.5, 64] as Vec3, look: [-10.5, 14.4, 0] as Vec3, halfWidth: 33 },
+    bounds: { minX: -36, maxX: 36, minZ: BACK_Z - 7, maxZ: front + 12 },
   }
 }
 

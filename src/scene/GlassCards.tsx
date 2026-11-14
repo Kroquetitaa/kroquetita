@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
 import * as THREE from 'three'
@@ -13,9 +13,9 @@ import { VoxelLogo } from './VoxelLogo'
 
 /**
  * Las etapas de la trayectoria, grabadas en el cristal de la torre como
- * tarjetas holográficas: logo en vóxeles, empresa y fechas. Cada una tiene
- * una línea guía hasta el componente del PC con el que se asocia, y una pista
- * luminosa las recorre en orden cronológico hasta la etapa actual (la CPU).
+ * tarjetas holográficas, en dos columnas a los lados del equipo: número de
+ * orden, logo en vóxeles, empresa y fechas. Cada una tiene una línea guía
+ * hasta el componente del PC con el que se asocia; la etapa actual es la CPU.
  * La etapa activa (la que se amplía en la ficha de la interfaz) se resalta.
  */
 
@@ -136,6 +136,19 @@ function Card({ card }: { card: CardData }) {
             {stage.part}
           </Text>
         )}
+        {/* Número de orden: la cronología se lee aunque las tarjetas no vayan en fila */}
+        <Text
+          font={fontBold}
+          fontSize={0.34}
+          anchorX="right"
+          anchorY="bottom"
+          position={[CARD_W / 2 - 0.22, -CARD_H / 2 + 0.2, 0.02]}
+          color={hdr}
+          fillOpacity={0.55}
+          material-toneMapped={false}
+        >
+          {String(index + 1).padStart(2, '0')}
+        </Text>
         <Text
           font={fontBold}
           fontSize={titleSize}
@@ -175,71 +188,9 @@ function Card({ card }: { card: CardData }) {
   )
 }
 
-/** Pista que une las tarjetas en orden, con pulsos que la recorren. */
-function Timeline({ pulses = 8 }: { pulses?: number }) {
-  const dots = useRef<THREE.InstancedMesh>(null)
-  const track = useMemo(() => {
-    const points = world.cards.map((c) => new THREE.Vector3(c.x, c.y, Z - 0.02))
-    const lengths = [0]
-    for (let i = 1; i < points.length; i++) {
-      lengths.push(lengths[i - 1] + points[i].distanceTo(points[i - 1]))
-    }
-    const geometry = new THREE.BufferGeometry().setFromPoints(points)
-    const line = new THREE.Line(
-      geometry,
-      new THREE.LineBasicMaterial({
-        color: new THREE.Color(0.5, 1.5, 2.2),
-        transparent: true,
-        opacity: 0.45,
-        toneMapped: false,
-      }),
-    )
-    return { points, lengths, total: lengths[lengths.length - 1], line }
-  }, [])
-  const scratch = useMemo(() => ({ m: new THREE.Matrix4(), p: new THREE.Vector3() }), [])
-
-  useLayoutEffect(() => {
-    const mesh = dots.current
-    if (!mesh) return
-    const color = new THREE.Color()
-    for (let i = 0; i < pulses; i++) mesh.setColorAt(i, color.setRGB(1.4, 2.8, 4))
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
-  }, [pulses])
-
-  useFrame(({ clock }) => {
-    const mesh = dots.current
-    if (!mesh) return
-    const { points, lengths, total } = track
-    const visible = introProgress(3.4, 1)
-    track.line.visible = visible > 0.01
-    const t = clock.elapsedTime
-    for (let i = 0; i < pulses; i++) {
-      const d = (t * (3 + uParty.value * 6) + (i / pulses) * total) % total
-      let seg = 1
-      while (seg < lengths.length - 1 && lengths[seg] < d) seg++
-      const span = lengths[seg] - lengths[seg - 1] || 1
-      scratch.p.lerpVectors(points[seg - 1], points[seg], (d - lengths[seg - 1]) / span)
-      const size = Math.min(1, d / 1.5, (total - d) / 1.5) * visible
-      mesh.setMatrixAt(i, scratch.m.makeScale(size, size, size).setPosition(scratch.p))
-    }
-    mesh.instanceMatrix.needsUpdate = true
-  })
-
-  return (
-    <>
-      <primitive object={track.line} />
-      <instancedMesh ref={dots} args={[undefined, undefined, pulses]} frustumCulled={false}>
-        <sphereGeometry args={[0.09, 10, 10]} />
-        <meshBasicMaterial toneMapped={false} />
-      </instancedMesh>
-    </>
-  )
-}
-
 export function GlassCards() {
   return (
     <>
-      <Timeline />
       {world.cards.map((card) => (
         <Card key={card.index} card={card} />
       ))}

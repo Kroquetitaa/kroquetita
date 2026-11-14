@@ -15,7 +15,7 @@ export interface Stage {
   /**
    * Componente del PC al que se asocia, como rótulo de la tarjeta. Las etapas
    * se reparten por los componentes en orden de arranque del equipo:
-   * fuente, disco, bomba, ventiladores, depósito, memoria, gráfica y CPU.
+   * fuente, placa, bomba, ventiladores, depósito, memoria, gráfica y CPU.
    */
   part?: string
   /** Logo en /public/logos; se convierte en un emblema 3D de vóxeles */
@@ -64,7 +64,7 @@ export const stages: Stage[] = [
     role: 'Desarrollador Front-end',
     period: 'Jun 2021 — Ene 2022',
     color: '#3df2b0',
-    part: 'SSD · LAS BASES',
+    part: 'PLACA BASE · LAS BASES',
     logo: '/logos/dedeeit.jpg',
     logoCrop: [0, 0.14, 1, 0.55],
   },
