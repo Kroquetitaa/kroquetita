@@ -505,42 +505,6 @@ export function createRackMaterial(seed: number) {
   })
 }
 
-/** Esfera del núcleo de IA: brilla más en el contorno (fresnel) y late. */
-export function createCoreMaterial() {
-  return new THREE.ShaderMaterial({
-    uniforms: { uTime, uParty },
-    vertexShader: /* glsl */ `
-      varying vec3 vNormal;
-      varying vec3 vView;
-      void main() {
-        vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        vNormal = normalize(normalMatrix * normal);
-        vView = normalize(-mv.xyz);
-        gl_Position = projectionMatrix * mv;
-      }
-    `,
-    fragmentShader: /* glsl */ `
-      uniform float uTime;
-      uniform float uParty;
-      varying vec3 vNormal;
-      varying vec3 vView;
-      void main() {
-        float facing = clamp(dot(normalize(vNormal), normalize(vView)), 0.0, 1.0);
-        float rim = pow(1.0 - facing, 2.5);
-        float pulse = 0.75 + 0.25 * sin(uTime * 1.7);
-        vec3 cold = mix(vec3(0.08, 0.35, 1.0), vec3(0.6, 0.9, 1.0), rim);
-        vec3 gold = mix(vec3(1.0, 0.5, 0.1), vec3(1.0, 0.9, 0.5), rim);
-        vec3 col = mix(cold, gold, uParty) * (0.3 + rim * 2.4) * pulse;
-        gl_FragColor = vec4(col, 0.35 + rim * 0.65);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
-    toneMapped: false,
-  })
-}
-
-
 /** Textura procedural de piedra/hormigón: grano y vetas suaves en un canvas. */
 export function createStoneTexture(size = 256) {
   const canvas = document.createElement('canvas')
@@ -658,6 +622,51 @@ export function createStreakMaterial() {
     side: THREE.DoubleSide,
     blending: THREE.AdditiveBlending,
     fog: false,
+    toneMapped: false,
+  })
+}
+
+/**
+ * Neuronas del cerebro: puntos de luz con color y tamaño propios, que se
+ * encienden (aGlow) cuando les llega un impulso.
+ */
+export function createNodeMaterial() {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime, uParty, uPixelRatio: { value: 1 } },
+    vertexShader: /* glsl */ `
+      uniform float uTime;
+      uniform float uPixelRatio;
+      attribute vec3 color;
+      attribute float aSize;
+      attribute float aGlow;
+      varying vec3 vColor;
+      varying float vGlow;
+      void main() {
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * mv;
+        // Un latido propio de cada neurona, además del encendido por impulso.
+        float idle = 0.85 + 0.15 * sin(uTime * 2.0 + position.x * 9.0 + position.z * 7.0);
+        gl_PointSize = (9.0 * aSize * idle + aGlow * 16.0) * uPixelRatio / -mv.z;
+        vColor = color;
+        vGlow = aGlow;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform float uParty;
+      varying vec3 vColor;
+      varying float vGlow;
+      void main() {
+        float d = length(gl_PointCoord - 0.5) * 2.0;
+        float core = smoothstep(0.55, 0.0, d);
+        float halo = smoothstep(1.0, 0.2, d) * 0.45;
+        vec3 col = mix(vColor, vec3(1.0, 0.8, 0.3), uParty * 0.6);
+        float a = core + halo;
+        gl_FragColor = vec4((col * (1.2 + vGlow * 2.6) + vec3(vGlow) * core) * a, a);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
     toneMapped: false,
   })
 }

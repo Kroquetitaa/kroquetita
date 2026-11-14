@@ -225,14 +225,14 @@ function build() {
     spawn: [x0 - 6.5, 0, front + 4] as Vec3,
     /** Donde aparece el trofeo al completar las monedas */
     trophy: [summit.center[0], summitTop + 4.2, summit.center[2]] as Vec3,
-    /** Núcleo de IA: flota sobre la cima */
-    core: [summit.center[0] + 2, summitTop + 6.8, summit.center[2] - 5] as Vec3,
+    /** Centro del cerebro (grafo de conocimiento) que flota sobre la cima */
+    core: [summit.center[0] + 2, summitTop + 6.3, summit.center[2] - 5] as Vec3,
     /** Altura de la escena (polvo, cámara y fuegos artificiales) */
     top: summitTop,
     /** Zona del suelo por la que deambulan los personajes */
     plaza: { minX: x0 - 14, maxX: -x0 + 15, minZ: front + 2, maxZ: front + 11 },
     /** Encuadre de la portada */
-    view: { position: [-12, 13.5, 49] as Vec3, look: [-5.6, 6.9, 0] as Vec3, halfWidth: 27.5 },
+    view: { position: [-12, 14.5, 54] as Vec3, look: [-5.8, 8.6, 0] as Vec3, halfWidth: 29.5 },
     bounds: { minX: x0 - 19, maxX: -x0 + 19, minZ: ROW_Z[1] - 9, maxZ: front + 13 },
   }
 }
