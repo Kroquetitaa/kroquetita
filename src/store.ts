@@ -20,12 +20,36 @@ export const ACHIEVEMENTS = [
   'tour',
   'hired',
   'social',
+  'errands',
+  'boss',
+  'speedrun',
+  'graduate',
 ] as const
 export type Achievement = (typeof ACHIEVEMENTS)[number]
 export type CameraMode = 'wide' | 'chase'
 
+/** Encargos que piden los personajes (los textos están en i18n) */
+export const QUESTS = ['recruiter', 'guide', 'qa', 'sysadmin', 'intern'] as const
+export type QuestId = (typeof QUESTS)[number]
+export type QuestState = 'idle' | 'active' | 'done'
+
+/** Vidas del jefe final y tiempo (s) por debajo del cual la contrarreloj da medalla */
+export const BOSS_HP = 3
+export const SPEEDRUN_GOAL = 120
+
 const LANG_KEY = 'kroquetita:lang'
 const MEDALS_KEY = 'kroquetita:medals'
+const BEST_KEY = 'kroquetita:best'
+
+/** Mejor tiempo guardado de la contrarreloj, en segundos. */
+function initialBest(): number | null {
+  try {
+    const saved = Number(localStorage.getItem(BEST_KEY))
+    return Number.isFinite(saved) && saved > 0 ? saved : null
+  } catch {
+    return null
+  }
+}
 
 /** Logros ya conseguidos en visitas anteriores. */
 function initialMedals(): Achievement[] {
@@ -52,6 +76,24 @@ function initialLang(): Lang {
 interface GameState {
   /** Shaders compilados y escena lista para mostrarse */
   ready: boolean
+  /** Avance de la carga inicial, 0..1 (solo sube) */
+  progress: number
+  /** Contrarreloj: cuándo se cogió la primera moneda, tiempo final (s), mejor marca y si se acaba de batir */
+  runStart: number | null
+  runTime: number | null
+  best: number | null
+  record: boolean
+  /** Jefe final: aparece al llegar a la cima y se le vence saltándole encima */
+  boss: 'none' | 'active' | 'defeated'
+  bossHp: number
+  /** Libro de la biblioteca (formación) sobre el que está el jugador, o null */
+  study: number | null
+  /** Encargos de los personajes, y lo que hace falta para seguirlos */
+  quests: Record<QuestId, QuestState>
+  questBase: number
+  visited: number[]
+  summitReached: boolean
+  lastQuest: { id: QuestId; kind: 'new' | 'done'; at: number } | null
   mode: Mode
   camera: CameraMode
   muted: boolean
@@ -92,6 +134,15 @@ interface GameState {
   /** Cambia en cada reinicio para recolocar al jugador */
   runId: number
   setReady: () => void
+  setProgress: (value: number) => void
+  setStudy: (index: number | null) => void
+  spawnBoss: () => void
+  hitBoss: () => void
+  startQuest: (id: QuestId) => void
+  completeQuest: (id: QuestId) => void
+  /** El jugador ha pisado la azotea de esa caja */
+  visit: (index: number) => void
+  reachSummit: () => void
   play: () => void
   /** Empieza el recorrido de cámara por las cajas */
   tour: () => void
@@ -120,6 +171,19 @@ interface GameState {
 
 export const useGame = create<GameState>((set, get) => ({
   ready: false,
+  progress: 0,
+  runStart: null,
+  runTime: null,
+  best: initialBest(),
+  record: false,
+  boss: 'none',
+  bossHp: BOSS_HP,
+  study: null,
+  quests: { recruiter: 'idle', guide: 'idle', qa: 'idle', sysadmin: 'idle', intern: 'idle' },
+  questBase: 0,
+  visited: [],
+  summitReached: false,
+  lastQuest: null,
   mode: 'intro',
   camera: 'wide',
   muted: false,
@@ -144,7 +208,46 @@ export const useGame = create<GameState>((set, get) => ({
   stageHold: 0,
   crash: null,
   runId: 0,
-  setReady: () => set({ ready: true }),
+  setReady: () => set({ ready: true, progress: 1 }),
+  setProgress: (value) => set((s) => (value > s.progress ? { progress: Math.min(1, value) } : s)),
+  setStudy: (study) => set((s) => (s.study === study ? s : { study })),
+  spawnBoss: () => set((s) => (s.boss === 'none' ? { boss: 'active', bossHp: BOSS_HP } : s)),
+  hitBoss: () => {
+    const { boss, bossHp } = get()
+    if (boss !== 'active') return
+    if (bossHp > 1) set({ bossHp: bossHp - 1 })
+    else {
+      set({ bossHp: 0, boss: 'defeated' })
+      get().unlock('boss')
+    }
+  },
+  startQuest: (id) => {
+    if (get().quests[id] !== 'idle') return
+    const s = get()
+    set({ quests: { ...s.quests, [id]: 'active' }, lastQuest: { id, kind: 'new', at: performance.now() } })
+    if (id === 'qa') set({ questBase: s.bugs })
+    // Puede que ya esté hecho antes de que te lo pidan.
+    if (id === 'recruiter' && s.summitReached) get().completeQuest(id)
+    if (id === 'guide' && s.visited.length >= world.blocks.length) get().completeQuest(id)
+  },
+  completeQuest: (id) => {
+    const s = get()
+    if (s.quests[id] !== 'active') return
+    const quests = { ...s.quests, [id]: 'done' as const }
+    set({ quests, lastQuest: { id, kind: 'done', at: performance.now() } })
+    if (QUESTS.every((quest) => quests[quest] === 'done')) get().unlock('errands')
+  },
+  visit: (index) => {
+    if (get().visited.includes(index)) return
+    set((s) => ({ visited: [...s.visited, index] }))
+    if (get().visited.length >= world.blocks.length) get().completeQuest('guide')
+  },
+  reachSummit: () => {
+    if (!get().summitReached) set({ summitReached: true })
+    get().unlock('summit')
+    get().completeQuest('recruiter')
+    get().spawnBoss()
+  },
   play: () => set((s) => (s.ready ? { mode: 'play' } : s)),
   tour: () => set((s) => (s.ready ? { mode: 'tour', stage: 0, stageHold: 0, talk: null, near: null } : s)),
   exit: () => set({ mode: 'intro', talk: null, near: null }),
@@ -189,6 +292,7 @@ export const useGame = create<GameState>((set, get) => ({
     set((s) => ({ bugs: s.bugs + 1 }))
     get().unlock('bug')
     if (get().bugs >= 5) get().unlock('exterminator')
+    if (get().bugs - get().questBase >= 3) get().completeQuest('qa')
   },
   startMeeting: (seconds) => set({ meetingUntil: performance.now() + seconds * 1000 }),
   drinkCoffee: (seconds) => {
@@ -204,14 +308,41 @@ export const useGame = create<GameState>((set, get) => ({
       }
     }),
   collect: (id) => {
-    set((s) => {
-      if (s.collected.includes(id)) return s
-      const collected = [...s.collected, id]
-      return { collected, wonAt: collected.length === s.total ? performance.now() : s.wonAt }
-    })
-    if (get().collected.length === get().total) get().unlock('coins')
+    const before = get()
+    if (before.collected.includes(id)) return
+    const now = performance.now()
+    const collected = [...before.collected, id]
+    // La contrarreloj arranca con la primera moneda y para con la última.
+    const runStart = before.runStart ?? now
+    const done = collected.length === before.total
+    set({ collected, runStart, wonAt: done ? now : before.wonAt })
+    if (!done) return
+    const runTime = (now - runStart) / 1000
+    const record = before.best === null || runTime < before.best
+    set({ runTime, record, best: record ? runTime : before.best })
+    if (record) {
+      try {
+        localStorage.setItem(BEST_KEY, runTime.toFixed(2))
+      } catch {
+        // No pasa nada si no se puede guardar.
+      }
+    }
+    get().unlock('coins')
+    if (runTime <= SPEEDRUN_GOAL) get().unlock('speedrun')
   },
-  restart: () => set((s) => ({ collected: [], wonAt: null, bugs: 0, runId: s.runId + 1 })),
+  restart: () =>
+    set((s) => ({
+      collected: [],
+      wonAt: null,
+      bugs: 0,
+      questBase: 0,
+      runStart: null,
+      runTime: null,
+      record: false,
+      boss: 'none',
+      bossHp: BOSS_HP,
+      runId: s.runId + 1,
+    })),
 }))
 
 /** Segundos desde la victoria, o -1 si aún no se han recogido todas las monedas. */

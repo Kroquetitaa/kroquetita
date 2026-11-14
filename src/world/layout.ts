@@ -1,4 +1,5 @@
 import { monthIndex, monthsOf, NOW, stages, type Stage } from '../data/career'
+import { education } from '../data/education'
 
 /**
  * El mundo: una caja por etapa, en dos filas, sobre un suelo abierto donde
@@ -114,6 +115,84 @@ function arc(from: Vec3, to: Vec3): Launcher {
       from[1] + vy * top - 0.5 * GRAVITY * top * top,
       from[2] + (dz / time) * top,
     ],
+  }
+}
+
+/** Pseudoaleatorio estable 0..1: la biblioteca sale idéntica en cada carga. */
+const vary = (index: number, salt: number) => {
+  const s = Math.sin(index * 12.9898 + salt * 78.233) * 43758.5453
+  return s - Math.floor(s)
+}
+
+/**
+ * Biblioteca (formación), a la izquierda del todo: una pila de libros gigantes
+ * que hace de escalera, uno por título, del más antiguo (en el suelo) al más
+ * reciente (arriba). El primer tramo sube hacia la izquierda y el segundo
+ * vuelve hacia la derecha, algo más atrás: así ningún libro tapa el hueco en
+ * el que se aterriza y todos los lomos (cara +Z) se ven desde delante.
+ */
+function library(count: number) {
+  /** Borde derecho y lomo del primer libro */
+  const right0 = -41.2
+  const front0 = 5.6
+  /** Lo que se retrasa el segundo tramo: el pasillo que queda libre delante */
+  const aisle = 1.55
+  /** Libros del primer tramo */
+  const turn = Math.ceil(count / 2)
+  /** Grosor medio: con más o menos títulos, la cima queda siempre rondando los 5,8 */
+  const girth = Math.min(0.72, Math.max(0.64, 5.9 / count))
+
+  const books: Box[] = []
+  let base = 0
+  let right = right0
+  let left = right0
+  let front = front0
+  for (let i = 0; i < count; i++) {
+    const length = round(4 + vary(i, 1) * 0.45)
+    const depth = round(2.75 + vary(i, 2) * 0.3)
+    const thick = round(girth - 0.03 + vary(i, 3) * 0.06)
+    /** Trozo del libro de debajo que queda libre para aterrizar */
+    const tread = round(1.35 + vary(i, 4) * 0.12)
+    if (i === 0) {
+      left = right - length
+    } else if (i < turn) {
+      // Primer tramo: cada libro deja libre el extremo derecho del anterior.
+      right = round(right - tread)
+      left = right - length
+      front = round(front - 0.05)
+    } else {
+      // Segundo tramo: deja libre el extremo izquierdo (y, al girar, el pasillo de delante).
+      left = round(left + tread)
+      right = left + length
+      front = round(front - (i === turn ? aisle : 0.05))
+    }
+    books.push({
+      center: [round((left + right) / 2), base + thick / 2, round(front - depth / 2)],
+      size: [length, thick, depth],
+    })
+    base = round(base + thick)
+  }
+
+  const shelf = (x: number, height: number): Box => ({ center: [x, height / 2, -7.2], size: [3.6, height, 0.8] })
+  const lectern = (x: number, z: number): Box => ({ center: [x, 0.55, z], size: [0.9, 1.1, 0.6] })
+  const arch: Vec3 = [-38, 0, 4.4]
+  return {
+    /** Punto del suelo desde el que crece todo al aparecer */
+    origin: [-46, 0, 2] as Vec3,
+    /** Un libro por título, en el orden de `education`: su caja es también su colisión */
+    books,
+    /** Altura de la cima de la pila */
+    top: base,
+    /** Estanterías del fondo */
+    shelves: [shelf(-51.85, 5), shelf(-47.95, 5.5), shelf(-44.05, 5.5), shelf(-40.15, 5)],
+    /** Atriles con un libro abierto (la colisión es el mueble entero): lejos de los lomos, para no taparlos */
+    lecterns: [lectern(-42.6, 10.6), lectern(-49.6, 10.2), lectern(-53, 3.4)],
+    /** Arco de entrada (sin colisión), girado para dar a la vez al resto del mapa y a la cámara */
+    arch: { position: arch, yaw: Math.PI / 4 },
+    /** Baldosas de luz: del borde del mapa al pie del primer libro, pasando bajo el arco */
+    path: Array.from({ length: 8 }, (_, i): Vec3 => [-34.4 - i * 0.9, 0, arch[2]]),
+    /** Poste indicador (sin colisión), ya dentro de la zona de siempre */
+    signpost: [-33.2, 0, 10.2] as Vec3,
   }
 }
 
@@ -300,6 +379,9 @@ function build() {
     benches: [bench(-12.5), bench(1.5), bench(13.5)],
   }
 
+  // Biblioteca: la formación, más allá del parque tecnológico de la izquierda.
+  const campus = library(education.length)
+
   const props = {
     elevator: {
       center: elevatorCenter,
@@ -328,6 +410,8 @@ function build() {
     park,
     /** Mobiliario urbano: el bar y los bancos */
     city,
+    /** Biblioteca de la formación: la escalera de libros y lo que la rodea */
+    campus,
   }
 
   // Línea de tiempo en el suelo, delante de las cajas: un eje con los años y
@@ -396,6 +480,9 @@ function build() {
     ...park.keys.map((k) => k.collider),
     toAABB(city.bar),
     ...city.benches.map(toAABB),
+    ...campus.books.map(toAABB),
+    ...campus.shelves.map(toAABB),
+    ...campus.lecterns.map(toAABB),
   ]
 
   return {
@@ -419,7 +506,8 @@ function build() {
     plaza: { minX: x0 - 14, maxX: -x0 + 15, minZ: front + 3.4, maxZ: front + 11 },
     /** Encuadre de la portada */
     view: { position: [-10, 15.5, 62] as Vec3, look: [-4.5, 9.2, 0] as Vec3, halfWidth: 33.5 },
-    bounds: { minX: x0 - 19, maxX: -x0 + 19, minZ: ROW_Z[1] - 9, maxZ: front + 13 },
+    // Por la izquierda llegan hasta pasada la biblioteca.
+    bounds: { minX: campus.origin[0] - 10, maxX: -x0 + 19, minZ: ROW_Z[1] - 9, maxZ: front + 13 },
   }
 }
 

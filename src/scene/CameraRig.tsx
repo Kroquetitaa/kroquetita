@@ -89,8 +89,10 @@ export function CameraRig() {
     } else if (cameraMode === 'wide') {
       // En vertical se ve poco ancho: la cámara sigue al jugador mucho más de cerca.
       const follow = portrait ? 0.92 : 0.5
-      goalPos.set(px * follow - (portrait ? 0 : 2), 7 + py * 0.6, 27 * fit + pz * 0.35)
-      goalLook.set(px * (portrait ? 0.96 : 0.7), 2.6 + py * 0.7, pz * 0.25)
+      // Más allá del borde izquierdo original (la biblioteca) la cámara acompaña del todo.
+      const far = portrait ? 0 : Math.min(0, px + 30)
+      goalPos.set(px * follow - (portrait ? 0 : 2) + far * 0.7, 7 + py * 0.6, 27 * fit + pz * 0.35)
+      goalLook.set(px * (portrait ? 0.96 : 0.7) + far * 0.5, 2.6 + py * 0.7, pz * 0.25)
     } else {
       goalPos.set(px - 1.4, py + 3.3, pz + 7.6)
       goalLook.set(px, py + 0.9, pz - 1)

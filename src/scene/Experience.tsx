@@ -5,6 +5,7 @@ import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postp
 import { ToneMappingMode } from 'postprocessing'
 import * as THREE from 'three'
 import { celebrationTime, useGame } from '../store'
+import { Boss } from './Boss'
 import { CameraRig } from './CameraRig'
 import { Detail, DETAIL_LAYER } from './Detail'
 import { Fireworks } from './Celebration'
@@ -138,6 +139,7 @@ export function Experience() {
       gl={{ antialias: false, powerPreference: 'high-performance' }}
       camera={{ fov: 32, near: 0.5, far: 260 }}
       onCreated={({ camera, raycaster }) => {
+        useGame.getState().setProgress(0.6)
         // La capa de detalle se ve y se puede pulsar, pero no entra en reflejos ni sombras.
         camera.layers.enable(DETAIL_LAYER)
         raycaster.layers.enable(DETAIL_LAYER)
@@ -157,6 +159,7 @@ export function Experience() {
         </Detail>
         <Player />
         <Folk />
+        <Boss />
         <Fireworks />
         <Runtime />
       </Suspense>

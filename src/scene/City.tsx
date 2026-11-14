@@ -839,6 +839,8 @@ const KEEP_OUT: Vec3[] = [
   // Los personajes que charlan parados en la plaza (Folk).
   [-18, 12.2, 0.7],
   [-14.5, 9.8, 0.7],
+  [-1.8, 15, 0.8],
+  [14.6, 12.2, 0.8],
 ]
 
 /** ¿Cabe el robot en ese punto? Ni fuera de la plaza ni contra un obstáculo. */

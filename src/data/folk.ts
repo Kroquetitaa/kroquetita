@@ -6,7 +6,7 @@ import type { Localized } from './career'
  * algunos hacen algo: abrir LinkedIn, cambiar el clima, empezar el recorrido…
  */
 
-export type TalkerId = 'recruiter' | 'sysadmin' | 'qa' | 'guide'
+export type TalkerId = 'recruiter' | 'sysadmin' | 'qa' | 'guide' | 'joseba' | 'pochita'
 
 export interface Talker {
   id: TalkerId
@@ -151,6 +151,207 @@ export const talkers: Talker[] = [
     ],
   },
 ]
+
+/** Joseba: ingeniero de IA, friki y amigo, que no para de proponer ideas locas. */
+talkers.push({
+  id: 'joseba',
+  name: { es: 'Joseba · AI Engineer', en: 'Joseba · AI Engineer' },
+  color: '#2b2140',
+  accent: '#3df2b0',
+  position: [-1.8, 15],
+  facing: -0.3,
+  scripts: [
+    {
+      es: [
+        '¡Sergio! Escucha: ¿y si entrenamos un modelo solo con actas de reuniones?',
+        'Así aprende él solito a decir «lo vemos en otra call».',
+        'Ya tengo el nombre: MeetingGPT. Va a ser enorme. O no.',
+      ],
+      en: [
+        'Sergio! Listen: what if we train a model on nothing but meeting minutes?',
+        'It would learn to say "let us take this offline" all by itself.',
+        'I already have the name: MeetingGPT. It will be huge. Or not.',
+      ],
+    },
+    {
+      es: [
+        '¿Y si le quitamos la gravedad a tu web? Por probar.',
+        'Tranquilo, lo hago en producción, que es donde se ve bien.',
+        'Mira, mira. Ya está. Ni un test. Limpio.',
+      ],
+      en: [
+        'What if we remove gravity from your website? Just to see.',
+        'Relax, I will do it in production, where it really shows.',
+        'Look, look. Done. Not a single test. Clean.',
+      ],
+    },
+    {
+      es: [
+        'Idea: agentes que gestionan a otros agentes que gestionan a otros agentes.',
+        'Y arriba del todo, uno que solo pregunta «¿cómo vamos?».',
+        'Lo he llamado «mando intermedio as a service».',
+      ],
+      en: [
+        'Idea: agents that manage agents that manage other agents.',
+        'And at the very top, one that only asks "how are we doing?".',
+        'I call it "middle management as a service".',
+      ],
+    },
+    {
+      es: [
+        '¿Y si desplegamos el LLM en una tostadora? Tiene chip, tiene wifi…',
+        'Inferencia en el edge y tostadas en el edge. Dos pájaros de un tiro.',
+        'Solo falla una cosa: alucina con la mantequilla.',
+      ],
+      en: [
+        'What if we deploy the LLM on a toaster? It has a chip, it has wifi…',
+        'Inference at the edge and toast at the edge. Two birds, one stone.',
+        'Only one issue: it hallucinates butter.',
+      ],
+    },
+    {
+      es: [
+        'Tengo un RAG que solo recupera memes. Recuperación aumentada por risas.',
+        'Precisión del doce por ciento, pero la gente sale contenta.',
+        'Lo siguiente: fine-tuning con los chistes de mi cuñado.',
+      ],
+      en: [
+        'I built a RAG that only retrieves memes. Laughter-augmented generation.',
+        'Twelve percent accuracy, but people leave happy.',
+        'Next up: fine-tuning on my brother-in-law\'s jokes.',
+      ],
+    },
+    {
+      es: [
+        'He montado un clúster con cuarenta Raspberry Pi y una Game Boy.',
+        'La Game Boy hace de orquestador. Va lenta, pero tiene carisma.',
+        'Si se cuelga, soplas el cartucho y listo.',
+      ],
+      en: [
+        'I built a cluster out of forty Raspberry Pis and a Game Boy.',
+        'The Game Boy is the orchestrator. Slow, but it has charisma.',
+        'If it hangs, you blow on the cartridge and that is it.',
+      ],
+    },
+    {
+      es: [
+        'Blockchain para decidir dónde comemos. Cada voto, un smart contract.',
+        'Ayer comimos a las seis de la tarde por culpa de las comisiones.',
+        'Pero quedó registrado para siempre. Eso no nos lo quita nadie.',
+      ],
+      en: [
+        'Blockchain to decide where we have lunch. Every vote, a smart contract.',
+        'Yesterday we ate at six in the evening because of the gas fees.',
+        'But it is on record forever. Nobody can take that from us.',
+      ],
+    },
+  ],
+})
+
+/** Pochita: te anima sin parar, con ideas y con «¡eres un crack!». */
+talkers.push({
+  id: 'pochita',
+  name: { es: 'Pochita', en: 'Pochita' },
+  color: '#ff5fa2',
+  accent: '#ffd60a',
+  position: [14.6, 12.2],
+  facing: -0.5,
+  scripts: [
+    {
+      es: [
+        '¡Sergio! ¿Has visto todo lo que has montado? ¡Eres un crack!',
+        'Una idea: ponle tu cara a las monedas. Ah, que ya lo has hecho. ¡Crack doble!',
+        'Venga, a por la cima, que tú puedes con todo.',
+      ],
+      en: [
+        'Sergio! Have you seen everything you have built? You rock!',
+        'An idea: put your face on the coins. Oh, you already did. Double rock!',
+        'Come on, off to the summit. You can handle anything.',
+      ],
+    },
+    {
+      es: [
+        '¿Head of AI? Se te queda corto. Yo te pondría Head of Todo.',
+        'Idea: celébralo. Cada commit, una fiesta pequeñita.',
+        '¡Vamos, máquina!',
+      ],
+      en: [
+        'Head of AI? That sells you short. I would make you Head of Everything.',
+        'Idea: celebrate it. Every commit, a tiny party.',
+        'Go get them, champ!',
+      ],
+    },
+    {
+      es: [
+        'Hoy tienes cara de arreglar bugs sin mirar.',
+        'Idea: cuando dudes, acuérdate de que ya has hecho cosas más difíciles.',
+        'Eres un crack y lo sabes. Bueno, ahora lo sabes.',
+      ],
+      en: [
+        'Today you look like someone who fixes bugs without even looking.',
+        'Idea: when in doubt, remember you have already done harder things.',
+        'You rock and you know it. Well, now you know it.',
+      ],
+    },
+    {
+      es: [
+        '¡Qué web más bonita! ¿La has hecho tú? Claro que la has hecho tú.',
+        'Idea: enséñasela a todo el mundo. A tu abuela también.',
+        'Estoy orgullosísima. ¡A tope!',
+      ],
+      en: [
+        'What a beautiful website! Did you make it? Of course you made it.',
+        'Idea: show it to everyone. Your grandma too.',
+        'I could not be prouder. Full speed ahead!',
+      ],
+    },
+    {
+      es: [
+        'Si el bug gigante te da miedo, piensa que él te tiene más miedo a ti.',
+        'Tres saltos y a casa. Lo tienes hecho.',
+        '¡Dale, crack!',
+      ],
+      en: [
+        'If the giant bug scares you, remember it is more scared of you.',
+        'Three jumps and home. You have got this.',
+        'Go for it, champ!',
+      ],
+    },
+  ],
+})
+
+/** Lo que te grita Pochita cuando pasas cerca */
+export const pochitaShouts: Localized<string[]> = {
+  es: ['¡Eres un crack!', '¡Tú puedes!', '¡Vamos, máquina!', '¡Qué salto!', '¡Así se hace!', '¡Ole tú!', '¡A por todas!'],
+  en: ['You rock!', 'You can do it!', 'Go, champ!', 'What a jump!', 'That is how it is done!', 'Go you!', 'Go get them!'],
+}
+/** …y cada vez que coges una moneda */
+export const pochitaCoin: Localized<string[]> = {
+  es: ['¡Otra moneda! ¡Crack!', '¡Toma ya!', '¡Imparable!', '¡Esa es mi gente!'],
+  en: ['Another coin! Legend!', 'Yes!', 'Unstoppable!', 'That is my champ!'],
+}
+
+/** Lo que grita Joseba cuando pasas cerca, antes de que le hables */
+export const josebaShouts: Localized<string[]> = {
+  es: [
+    '¡Tengo otra idea!',
+    '¿Y si…? No, espera. ¿Y si…?',
+    'Esto con un agente se arregla.',
+    '¿Lo metemos en un vector store?',
+    'Un LLM más y ya está.',
+    'Necesitamos más GPUs. Siempre.',
+    '¡Sergio! ¡Ven, que te cuento!',
+  ],
+  en: [
+    'I have another idea!',
+    'What if…? No, wait. What if…?',
+    'An agent would fix this.',
+    'Shall we put it in a vector store?',
+    'One more LLM and we are done.',
+    'We need more GPUs. Always.',
+    'Sergio! Come here, listen to this!',
+  ],
+}
 
 /** Lo que va soltando el becario mientras te sigue */
 export const internLines: Localized<string[]> = {

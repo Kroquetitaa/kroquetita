@@ -1,3 +1,5 @@
+import { useGame } from '../store'
+
 /**
  * Convierte la imagen de un logo en vóxeles: separa el fondo, recorta al
  * contenido y muestrea una rejilla. Cada celda con suficiente "tinta" es un cubo.
@@ -211,8 +213,19 @@ export function loadImage(url: string): Promise<Loaded> {
     pending = new Promise<Loaded>((resolve) => {
       const img = new Image()
       img.decoding = 'async'
-      img.onload = () => resolve(img)
-      img.onerror = () => resolve('error')
+      // Cada logo que llega empuja un poco la barra de carga.
+      const loaded = () => {
+        const game = useGame.getState()
+        game.setProgress(Math.min(0.84, Math.max(0.6, game.progress) + 0.022))
+      }
+      img.onload = () => {
+        loaded()
+        resolve(img)
+      }
+      img.onerror = () => {
+        loaded()
+        resolve('error')
+      }
       img.src = url
     })
     cache.set(url, pending)

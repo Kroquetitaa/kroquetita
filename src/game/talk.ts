@@ -1,7 +1,7 @@
 import { profile } from '../data/career'
 import { talkers, type Talker, type TalkerId } from '../data/folk'
-import { currentLang, tr } from '../i18n'
-import { useGame, type Weather } from '../store'
+import { currentLang, QUEST_TEXT, tr } from '../i18n'
+import { useGame, type QuestId, type Weather } from '../store'
 import { sfx } from './audio'
 import { playerSay } from './events'
 
@@ -16,10 +16,36 @@ const visits: Partial<Record<TalkerId, number>> = {}
 export const talkerById = (id: string | null | undefined): Talker | undefined =>
   talkers.find((talker) => talker.id === id)
 
+/** Qué encargo da cada personaje (Joseba solo da ideas) */
+const QUEST_OF: Partial<Record<TalkerId, QuestId>> = {
+  recruiter: 'recruiter',
+  guide: 'guide',
+  qa: 'qa',
+  sysadmin: 'sysadmin',
+}
+/** A quién se le ha oído ya dar las gracias por su encargo */
+const thanked: Partial<Record<TalkerId, boolean>> = {}
+
+/** ¿Toca que este personaje agradezca un encargo ya cumplido? */
+function owesThanks(talker: Talker) {
+  const quest = QUEST_OF[talker.id]
+  return Boolean(quest && useGame.getState().quests[quest] === 'done' && !thanked[talker.id])
+}
+
 /** Conversación que toca ahora con este personaje, en el idioma actual */
 export function scriptOf(talker: Talker): string[] {
-  const index = (visits[talker.id] ?? 0) % talker.scripts.length
-  return talker.scripts[index][currentLang()]
+  const lang = currentLang()
+  const quest = QUEST_OF[talker.id]
+  if (quest && owesThanks(talker)) return [QUEST_TEXT[quest].thanks[lang]]
+  const visit = visits[talker.id] ?? 0
+  const lines = talker.scripts[visit % talker.scripts.length][lang]
+  // La primera vez, antes de despedirse, pide su encargo.
+  if (quest && visit === 0) {
+    const offer = QUEST_TEXT[quest].offer[lang]
+    // La QA lo pide al final: su conversación es una pista que no conviene partir.
+    return talker.id === 'qa' ? [...lines, offer] : [...lines.slice(0, -1), offer, lines[lines.length - 1]]
+  }
+  return lines
 }
 
 const WEATHER_CYCLE: Weather[] = ['rain', 'storm', 'clear', 'auto']
@@ -33,9 +59,18 @@ const WEATHER_NAMES: Record<Weather, { es: string; en: string }> = {
 /** Lo que pasa al acabar de hablar con cada uno */
 function finish(talker: Talker) {
   const game = useGame.getState()
+  const quest = QUEST_OF[talker.id]
+  // Si solo ha dado las gracias, no hay más que hacer.
+  if (owesThanks(talker)) {
+    thanked[talker.id] = true
+    sfx.ding()
+    return
+  }
+  const first = (visits[talker.id] ?? 0) === 0
   visits[talker.id] = (visits[talker.id] ?? 0) + 1
   game.markTalked(talker.id)
   sfx.ding()
+  if (quest && first) game.startQuest(quest)
   switch (talker.id) {
     case 'recruiter':
       window.open(profile.links[0].href, '_blank', 'noopener')
@@ -49,6 +84,20 @@ function finish(talker: Talker) {
       playerSay(tr(WEATHER_NAMES[next]))
       break
     }
+    case 'joseba':
+      // Su idea loca del día: un rato sin gravedad y con todo en arcoíris.
+      if (!game.party) {
+        game.toggleParty()
+        window.setTimeout(() => {
+          if (useGame.getState().party) useGame.getState().toggleParty()
+        }, 12000)
+      }
+      playerSay(tr({ es: 'Joseba, ¿qué has tocado?', en: 'Joseba, what did you touch?' }))
+      break
+    case 'pochita':
+      sfx.firework()
+      playerSay(tr({ es: 'Con esos ánimos, me como el mundo.', en: 'With cheering like that, I can take on the world.' }))
+      break
     default:
       break
   }
