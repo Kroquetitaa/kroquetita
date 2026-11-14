@@ -11,6 +11,7 @@ import { blockRise, introProgress, introTime } from './intro'
 import {
   createAuroraMaterial,
   createBeamMaterial,
+  createBoardMaterial,
   createDustMaterial,
   createGlowMaterial,
   createGridMaterial,
@@ -80,7 +81,6 @@ function Monolith({ block, stone }: { block: Block; stone: THREE.Texture }) {
   const neon = useMemo(() => createNeonMaterial(accent), [accent])
   const trim = useMemo(() => createNeonMaterial(accent, 0.55), [accent])
   const ring = useMemo(() => createNeonMaterial(accent, 1.1), [accent])
-  const glow = useMemo(() => createGlowMaterial(accent, 1.1), [accent])
   const beam = useMemo(() => createBeamMaterial(accent), [accent])
   const scan = useMemo(
     () => createScanMaterial(accent, index * 0.37, [width, height]),
@@ -116,12 +116,12 @@ function Monolith({ block, stone }: { block: Block; stone: THREE.Texture }) {
       <mesh position={[0, height / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[width, height, depth]} />
         <meshStandardMaterial
-          color="#5b606b"
-          roughness={0.8}
-          metalness={0.15}
+          color="#3d4250"
+          roughness={0.55}
+          metalness={0.45}
           map={stone}
           bumpMap={stone}
-          bumpScale={0.35}
+          bumpScale={0.2}
         />
       </mesh>
 
@@ -180,7 +180,7 @@ function Monolith({ block, stone }: { block: Block; stone: THREE.Texture }) {
       </mesh>
       {block.row === 0 && (
         <pointLight
-          position={[0, 0.45, depth / 2 + 0.9]}
+          position={[0, block.stripY + 0.5, depth / 2 + 1.3]}
           color={accent}
           intensity={5}
           distance={6}
@@ -190,19 +190,16 @@ function Monolith({ block, stone }: { block: Block; stone: THREE.Texture }) {
 
       {/* Logo flotante con halo y un anillo orbitando */}
       <group position={[block.emblem[0], height, block.emblem[2]]}>
-        <mesh rotation-x={FLAT} position-y={0.02} material={glow}>
-          <planeGeometry args={[2.6, 2.6]} />
-        </mesh>
         {/* Proyector holográfico: base con aro de luz y haz hasta el logo */}
         <mesh position-y={0.04} castShadow>
-          <cylinderGeometry args={[0.3, 0.36, 0.08, 24]} />
+          <cylinderGeometry args={[0.15, 0.18, 0.08, 20]} />
           <meshStandardMaterial color="#17181d" roughness={0.4} metalness={0.8} />
         </mesh>
         <mesh position-y={0.09} rotation-x={Math.PI / 2} material={ring}>
-          <torusGeometry args={[0.24, 0.018, 8, 40]} />
+          <torusGeometry args={[0.12, 0.014, 8, 32]} />
         </mesh>
         <mesh position-y={0.08 + (block.emblem[1] - 0.2) / 2} material={beam}>
-          <cylinderGeometry args={[1.05, 0.2, block.emblem[1] - 0.2, 40, 1, true]} />
+          <cylinderGeometry args={[1.05, 0.1, block.emblem[1] - 0.2, 40, 1, true]} />
         </mesh>
         <group position-y={block.emblem[1]}>
           <VoxelLogo
@@ -373,6 +370,51 @@ function Aurora() {
   )
 }
 
+/** La placa: una lámina de pistas y vías dibujada sobre el suelo reflectante. */
+function Board() {
+  const { minX, maxX, minZ, maxZ } = world.board
+  const material = useMemo(() => createBoardMaterial([minX, minZ, maxX, maxZ]), [minX, minZ, maxX, maxZ])
+  return (
+    <mesh
+      rotation-x={FLAT}
+      position={[(minX + maxX) / 2, 0.02, (minZ + maxZ) / 2]}
+      material={material}
+    >
+      <planeGeometry args={[maxX - minX + 2, maxZ - minZ + 2]} />
+    </mesh>
+  )
+}
+
+/** Mirador: plataforma de cristal suspendida a la que sube el ascensor. */
+function Mirador() {
+  const { center, size } = world.props.mirador
+  const neon = useMemo(() => createNeonMaterial('#19e6ff', 1.2), [])
+  const glow = useMemo(() => createGlowMaterial('#19e6ff', 0.7), [])
+  return (
+    <group position={center}>
+      <mesh castShadow receiveShadow>
+        <boxGeometry args={size} />
+        <meshPhysicalMaterial
+          color="#16202c"
+          roughness={0.15}
+          metalness={0.6}
+          transparent
+          opacity={0.82}
+          clearcoat={1}
+        />
+      </mesh>
+      {[-1, 1].map((side) => (
+        <mesh key={side} position={[0, 0, (side * size[2]) / 2]} material={neon}>
+          <boxGeometry args={[size[0] + 0.06, 0.06, 0.04]} />
+        </mesh>
+      ))}
+      <mesh rotation-x={-FLAT} position-y={-size[1] / 2 - 0.02} material={glow}>
+        <planeGeometry args={[size[0] * 1.6, size[2] * 1.6]} />
+      </mesh>
+    </group>
+  )
+}
+
 /** Trampolines: discos luminosos que lanzan al jugador por los aires. */
 function Pads() {
   const material = useMemo(() => createPadMaterial('#ffd60a'), [])
@@ -440,12 +482,18 @@ export function World() {
       {world.blocks.map((block) => (
         <Monolith key={block.index} block={block} stone={stone} />
       ))}
-      <Boxes boxes={world.steps}>
-        <meshStandardMaterial color="#a9cdf0" roughness={0.55} metalness={0.1} />
+      <Board />
+      {/* Chips (encapsulado negro), sus patillas doradas y la pista principal */}
+      <Boxes boxes={world.chips}>
+        <meshStandardMaterial color="#15171c" roughness={0.38} metalness={0.55} />
       </Boxes>
-      <Boxes boxes={world.ledges}>
-        <meshStandardMaterial color="#8a7f78" roughness={0.7} metalness={0.1} map={stone} />
+      <Boxes boxes={world.pins}>
+        <meshStandardMaterial color="#d9b25a" roughness={0.3} metalness={1} />
       </Boxes>
+      <Boxes boxes={world.traces}>
+        <meshBasicMaterial color={[2.4, 1.5, 0.35]} toneMapped={false} />
+      </Boxes>
+      <Mirador />
       <Runners />
       <Scenery />
       <Props />

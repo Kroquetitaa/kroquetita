@@ -19,8 +19,8 @@ const rng = (seed: number) => () => {
   return seed / 2147483647
 }
 
-/** Posición del núcleo de IA: flotando detrás del diorama, sobre la fila baja. */
-const CORE = new THREE.Vector3(7.5, world.top + 3.2, -21)
+/** Posición del núcleo de IA: flotando sobre el procesador central. */
+const CORE = new THREE.Vector3(...world.core)
 
 /** Ciudad lejana: un arco de rascacielos con ventanas encendidas tras el diorama. */
 function Skyline({ count = 70 }: { count?: number }) {
@@ -86,7 +86,7 @@ function AICore() {
     const t = clock.elapsedTime
     const appear = introProgress(2.4, 2.2)
     const beat = 1 + Math.sin(t * 1.7) * 0.04 + uParty.value * 0.3
-    group.current?.scale.setScalar(Math.max(0.001, appear * beat))
+    group.current?.scale.setScalar(Math.max(0.001, appear * beat * 0.8))
     if (shell.current) shell.current.rotation.set(t * 0.13, t * 0.21, 0)
     if (cloud.current) cloud.current.rotation.y = -t * 0.07
     rings.current.forEach((ring, i) => {
@@ -221,9 +221,9 @@ function Synapses({ perCurve = 3 }: { perCurve?: number }) {
 }
 
 const LOOPS = [
-  { x0: -22, x1: 21, z0: -11, z1: 9.5, speed: 11, dir: 1, color: [0.2, 2.4, 3.8] },
-  { x0: -25, x1: 24, z0: -14, z1: 12, speed: 9, dir: -1, color: [3.8, 1.1, 0.25] },
-  { x0: -28, x1: 27, z0: -17, z1: 14.5, speed: 13, dir: 1, color: [3.2, 0.45, 2.6] },
+  { x0: -25, x1: 26, z0: -16, z1: 13, speed: 11, dir: 1, color: [0.2, 2.4, 3.8] },
+  { x0: -28, x1: 29, z0: -19, z1: 15.5, speed: 9, dir: -1, color: [3.8, 1.1, 0.25] },
+  { x0: -31, x1: 32, z0: -22, z1: 18, speed: 13, dir: 1, color: [3.2, 0.45, 2.6] },
 ]
 const TRAIL = 26
 
@@ -448,9 +448,11 @@ function Crystals({ count = 14 }: { count?: number }) {
     const list: Array<{ x: number; z: number; size: number; spin: number; grow: number }> = []
     while (list.length < count) {
       const x = -26 + rand() * 50
-      const z = -8 + rand() * 21
-      // Fuera del diorama y de la zona de salida.
-      const inside = x > -16.5 && x < 12 && z < 3.2
+      const z = -15 + rand() * 28
+      // Fuera de la placa y de la zona de salida.
+      const board = world.board
+      const inside =
+        x > board.minX - 1.5 && x < board.maxX + 1.5 && z > board.minZ - 1.5 && z < board.maxZ + 1.5
       const spawn = Math.hypot(x - world.spawn[0], z - world.spawn[2]) < 2.5
       if (inside || spawn) continue
       list.push({ x, z, size: 0.15 + rand() * 0.18, spin: rand() * 6, grow: 0 })

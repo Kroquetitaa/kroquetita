@@ -699,3 +699,61 @@ export function createStreakMaterial() {
     toneMapped: false,
   })
 }
+
+/**
+ * Superficie de la placa base: rectángulo redondeado con pistas decorativas,
+ * vías y un borde serigrafiado. `rect` = [minX, minZ, maxX, maxZ] en mundo.
+ */
+export function createBoardMaterial(rect: [number, number, number, number]) {
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime, uParty, uRect: { value: new THREE.Vector4(...rect) } },
+    vertexShader: /* glsl */ `
+      varying vec3 vWorld;
+      void main() {
+        vec4 world = modelMatrix * vec4(position, 1.0);
+        vWorld = world.xyz;
+        gl_Position = projectionMatrix * viewMatrix * world;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      uniform float uParty;
+      uniform vec4 uRect;
+      varying vec3 vWorld;
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+      }
+      void main() {
+        vec2 p = vWorld.xz;
+        // Distancia con signo a un rectángulo de esquinas redondeadas.
+        vec2 center = (uRect.xy + uRect.zw) * 0.5;
+        vec2 half_ = (uRect.zw - uRect.xy) * 0.5;
+        vec2 q = abs(p - center) - half_ + 1.4;
+        float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - 1.4;
+        float inside = smoothstep(0.05, -0.05, d);
+        float border = smoothstep(0.1, 0.0, abs(d + 0.3));
+
+        // Cada celda lleva una pista horizontal, una vertical o nada.
+        vec2 grid = p / 1.2;
+        vec2 cell = floor(grid);
+        vec2 f = fract(grid) - 0.5;
+        float h = hash(cell);
+        float lines = smoothstep(0.05, 0.02, abs(f.y)) * step(h, 0.36)
+                    + smoothstep(0.05, 0.02, abs(f.x)) * step(0.64, h);
+        float via = smoothstep(0.17, 0.1, length(f)) * step(0.84, hash(cell + 7.3));
+        // La corriente "fluye" en diagonal por las pistas.
+        float flow = 0.5 + 0.5 * sin(uTime * 1.6 - (p.x + p.y) * 0.5 + h * 6.2831);
+
+        vec3 copper = mix(vec3(0.05, 0.6, 0.52), vec3(1.0, 0.62, 0.15), uParty);
+        float a = inside * (lines * 0.2 * flow + via * 0.3 + 0.04) + border * 0.55;
+        gl_FragColor = vec4(copper * a * 1.5, a);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    polygonOffset: true,
+    polygonOffsetFactor: -6,
+    toneMapped: false,
+  })
+}

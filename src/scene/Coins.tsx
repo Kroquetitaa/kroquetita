@@ -146,11 +146,11 @@ function Burst({ count = 28 }: { count?: number }) {
   return <points geometry={geometry} material={material} frustumCulled={false} />
 }
 
-/** Premio final: una moneda gigante que aparece girando sobre la cima. */
+/** Premio final: una moneda gigante que aparece girando ante el procesador. */
 function Trophy({ shared }: { shared: Shared }) {
   const group = useRef<THREE.Group>(null)
   const light = useRef<THREE.PointLight>(null)
-  const summit = world.blocks[world.blocks.length - 1]
+  const [tx, ty, tz] = world.trophy
 
   useFrame((state) => {
     const g = group.current
@@ -162,14 +162,14 @@ function Trophy({ shared }: { shared: Shared }) {
     const k = Math.min(1, t / 1.4)
     const pop = 1 - Math.pow(1 - k, 3) * Math.cos(k * Math.PI * 2.5)
     const clock = state.clock.elapsedTime
-    g.scale.setScalar(pop * 3.6)
-    g.position.y = summit.height + 4.4 + Math.sin(clock * 1.4) * 0.3
+    g.scale.setScalar(pop * 2.8)
+    g.position.y = ty + Math.sin(clock * 1.4) * 0.3
     g.rotation.y = clock * 1.5 + (1 - k) * 9
     if (light.current) light.current.intensity = pop * 260
   })
 
   return (
-    <group ref={group} position={[summit.x, summit.height + 4.4, summit.z + 0.4]} visible={false}>
+    <group ref={group} position={[tx, ty, tz]} visible={false}>
       <CoinMesh shared={shared} />
       <mesh material={shared.glow} scale={1.4}>
         <planeGeometry args={[1.8, 1.8]} />

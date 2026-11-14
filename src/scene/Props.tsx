@@ -42,7 +42,7 @@ function liftTop(t: number) {
   return LIFT.top - (LIFT.top - low) * smooth((p - WAIT_DOWN - RISE - WAIT_UP) / FALL)
 }
 
-/** Ascensor a la cima: una plataforma que sube y baja sola. Súbete y espera. */
+/** Ascensor al mirador: una plataforma que sube y baja sola. Súbete y espera. */
 function Elevator() {
   const platform = useRef<THREE.Group>(null)
   const neon = useMemo(() => createNeonMaterial('#19e6ff', 1.3), [])
@@ -63,7 +63,7 @@ function Elevator() {
       Math.abs(body.pos[1] - top) < 0.05 &&
       Math.abs(body.pos[0] - x) < LIFT.size[0] / 2 &&
       Math.abs(body.pos[2] - z) < LIFT.size[2] / 2
-    if (riding && !s.riding && top < LIFT.top - 1) playerSay('Ascensor a la cima. Sin reuniones por el camino.')
+    if (riding && !s.riding && top < LIFT.top - 1) playerSay('Ascensor al mirador. Sin reuniones por el camino.')
     s.riding = riding
     const atTop = top >= LIFT.top - 0.01
     if (atTop && !s.atTop && riding) sfx.ding()
