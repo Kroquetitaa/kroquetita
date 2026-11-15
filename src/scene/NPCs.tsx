@@ -1,3 +1,4 @@
+import { BlenderActor } from './BlenderActor'
 import { useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
@@ -10,6 +11,9 @@ import { body, lastLanding } from '../game/state'
 import { tr } from '../i18n'
 import { useGame } from '../store'
 import { world } from '../world/layout'
+import { zones } from '../world/zones'
+import { cityNavigation } from '../game/cityNavigation'
+import { navigateGround, randomGroundPoint, spawnGroundAgent, steerGround, groundSegmentFree, type GroundAgent, type GroundProfile } from '../game/groundNavigation'
 import { introProgress } from './intro'
 import { createBurstGeometry, createBurstMaterial, uTime } from './materials/shaders'
 import { Bubble } from './Player'
@@ -20,56 +24,17 @@ import { Bubble } from './Player'
  * de proyecto que te persigue para meterte en una reunión.
  */
 
-const PLAZA = world.plaza
 const APPEAR = 3.2
+const CAT_ROAM = cityNavigation.cat.area
+const MANAGER_ROAM = cityNavigation.manager.area
 
 const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)]
 const between = (a: number, b: number) => a + Math.random() * (b - a)
 
-/** ¿Hay algo a ras de suelo en ese punto? (con un margen alrededor) */
-function blocked(x: number, z: number, margin = 0.5) {
-  for (const c of world.colliders) {
-    if (c.min[1] > 0.6) continue
-    if (x > c.min[0] - margin && x < c.max[0] + margin && z > c.min[2] - margin && z < c.max[2] + margin) {
-      return true
-    }
-  }
-  return false
-}
-
-/** Un punto libre de la plaza al que caminar. */
-function freeSpot(minX = PLAZA.minX, maxX = PLAZA.maxX): [number, number] {
-  for (let i = 0; i < 12; i++) {
-    const x = between(minX, maxX)
-    const z = between(PLAZA.minZ, PLAZA.maxZ)
-    if (!blocked(x, z, 1)) return [x, z]
-  }
-  return [0, PLAZA.maxZ]
-}
-
-/** Caminante: avanza hacia su destino girando con suavidad. Devuelve si ha llegado. */
-interface Walker {
-  x: number
-  z: number
-  heading: number
-  tx: number
-  tz: number
-}
-function walk(w: Walker, speed: number, dt: number) {
-  const dx = w.tx - w.x
-  const dz = w.tz - w.z
-  const dist = Math.hypot(dx, dz)
-  if (dist < 0.25) return true
-  const nx = w.x + (dx / dist) * speed * dt
-  const nz = w.z + (dz / dist) * speed * dt
-  // Si hay algo delante, da el destino por alcanzado y ya elegirá otro.
-  if (blocked(nx, nz)) return true
-  w.x = nx
-  w.z = nz
-  let turn = Math.atan2(dx, dz) - w.heading
-  turn = Math.atan2(Math.sin(turn), Math.cos(turn))
-  w.heading += turn * (1 - Math.exp(-9 * dt))
-  return false
+type Walker = GroundAgent
+function walk(w: Walker, speed: number, dt: number, profile: GroundProfile) {
+  const result = navigateGround(profile, w, speed, dt)
+  return result.arrived || result.blocked
 }
 
 const playerOnFloor = () => useGame.getState().mode === 'play' && body.pos[1] < 0.6
@@ -79,7 +44,7 @@ const distanceToPlayer = (x: number, z: number) => Math.hypot(body.pos[0] - x, b
 
 const TABLE = world.props.table
 /** Distancia de cada taburete al centro de la mesa. */
-const SEAT = 2.25
+const SEAT = 1.35
 
 /** Los cinco comensales: color, tocado y posición alrededor de la mesa (grados desde el frente). */
 const MODELS = [
@@ -141,6 +106,7 @@ function Puppet({
   const turn = useRef(0)
 
   useFrame(({ clock }, delta) => {
+    if (useGame.getState().place !== 'city') return
     const t = clock.elapsedTime
     const talking = speaker.current.index === index
     const other = MODELS[speaker.current.index]
@@ -184,6 +150,8 @@ function Puppet({
         {dark}
       </mesh>
       <group ref={root}>
+<BlenderActor name={model.name} joints={{ Head: head, Arm_L: armL, Arm_R: armR, Eyes: eyes }} fallback={<>
+
         <mesh position-y={0.62} castShadow>
           <boxGeometry args={[0.42, 0.44, 0.3]} />
           {skin}
@@ -269,6 +237,8 @@ function Puppet({
             </>
           )}
         </group>
+
+</>} />
         {/* Rótulo con el nombre, girado hacia la cámara */}
         <group rotation-y={-facing}>
           <Text
@@ -297,15 +267,14 @@ function Puppet({
 function AiTable() {
   const speaker = useRef({ index: 0, since: 0 })
   const bang = useRef(0)
-  const top = useRef<THREE.Mesh>(null)
   const [speech, setSpeech] = useState({ who: 0, text: '', shownAt: 0 })
   const state = useRef({ line: -1, next: 4.5, asked: false })
 
   useFrame(({ clock }, delta) => {
+    if (useGame.getState().place !== 'city') return
     const s = state.current
     const t = clock.elapsedTime
     bang.current = Math.max(0, bang.current - delta * 4)
-    if (top.current) top.current.position.y = TABLE.size[1] - 0.05 + Math.sin(bang.current * 20) * bang.current * 0.03
 
     if (t > s.next && introProgress(APPEAR + 1, 0.1) >= 1) {
       s.next = t + TURN
@@ -319,29 +288,20 @@ function AiTable() {
       if (s.line % 3 === 2) bang.current = 1
 
       const near = useGame.getState().mode === 'play' ? distanceToPlayer(TABLE.center[0], TABLE.center[2]) : Infinity
-      if (near < 12) sfx.beep()
+      if (near < 5) sfx.beep()
       // Si pasas cerca, te meten en la discusión.
-      if (near < 4 && !s.asked) {
+      if (near < 2.6 && !s.asked) {
         s.asked = true
         playerSay(tr(NOT_MY_FIGHT))
-      } else if (near > 8) s.asked = false
+      } else if (near > 5) s.asked = false
     }
   })
 
-  const wood = <meshStandardMaterial color="#2b2f3a" roughness={0.35} metalness={0.6} />
   return (
     <group position={[TABLE.center[0], 0, TABLE.center[2]]}>
-      <mesh position-y={TABLE.size[1] / 2 - 0.06} castShadow>
-        <cylinderGeometry args={[0.16, 0.34, TABLE.size[1] - 0.12, 16]} />
-        {wood}
-      </mesh>
-      <mesh ref={top} position-y={TABLE.size[1] - 0.05} castShadow receiveShadow>
-        <cylinderGeometry args={[1.5, 1.5, 0.1, 40]} />
-        {wood}
-      </mesh>
       {/* Lo que están discutiendo: un holograma con la gráfica de quién gana */}
-      <mesh position-y={TABLE.size[1] + 0.02} rotation-x={-Math.PI / 2}>
-        <ringGeometry args={[0.66, 0.73, 40]} />
+      <mesh position-y={TABLE.center[1] + TABLE.size[1] / 2 + .015} rotation-x={-Math.PI / 2}>
+        <ringGeometry args={[0.43, 0.47, 32]} />
         <meshBasicMaterial color={[0.4, 2.2, 3.2]} toneMapped={false} />
       </mesh>
       {MODELS.map((model, i) => (
@@ -360,11 +320,6 @@ function AiTable() {
   )
 }
 
-function spawnWalker(x: number, dz: number): Walker {
-  const z = PLAZA.minZ + dz
-  return { x, z, heading: 0, tx: x, tz: z }
-}
-
 // ---------------------------------------------------------------- Gato
 
 /** El susto del gato y lo que suelta cuando se sienta cerca de ti. */
@@ -377,9 +332,10 @@ function Cat() {
   const tail = useRef<THREE.Group>(null)
   const bodyMesh = useRef<THREE.Group>(null)
   const [speech, setSpeech] = useState({ text: '', shownAt: 0 })
-  const state = useRef({ ...spawnWalker(8, 6), sit: 2, flee: 0, hop: 0, seen: 0 })
+  const state = useRef({ ...spawnGroundAgent(cityNavigation.cat, [-14.5, -5.3]), sit: 2, flee: 0, hop: 0, seen: 0 })
 
   useFrame(({ clock }, delta) => {
+    if (useGame.getState().place !== 'city') return
     const s = state.current
     const dt = Math.min(delta, 1 / 20)
     const t = clock.elapsedTime
@@ -393,8 +349,8 @@ function Cat() {
       s.hop = 1
       s.sit = 0
       const away = Math.atan2(s.x - body.pos[0], s.z - body.pos[2])
-      s.tx = THREE.MathUtils.clamp(s.x + Math.sin(away) * 7, PLAZA.minX, PLAZA.maxX)
-      s.tz = THREE.MathUtils.clamp(s.z + Math.cos(away) * 7, PLAZA.minZ, PLAZA.maxZ)
+      s.tx = THREE.MathUtils.clamp(s.x + Math.sin(away) * 7, CAT_ROAM.minX, CAT_ROAM.maxX)
+      s.tz = THREE.MathUtils.clamp(s.z + Math.cos(away) * 7, CAT_ROAM.minZ, CAT_ROAM.maxZ)
       setSpeech({ text: tr(CAT_SCARED), shownAt: performance.now() })
       sfx.meow()
     }
@@ -403,8 +359,8 @@ function Cat() {
     s.hop = Math.max(0, s.hop - dt * 2.5)
     if (s.sit > 0) {
       s.sit -= dt
-      if (s.sit <= 0) [s.tx, s.tz] = freeSpot()
-    } else if (walk(s, s.flee > 0 ? 5 : 1.5, dt)) {
+      if (s.sit <= 0) [s.tx, s.tz] = randomGroundPoint(cityNavigation.cat) ?? [s.x, s.z]
+    } else if (walk(s, s.flee > 0 ? 5 : 1.5, dt, cityNavigation.cat)) {
       s.sit = between(3, 7)
       if (near < 6 && Math.random() < 0.5) setSpeech({ text: pick(tr(CAT_LINES)), shownAt: performance.now() })
     }
@@ -424,6 +380,8 @@ function Cat() {
   const cream = <meshStandardMaterial color="#f3dcc0" roughness={0.9} />
   return (
     <group ref={root}>
+<BlenderActor name="cat" joints={{ Body: bodyMesh, Tail: tail }} fallback={<>
+
       <group ref={bodyMesh} position={[0, 0.2, 0]}>
         <mesh castShadow>
           <boxGeometry args={[0.24, 0.22, 0.5]} />
@@ -474,6 +432,8 @@ function Cat() {
           {cream}
         </mesh>
       </group>
+
+</>} />
       <group scale={0.8} position-y={-0.55}>
         <Bubble text={speech.text} shownAt={speech.shownAt} />
       </group>
@@ -507,12 +467,13 @@ function Bugs() {
   const burst = useMemo(() => createBurstGeometry(24, 0.6), [])
   const bugs = useRef(
     Array.from({ length: BUG_COUNT }, () => {
-      const [x, z] = freeSpot()
+      const { x, z } = spawnGroundAgent(cityNavigation.bug, randomGroundPoint(cityNavigation.bug) ?? [17, -3.5])
       return { x, z, dir: between(0, Math.PI * 2), speed: between(1.2, 1.9), turnIn: between(0.4, 2), flat: 0, respawnAt: 0 }
     }),
   )
 
   useFrame(({ clock, gl, size }, delta) => {
+    if (useGame.getState().place !== 'city') return
     const dt = Math.min(delta, 1 / 20)
     const t = clock.elapsedTime
     const game = useGame.getState()
@@ -528,7 +489,7 @@ function Bugs() {
         // Aplastado: se queda hecho una oblea un momento y luego reaparece en otro sitio.
         bug.flat = Math.min(1, bug.flat + dt * 12)
         if (t > bug.respawnAt) {
-          ;[bug.x, bug.z] = freeSpot()
+          ;[bug.x, bug.z] = randomGroundPoint(cityNavigation.bug) ?? [bug.x, bug.z]
           bug.respawnAt = 0
           bug.flat = 0
         }
@@ -560,14 +521,8 @@ function Bugs() {
           bug.speed = 3.8
         } else bug.speed += (1.6 - bug.speed) * dt
 
-        const nx = bug.x + Math.sin(bug.dir) * bug.speed * dt
-        const nz = bug.z + Math.cos(bug.dir) * bug.speed * dt
-        const inside = nx > PLAZA.minX && nx < PLAZA.maxX && nz > PLAZA.minZ && nz < PLAZA.maxZ
-        if (!inside || blocked(nx, nz, 0.3)) bug.dir += Math.PI * between(0.6, 1.4)
-        else {
-          bug.x = nx
-          bug.z = nz
-        }
+        const move = steerGround(cityNavigation.bug, bug.x, bug.z, bug.dir, bug.speed * dt, i % 2 ? 1 : -1)
+        bug.x = move.x; bug.z = move.z; bug.dir = move.heading
         group.visible = appear > 0.01
       }
 
@@ -588,6 +543,8 @@ function Bugs() {
             groups.current[i] = group
           }}
         >
+<BlenderActor name="bug" fallback={<>
+
           <mesh position={[0, 0.13, 0]} castShadow>
             <boxGeometry args={[0.3, 0.18, 0.38]} />
             <meshStandardMaterial color="#e5352b" roughness={0.4} emissive="#e5352b" emissiveIntensity={0.35} />
@@ -616,6 +573,8 @@ function Bugs() {
               </mesh>
             ))}
           </group>
+
+</>} />
         </group>
       ))}
       <points geometry={burst} material={splat} frustumCulled={false} />
@@ -645,13 +604,14 @@ function ProjectManager() {
   const arm = useRef<THREE.Group>(null)
   const [speech, setSpeech] = useState({ text: '', shownAt: 0 })
   const state = useRef({
-    ...spawnWalker(PLAZA.maxX - 5, 5),
+    ...spawnGroundAgent(cityNavigation.manager, [-12.6, 14.1]),
     mode: 'wander' as 'wander' | 'chase' | 'rest',
     timer: 2,
     phase: 0,
   })
 
   useFrame(({ clock }, delta) => {
+    if (useGame.getState().place !== 'city') return
     const s = state.current
     const dt = Math.min(delta, 1 / 20)
     const t = clock.elapsedTime
@@ -659,28 +619,30 @@ function ProjectManager() {
     const inMeeting = performance.now() < game.meetingUntil
     // Un salto no le despista; subirse a un bloque, sí.
     // Tampoco molesta con un panel abierto (mapa, foto, minijuego), en plena conversación o ante la máquina.
-    const busy = game.panel !== null || game.talk !== null || game.station !== null
-    const reachable = game.mode === 'play' && body.pos[1] < 2.2 && !inMeeting && !busy
+    const busy = game.panel !== null || game.talk !== null || game.station !== null || game.place !== 'city'
+    const atArrival = zones.some(zone => Math.hypot(body.pos[0] - zone.arrive[0], body.pos[2] - zone.arrive[1]) < 1.75)
+    const reachable = game.mode === 'play' && body.pos[1] < 2.2 && !inMeeting && !busy && !atArrival
     const near = reachable ? distanceToPlayer(s.x, s.z) : Infinity
     let moving = false
 
     if (s.mode === 'wander') {
-      if (near < 7.5) {
+      if (near < 3.4) {
         s.mode = 'chase'
         s.timer = 8
         setSpeech({ text: pick(tr(PM_CHASE_LINES)), shownAt: performance.now() })
       } else if (s.timer > 0) s.timer -= dt
-      else if (walk(s, 1.3, dt)) {
-        ;[s.tx, s.tz] = freeSpot(0, PLAZA.maxX)
+      else if (walk(s, 1.3, dt, cityNavigation.manager)) {
+        ;[s.tx, s.tz] = randomGroundPoint(cityNavigation.manager) ?? [s.x, s.z]
         s.timer = between(1, 3)
       } else moving = true
     } else if (s.mode === 'chase') {
       s.timer -= dt
-      s.tx = body.pos[0]
-      s.tz = THREE.MathUtils.clamp(body.pos[2], PLAZA.minZ - 3, PLAZA.maxZ + 1)
-      walk(s, 3.4, dt)
-      moving = true
-      if (near < 0.8 && body.pos[1] < 0.9) {
+      s.tx = THREE.MathUtils.clamp(body.pos[0], MANAGER_ROAM.minX, MANAGER_ROAM.maxX)
+      s.tz = THREE.MathUtils.clamp(body.pos[2], MANAGER_ROAM.minZ, MANAGER_ROAM.maxZ)
+      const beforeX = s.x, beforeZ = s.z
+      walk(s, 3.4, dt, cityNavigation.manager)
+      moving = Math.hypot(s.x - beforeX, s.z - beforeZ) > .0001
+      if (near < 0.8 && body.pos[1] < 0.9 && groundSegmentFree(cityNavigation.manager, s.x, s.z, body.pos[0], body.pos[2])) {
         // Te ha pillado.
         game.startMeeting(3.4)
         sfx.meeting()
@@ -697,7 +659,7 @@ function ProjectManager() {
       if (s.timer < 0) {
         s.mode = 'wander'
         s.timer = 0
-        ;[s.tx, s.tz] = freeSpot(0, PLAZA.maxX)
+        ;[s.tx, s.tz] = randomGroundPoint(cityNavigation.manager) ?? [s.x, s.z]
       }
     }
 
@@ -721,6 +683,8 @@ function ProjectManager() {
   const skin = <meshStandardMaterial color="#e2b08a" roughness={0.8} />
   return (
     <group ref={root}>
+<BlenderActor name="manager" joints={{ Leg_L: legL, Leg_R: legR, Arm_R: arm }} fallback={<>
+
       {[
         [legL, -0.11],
         [legR, 0.11],
@@ -769,6 +733,8 @@ function ProjectManager() {
         <boxGeometry args={[0.1, 0.28, 0.12]} />
         {shirt}
       </mesh>
+
+</>} />
       <group position-y={-0.2}>
         <Bubble text={speech.text} shownAt={speech.shownAt} />
       </group>

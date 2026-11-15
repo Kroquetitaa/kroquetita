@@ -1,0 +1,271 @@
+{
+  "transport": {
+    "animations": [
+      "Monorail_Loop",
+      "Drone_Hover"
+    ],
+    "notes": "Visual route only; player boarding needs application integration."
+  },
+  "plaza": {
+    "hooks": [
+      "Hook_Map",
+      "Hook_Team",
+      "Hook_Training",
+      "Hook_TimeMachine",
+      "Hook_Photo"
+    ],
+    "animations": [
+      "Time_2021_2026"
+    ],
+    "notes": "Coffee and main avatar are shared standalone assets."
+  },
+  "career": {
+    "district": "career",
+    "hooks": [
+      "Hook_Career_Stage_01",
+      "Hook_Career_Stage_02",
+      "Hook_Career_Stage_03",
+      "Hook_Career_Stage_04",
+      "Hook_Career_Stage_05",
+      "Hook_Career_Stage_06",
+      "Hook_Career_Stage_07",
+      "Hook_Career_Stage_08",
+      "Hook_Career_Stage_09",
+      "Hook_Career_Stage_10",
+      "Hook_Career_Stage_11",
+      "Hook_Career_Lookout",
+      "Hook_Career_Entrance",
+      "Hook_Career_Camera",
+      "Hook_Career_BrainPortal",
+      "Hook_Career_CoreFocus"
+    ],
+    "geometry_objects_excluding_platform": 217,
+    "footprint_m": [
+      18.0,
+      8.0
+    ],
+    "maximum_height_m": 9.13,
+    "stages": 11,
+    "preview_frame": 150,
+    "animation": "CareerTimeline: staggered local-Z building growth, frames 1-150; no district root motion.",
+    "integration_note": "Stage destination hooks follow the growth transforms; use frame 150 for the complete static export."
+  },
+  "library": {
+    "district": "library",
+    "hooks": [
+      "Hook_Library_Entry",
+      "Hook_Library_BookSummit",
+      "Hook_Library_Read",
+      "Hook_Library_Seat",
+      "Library_Book_01",
+      "Library_Book_02",
+      "Library_Book_03",
+      "Library_Book_04",
+      "Library_Book_05",
+      "Library_Book_06",
+      "Library_Book_07",
+      "Library_Book_08",
+      "Hook_Library_Cover_01",
+      "Hook_Library_Cover_02",
+      "Hook_Library_Cover_03",
+      "Hook_Library_Cover_04",
+      "Hook_Library_Cover_05",
+      "Hook_Library_Cover_06",
+      "Hook_Library_Cover_07",
+      "Hook_Library_Cover_08"
+    ],
+    "hook_roles": {
+      "entry": "Hook_Library_Entry",
+      "summit": "Hook_Library_BookSummit",
+      "read": "Hook_Library_Read",
+      "seat": "Hook_Library_Seat",
+      "books": [
+        "Library_Book_01",
+        "Library_Book_02",
+        "Library_Book_03",
+        "Library_Book_04",
+        "Library_Book_05",
+        "Library_Book_06",
+        "Library_Book_07",
+        "Library_Book_08"
+      ],
+      "covers": [
+        "Hook_Library_Cover_01",
+        "Hook_Library_Cover_02",
+        "Hook_Library_Cover_03",
+        "Hook_Library_Cover_04",
+        "Hook_Library_Cover_05",
+        "Hook_Library_Cover_06",
+        "Hook_Library_Cover_07",
+        "Hook_Library_Cover_08"
+      ]
+    },
+    "animation_descriptions": {
+      "books": "Eight independent books with named Y-axis cover hinges; open on interaction.",
+      "read": "Show validated education content when the lectern is activated.",
+      "lighting": "Warm shelf strips and lamp glow can pulse gently when a book is selected."
+    }
+  },
+  "bugs": {
+    "district": "bugs",
+    "hooks": [
+      "Hook_Bugs_Entry",
+      "Hook_Restore",
+      "Hook_Restore_Lever",
+      "Hook_Bugs_Balcony",
+      "Hook_Bugs_Boss",
+      "Hook_Bugs_BossHead",
+      "Breakable_tests",
+      "Breakable_network",
+      "Breakable_gauss",
+      "Breakable_dice",
+      "Breakable_graph",
+      "Breakable_prs",
+      "Breakable_legacy",
+      "Breakable_pinata",
+      "Breakable_stack",
+      "Breakable_table",
+      "Breakable_overfit"
+    ],
+    "hook_roles": {
+      "entry": "Hook_Bugs_Entry",
+      "restore": "Hook_Restore",
+      "restore_lever": "Hook_Restore_Lever",
+      "balcony": "Hook_Bugs_Balcony",
+      "boss": "Hook_Bugs_Boss",
+      "boss_head": "Hook_Bugs_BossHead",
+      "breakables": {
+        "tests": "Breakable_tests",
+        "network": "Breakable_network",
+        "gauss": "Breakable_gauss",
+        "dice": "Breakable_dice",
+        "graph": "Breakable_graph",
+        "prs": "Breakable_prs",
+        "legacy": "Breakable_legacy",
+        "pinata": "Breakable_pinata",
+        "stack": "Breakable_stack",
+        "table": "Breakable_table",
+        "overfit": "Breakable_overfit"
+      }
+    },
+    "animation_descriptions": {
+      "tests": "Knock the six tower pieces down, then rebuild from their saved transforms.",
+      "network": "Scatter node spheres while fading or shortening their independent edges.",
+      "gauss": "Flatten the nine histogram bars in a left-to-right wave.",
+      "dice": "Roll the two named die roots; pips remain attached to their die.",
+      "graph": "Pop graph nodes and retract edge cylinders.",
+      "prs": "Fan the five request slabs outwards and restack them.",
+      "legacy": "Shake the server monolith; eject four blades on the final hit.",
+      "pinata": "Swing the body beneath the rope and burst into authored pieces later.",
+      "stack": "Grow or collapse the six call-frame slabs.",
+      "table": "Scatter the twelve table cells and reconstruct the grid.",
+      "overfit": "Loosen the red curve segments into a simpler fitted path.",
+      "restore": "Rotate the lever around local X and restore relay/portal status materials.",
+      "boss": "Bob the root and turn the separate head; no skeletal rig is required."
+    }
+  },
+  "hangar": {
+    "hooks": [
+      "Hook_Demo_load",
+      "Hook_Demo_agents",
+      "Hook_Demo_data"
+    ],
+    "animations": [
+      "Demo_Before_After"
+    ],
+    "notes": "Three demonstration machines mirror src/data/projects.ts; not asserted client case studies."
+  },
+  "lab": {
+    "hooks": {
+      "neural": "Hook_Concept_neural",
+      "graph": "Hook_Concept_graph",
+      "vectors": "Hook_Concept_vectors",
+      "attention": "Hook_Concept_attention",
+      "rag": "Hook_Concept_rag",
+      "agents": "Hook_Concept_agents",
+      "gradient": "Hook_Concept_gradient",
+      "diffusion": "Hook_Concept_diffusion",
+      "mcp": "Hook_Concept_mcp",
+      "multiagent": "Hook_Concept_multiagent",
+      "rl": "Hook_Concept_rl",
+      "lora": "Hook_Concept_lora",
+      "Hook_Power_Core": "Hook_Power_Core",
+      "Hook_Power_Data": "Hook_Power_Data",
+      "Hook_Power_Link": "Hook_Power_Link"
+    },
+    "animations": {},
+    "exhibits": [
+      "neural",
+      "graph",
+      "vectors",
+      "attention",
+      "rag",
+      "agents",
+      "gradient",
+      "diffusion",
+      "mcp",
+      "multiagent",
+      "rl",
+      "lora"
+    ],
+    "mission_relays": [
+      "Hook_Power_Core",
+      "Hook_Power_Data",
+      "Hook_Power_Link"
+    ]
+  },
+  "factory": {
+    "hooks": {
+      "input": "Hook_Input",
+      "retrieval": "Hook_Retrieval",
+      "agents": "Hook_Agents",
+      "output": "Hook_Output"
+    },
+    "animations": {
+      "Factory_Conveyor": "Four payloads follow a closed belt, frames 1-96; district root stays fixed."
+    }
+  },
+  "brain_inside": {
+    "district": "brain_interior",
+    "hooks": [
+      "Hook_Brain_Entrance",
+      "Hook_Brain_ReturnToCareer",
+      "Hook_Skill_RAG",
+      "Hook_Skill_Agents",
+      "Hook_Skill_LLM",
+      "Hook_Skill_Data",
+      "Hook_Skill_Frontend",
+      "Hook_Skill_Systems",
+      "Hook_Skill_IA",
+      "Hook_Skill_NLP",
+      "Hook_Skill_Data_Science",
+      "Hook_Skill_Python",
+      "Hook_Skill_Node",
+      "Hook_Skill_React",
+      "Hook_Skill_React_Native",
+      "Hook_Skill_Next_js",
+      "Hook_Skill_Three_js",
+      "Hook_Skill_Blockchain",
+      "Hook_Skill_Swift",
+      "Hook_Brain_Telescope",
+      "Hook_Brain_Centre",
+      "Hook_Brain_Camera"
+    ],
+    "geometry_objects_excluding_platform": 84,
+    "footprint_m": [
+      10.0,
+      10.0
+    ],
+    "maximum_height_m": 2.89,
+    "constellations": [
+      "RAG",
+      "Agents",
+      "LLM",
+      "Data",
+      "Frontend",
+      "Systems"
+    ],
+    "animation": "Static observatory; all skill and portal hooks are named transform targets for application interaction.",
+    "integration_note": "Hook_Skill_* transforms identify the six visible constellations and all supplied skills; the front stays open for the camera."
+  }
+}

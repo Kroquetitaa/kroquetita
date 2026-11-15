@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "status": "passed",
+  "units": "metres",
+  "up": "+Y",
+  "forward": "+Z",
+  "assets": {
+    "avatar": {
+      "mesh_objects": 54,
+      "triangles": 10344,
+      "bounds_min": [
+        -0.2845,
+        0.0,
+        -0.18
+      ],
+      "bounds_max": [
+        0.288,
+        1.05,
+        0.246
+      ],
+      "dimensions": [
+        0.5725,
+        1.05,
+        0.426
+      ],
+      "bounds_method": "transformed local accessor AABBs in the default pose",
+      "root": "AvatarRoot",
+      "root_identity": true,
+      "cameras": 0,
+      "lights": 0,
+      "animations": [
+        "Idle"
+      ],
+      "root_motion": false,
+      "materials": 9,
+      "default_body_translation": [
+        0.0,
+        0.34,
+        0.0
+      ],
+      "default_pose_repaired": true,
+      "file": "avatar.glb",
+      "bytes": 323236,
+      "glb_version": 2,
+      "header_length_valid": true,
+      "binary_chunks_preserved": true
+    },
+    "coffee_machine": {
+      "mesh_objects": 47,
+      "triangles": 31550,
+      "bounds_min": [
+        -0.75,
+        0.0,
+        -0.6
+      ],
+      "bounds_max": [
+        0.764,
+        2.2,
+        0.685
+      ],
+      "dimensions": [
+        1.514,
+        2.2,
+        1.285
+      ],
+      "bounds_method": "transformed local accessor AABBs in the default pose",
+      "root": "CoffeeRoot",
+      "root_identity": true,
+      "cameras": 0,
+      "lights": 0,
+      "animations": [],
+      "root_motion": false,
+      "materials": 12,
+      "default_body_translation": null,
+      "default_pose_repaired": false,
+      "file": "coffee_machine.glb",
+      "bytes": 916888,
+      "glb_version": 2,
+      "header_length_valid": true,
+      "binary_chunks_preserved": true
+    },
+    "plaza_module": {
+      "mesh_objects": 63,
+      "triangles": 18114,
+      "bounds_min": [
+        -2.44,
+        -0.32,
+        -1.84
+      ],
+      "bounds_max": [
+        2.44,
+        0.16,
+        1.8571
+      ],
+      "dimensions": [
+        4.88,
+        0.48,
+        3.6971
+      ],
+      "bounds_method": "transformed local accessor AABBs in the default pose",
+      "root": "GroundRoot",
+      "root_identity": true,
+      "cameras": 0,
+      "lights": 0,
+      "animations": [],
+      "root_motion": false,
+      "materials": 7,
+      "default_body_translation": null,
+      "default_pose_repaired": false,
+      "file": "plaza_module.glb",
+      "bytes": 517196,
+      "glb_version": 2,
+      "header_length_valid": true,
+      "binary_chunks_preserved": true
+    }
+  }
+}

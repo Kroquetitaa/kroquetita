@@ -1,0 +1,32 @@
+[
+  {
+    "id": "Claude",
+    "path": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\public\\images\\loading\\Claude.png",
+    "bytes": 56767
+  },
+  {
+    "id": "ChatGPT",
+    "path": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\public\\images\\loading\\ChatGPT.png",
+    "bytes": 57240
+  },
+  {
+    "id": "Gemini",
+    "path": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\public\\images\\loading\\Gemini.png",
+    "bytes": 51091
+  },
+  {
+    "id": "Qwen3",
+    "path": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\public\\images\\loading\\Qwen3.png",
+    "bytes": 54232
+  },
+  {
+    "id": "Mistral",
+    "path": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\public\\images\\loading\\Mistral.png",
+    "bytes": 56404
+  },
+  {
+    "id": "duck",
+    "path": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\public\\images\\loading\\duck.png",
+    "bytes": 64636
+  }
+]

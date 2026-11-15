@@ -1,0 +1,6 @@
+__pycache__/
+*.log
+*.pid
+*.blend1
+*.blend2
+startup-backup.blend

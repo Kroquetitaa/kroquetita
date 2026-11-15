@@ -1203,7 +1203,7 @@ const KEY_TRAVEL = 0.1
  * Tres teclas gigantes en el suelo. Al pisarlas se hunden (su colisión baja
  * con ellas) y suenan; pisar la C y luego la V tiene premio.
  */
-function Keys() {
+export function Keys() {
   const keys = PARK.keys
   const glow = useMemo(() => createNeonMaterial('#8b5cf6', 1.2), [])
   const root = useRef<THREE.Group>(null)

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "Claude",
+    "frames": 8,
+    "frameWidth": 192,
+    "frameHeight": 224,
+    "width": 1536,
+    "height": 224,
+    "seconds": 0.72,
+    "direction": "right",
+    "pngBytes": 190330,
+    "webpBytes": 32486
+  },
+  {
+    "id": "ChatGPT",
+    "frames": 8,
+    "frameWidth": 192,
+    "frameHeight": 224,
+    "width": 1536,
+    "height": 224,
+    "seconds": 0.72,
+    "direction": "right",
+    "pngBytes": 205498,
+    "webpBytes": 33228
+  },
+  {
+    "id": "Gemini",
+    "frames": 8,
+    "frameWidth": 192,
+    "frameHeight": 224,
+    "width": 1536,
+    "height": 224,
+    "seconds": 0.72,
+    "direction": "right",
+    "pngBytes": 167986,
+    "webpBytes": 30946
+  },
+  {
+    "id": "Qwen3",
+    "frames": 8,
+    "frameWidth": 192,
+    "frameHeight": 224,
+    "width": 1536,
+    "height": 224,
+    "seconds": 0.72,
+    "direction": "right",
+    "pngBytes": 183390,
+    "webpBytes": 32296
+  },
+  {
+    "id": "Mistral",
+    "frames": 8,
+    "frameWidth": 192,
+    "frameHeight": 224,
+    "width": 1536,
+    "height": 224,
+    "seconds": 0.72,
+    "direction": "right",
+    "pngBytes": 198006,
+    "webpBytes": 33916
+  },
+  {
+    "id": "duck",
+    "frames": 8,
+    "frameWidth": 192,
+    "frameHeight": 224,
+    "width": 1536,
+    "height": 224,
+    "seconds": 0.72,
+    "direction": "right",
+    "pngBytes": 144034,
+    "webpBytes": 27118
+  }
+]

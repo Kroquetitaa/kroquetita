@@ -1,3 +1,4 @@
+import { BlenderActor } from './BlenderActor'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Billboard, Text } from '@react-three/drei'
@@ -241,7 +242,6 @@ export function Player() {
   const armL = useRef<THREE.Group>(null)
   const armR = useRef<THREE.Group>(null)
   const laptop = useRef<THREE.Group>(null)
-  const faceMaterial = useRef<THREE.MeshBasicMaterial>(null)
   const puff = useRef<THREE.Mesh>(null)
   const puffMaterial = useMemo(() => createPuffMaterial(), [])
 
@@ -255,6 +255,9 @@ export function Player() {
     [],
   )
   const bolt = useMemo(() => createBoltTexture(), [])
+  const faceMaterial = useMemo(() => new THREE.MeshBasicMaterial({ map: faces.normal }), [faces])
+  const actorMaterials = useMemo(() => ({ FaceScreen: faceMaterial }), [faceMaterial])
+  const actorJoints = useMemo(() => ({ Head: head, Leg_L: legL, Leg_R: legR, Arm_L: armL, Arm_R: armR, Laptop: laptop }), [])
 
   const anim = useRef({
     phase: 0,
@@ -329,12 +332,21 @@ export function Player() {
       }
       a.inMeeting = meeting
       // Con un panel abierto (mapa, modo foto, minijuego) las teclas son del panel.
-      const frozen = meeting || game.panel !== null
-      const x = frozen ? 0 : input.stickX || input.x
-      const z = frozen ? 0 : input.stickZ || input.z
+      const frozen = meeting || game.panel !== null || game.place !== 'city'
+      let x = frozen ? 0 : input.stickX || input.x
+      let z = frozen ? 0 : input.stickZ || input.z
+      if (game.camera === 'free') {
+        // In orbit view, forward follows the screen even after turning 360°.
+        const m = state.camera.matrixWorld.elements
+        const length = Math.hypot(m[0], m[2]) || 1
+        const rightX = m[0] / length, rightZ = m[2] / length, horizontal = x
+        x = horizontal * rightX - z * rightZ
+        z = horizontal * rightZ + z * rightX
+      }
       const boost = now < game.boostUntil ? 1.7 : 1
       const physics = {
         colliders: world.colliders,
+        ramps: world.ramps,
         bounds: world.bounds,
         pads: world.pads,
         gravityScale: game.party ? 0.45 : 1,
@@ -442,7 +454,7 @@ export function Player() {
       const bounce = Math.abs(Math.sin(a.phase)) * 0.04 * Math.min(1, moving * 2.2)
       laptop.current.position.set(
         0,
-        THREE.MathUtils.lerp(0.34 + bounce, 1.06, a.air),
+        THREE.MathUtils.lerp(0.51 + bounce, 1.06, a.air),
         THREE.MathUtils.lerp(0.29, 0.02, a.air),
       )
       laptop.current.rotation.x = THREE.MathUtils.lerp(0, -0.5, a.air)
@@ -451,12 +463,12 @@ export function Player() {
       head.current.rotation.z = Math.sin(t * 1.3) * 0.05 + (dance ? Math.sin(t * 8) * 0.18 : 0)
       head.current.rotation.x = typing ? 0.12 + Math.sin(t * 2.1) * 0.03 : -a.air * 0.25
     }
-    if (faceMaterial.current) {
+    {
       let face: Face = 'normal'
       if (airborne) face = 'wow'
       else if (celebrating || performance.now() < a.happyUntil) face = 'happy'
       else if (t % 3.4 < 0.13) face = 'blink'
-      faceMaterial.current.map = faces[face]
+      faceMaterial.map = faces[face]
     }
     if (squash.current) {
       const idle = Math.sin(t * 2.4) * 0.015
@@ -492,6 +504,8 @@ export function Player() {
         {/* Pivote de la voltereta, a la altura del pecho */}
         <group ref={flip} position-y={0.45}>
           <group ref={squash} position-y={-0.45}>
+<BlenderActor name="avatar" joints={actorJoints} materials={actorMaterials} fallback={<>
+
             {/* Piernas: el pivote está en la cadera */}
             <group ref={legL} position={[-0.11, 0.2, 0]}>
               <mesh position-y={-0.1} castShadow>
@@ -536,7 +550,7 @@ export function Player() {
               </mesh>
               <mesh position={[0, 0.2, 0.222]}>
                 <planeGeometry args={[0.38, 0.36]} />
-                <meshBasicMaterial ref={faceMaterial} map={faces.normal} />
+                <primitive object={faceMaterial} attach="material" />
               </mesh>
             </group>
 
@@ -572,6 +586,8 @@ export function Player() {
               </group>
               <pointLight position={[0, 0.15, 0.25]} color="#ff9a2e" intensity={1.6} distance={2.6} decay={2} />
             </group>
+
+</>} />
           </group>
         </group>
         <Bubble text={bubble.text} shownAt={bubble.shownAt} />

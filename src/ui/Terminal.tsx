@@ -54,7 +54,7 @@ const HELP: Record<Lang, Array<[string, string]>> = {
     ['contact', 'cómo escribirme'],
     ['play · tour · exit', 'jugar, recorrido, salir'],
     ['weather rain|storm|clear|auto', 'cambia el clima'],
-    ['time dawn|night|auto', 'cambia la hora'],
+    ['time day|sunset|night|auto', 'cambia la hora'],
     ['lang es|en', 'idioma'],
     ['medals', 'logros conseguidos'],
     ['map · photo · top', 'mapa, modo foto, tabla de récords'],
@@ -74,7 +74,7 @@ const HELP: Record<Lang, Array<[string, string]>> = {
     ['contact', 'how to reach me'],
     ['play · tour · exit', 'play, tour, leave'],
     ['weather rain|storm|clear|auto', 'change the weather'],
-    ['time dawn|night|auto', 'change the time of day'],
+    ['time day|sunset|night|auto', 'change the time of day'],
     ['lang es|en', 'language'],
     ['medals', 'achievements so far'],
     ['map · photo · top', 'map, photo mode, leaderboard'],
@@ -190,11 +190,11 @@ function run(input: string, lang: Lang): Line[] | 'clear' {
     case 'time':
     case 'hora': {
       const value = args.toLowerCase()
-      if (value === 'dawn' || value === 'night' || value === 'auto') {
+      if (value === 'dawn' || value === 'day' || value === 'sunset' || value === 'night' || value === 'auto') {
         game.setDaytime(value)
         return [out(es ? `Hora: ${value}.` : `Time: ${value}.`, 'ok')]
       }
-      return [out('time dawn | night | auto', 'error')]
+      return [out('time day | sunset | night | auto', 'error')]
     }
     case 'dawn':
     case 'night':

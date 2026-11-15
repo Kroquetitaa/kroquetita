@@ -38,7 +38,7 @@ export const talkers: Talker[] = [
     name: { es: 'Reclutadora', en: 'Recruiter' },
     color: '#ff4d8d',
     accent: '#ffd60a',
-    position: [-18, 12.2],
+    position: [-7.9, -5.2],
     facing: 0.5,
     scripts: [
       {
@@ -66,7 +66,7 @@ export const talkers: Talker[] = [
     name: { es: 'Guía', en: 'Guide' },
     color: '#3df2b0',
     accent: '#19e6ff',
-    position: [-14.5, 9.8],
+    position: [0, 4.6],
     facing: 0.3,
     scripts: [
       {
@@ -92,7 +92,7 @@ export const talkers: Talker[] = [
     name: { es: 'QA', en: 'QA' },
     color: '#8b5cf6',
     accent: '#ff9f1c',
-    position: [-20, -4.6],
+    position: [14.9, -3.7],
     facing: 0.9,
     scripts: [
       {
@@ -121,12 +121,12 @@ export const talkers: Talker[] = [
       },
       {
         es: [
-          '¿Ves la cinta? Uno de cada ocho paquetes no pasa. Ese test es mío.',
+          'En este distrito los bugs tienen patas. Al menos estos se dejan reproducir.',
           'Última pista: salta encima de los bichos. Con cinco te dan una medalla.',
           'Y no pulses el botón rojo. Es broma: púlsalo.',
         ],
         en: [
-          'See the belt? One in eight packages fails. That test is mine.',
+          'In this district, bugs have legs. At least these are reproducible.',
           'Last hint: jump on the bugs. Five of them earn you a medal.',
           'And do not press the red button. Kidding: press it.',
         ],
@@ -138,7 +138,7 @@ export const talkers: Talker[] = [
     name: { es: 'Sysadmin', en: 'Sysadmin' },
     color: '#2f7bff',
     accent: '#3df2b0',
-    position: [23.6, -4.4],
+    position: [21.4, -3.1],
     facing: -0.6,
     scripts: [
       {
@@ -169,7 +169,7 @@ talkers.push({
   name: { es: 'Joseba · AI Engineer', en: 'Joseba · AI Engineer' },
   color: '#2b2140',
   accent: '#3df2b0',
-  position: [-1.8, 15],
+  position: [-4.7, 6.8],
   facing: -0.3,
   scripts: [
     {
@@ -265,7 +265,7 @@ talkers.push({
   name: { es: 'Bibliotecario', en: 'Librarian' },
   color: '#6b4f3a',
   accent: '#ffd60a',
-  position: [-40.4, 7.6],
+  position: [-13.7, -6],
   facing: 0.9,
   scripts: [
     {
@@ -295,7 +295,7 @@ talkers.push({
   name: { es: 'Pochita', en: 'Pochita' },
   color: '#ff5fa2',
   accent: '#ffd60a',
-  position: [14.6, 12.2],
+  position: [-1.8, -14.6],
   facing: -0.5,
   scripts: [
     {
@@ -395,11 +395,11 @@ export const josebaShouts: Localized<string[]> = {
 }
 
 /**
- * El equipo: compañeros de trabajo de verdad, en un corrillo entre la plaza y
+ * El equipo: compañeros de trabajo de verdad, repartidos por los distritos y
  * la sala de conceptos. Lo que dicen son bromas escritas para el juego a
  * partir del papel de cada uno, no citas suyas.
  */
-export const teamSpot: [number, number] = [21.6, 21.2]
+export const teamSpot: [number, number] = [4.2, -2.8]
 
 talkers.push(
   {
@@ -408,7 +408,7 @@ talkers.push(
     name: { es: 'Alex', en: 'Alex' },
     color: '#1f2430',
     accent: '#ffd60a',
-    position: [20.3, 18.5],
+    position: [7.8, -5.2],
     facing: 0.1,
     scripts: [
       {
@@ -455,7 +455,7 @@ talkers.push(
     name: { es: 'Josete · Backend', en: 'Josete · Backend' },
     color: '#3b7a57',
     accent: '#3df2b0',
-    position: [17.7, 19.5],
+    position: [20, 13.7],
     facing: 0.3,
     scripts: [
       {
@@ -472,12 +472,12 @@ talkers.push(
       },
       {
         es: [
-          '¿Has roto ya algo en la sala de la derecha?',
+          '¿Has roto ya algo en el Distrito Bugs, al otro lado de la fábrica?',
           'Yo voy cuando alguien lanza un DELETE sin WHERE.',
           'La última vez fui yo. No se lo digas a nadie.',
         ],
         en: [
-          'Have you broken anything in the room on the right yet?',
+          'Have you broken anything in the Bugs District, across from the factory?',
           'I go there whenever someone runs a DELETE without a WHERE.',
           'Last time it was me. Do not tell anyone.',
         ],
@@ -502,19 +502,19 @@ talkers.push(
     name: { es: 'Cristian · Dev y QA', en: 'Cristian · Dev & QA' },
     color: '#7a3b6b',
     accent: '#ff4d8d',
-    position: [22.9, 19.5],
+    position: [-20, 13.8],
     facing: -0.1,
     scripts: [
       {
         es: [
           'Cristian, desarrollador. Y el que lo prueba todo antes de que explote.',
           '¿«En mi máquina funciona»? Perfecto: desplegamos tu máquina.',
-          'He encontrado tres bugs en esta plaza. Dos se mueven. Písalos.',
+          'He encontrado tres bugs en el Distrito Bugs. Dos se mueven. Písalos.',
         ],
         en: [
           'Cristian, developer. And the one who tests everything before it blows up.',
           '"It works on my machine"? Perfect: we will deploy your machine.',
-          'I found three bugs in this plaza. Two of them move. Step on them.',
+          'I found three bugs in the Bugs District. Two of them move. Step on them.',
         ],
       },
       {
@@ -549,7 +549,7 @@ talkers.push(
     name: { es: 'Pablo · Producto', en: 'Pablo · Product' },
     color: '#b5542b',
     accent: '#ff8a1e',
-    position: [25.5, 18.5],
+    position: [6.6, 13.7],
     facing: -0.3,
     scripts: [
       {

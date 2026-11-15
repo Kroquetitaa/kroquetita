@@ -1,0 +1,134 @@
+[
+  {
+    "id": "recruiter",
+    "file": "recruiter.glb",
+    "bytes": 104192,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\recruiter.blend"
+  },
+  {
+    "id": "guide",
+    "file": "guide.glb",
+    "bytes": 104164,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\guide.blend"
+  },
+  {
+    "id": "qa",
+    "file": "qa.glb",
+    "bytes": 131924,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\qa.blend"
+  },
+  {
+    "id": "sysadmin",
+    "file": "sysadmin.glb",
+    "bytes": 108884,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\sysadmin.blend"
+  },
+  {
+    "id": "intern",
+    "file": "intern.glb",
+    "bytes": 99192,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\intern.blend"
+  },
+  {
+    "id": "librarian",
+    "file": "librarian.glb",
+    "bytes": 121296,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\librarian.blend"
+  },
+  {
+    "id": "joseba",
+    "file": "joseba.glb",
+    "bytes": 110628,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\joseba.blend"
+  },
+  {
+    "id": "pochita",
+    "file": "pochita.glb",
+    "bytes": 104704,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\pochita.blend"
+  },
+  {
+    "id": "alex",
+    "file": "alex.glb",
+    "bytes": 93824,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\alex.blend"
+  },
+  {
+    "id": "josete",
+    "file": "josete.glb",
+    "bytes": 105476,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\josete.blend"
+  },
+  {
+    "id": "cristian",
+    "file": "cristian.glb",
+    "bytes": 131712,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\cristian.blend"
+  },
+  {
+    "id": "pablo",
+    "file": "pablo.glb",
+    "bytes": 114120,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\pablo.blend"
+  },
+  {
+    "id": "manager",
+    "file": "manager.glb",
+    "bytes": 137384,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\manager.blend"
+  },
+  {
+    "id": "Claude",
+    "file": "Claude.glb",
+    "bytes": 81800,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\Claude.blend"
+  },
+  {
+    "id": "ChatGPT",
+    "file": "ChatGPT.glb",
+    "bytes": 97508,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\ChatGPT.blend"
+  },
+  {
+    "id": "Gemini",
+    "file": "Gemini.glb",
+    "bytes": 99304,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\Gemini.blend"
+  },
+  {
+    "id": "Qwen3",
+    "file": "Qwen3.glb",
+    "bytes": 92152,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\Qwen3.blend"
+  },
+  {
+    "id": "Mistral",
+    "file": "Mistral.glb",
+    "bytes": 88216,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\Mistral.blend"
+  },
+  {
+    "id": "cat",
+    "file": "cat.glb",
+    "bytes": 101376,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\cat.blend"
+  },
+  {
+    "id": "duck",
+    "file": "duck.glb",
+    "bytes": 46280,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\duck.blend"
+  },
+  {
+    "id": "bug",
+    "file": "bug.glb",
+    "bytes": 68608,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\bug.blend"
+  },
+  {
+    "id": "boss",
+    "file": "boss.glb",
+    "bytes": 68640,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\boss.blend"
+  }
+]

@@ -41,10 +41,18 @@ export interface Pad {
   power: number
 }
 
+/** A rectangular sloped surface exported from Blender, expressed in world metres. */
+export interface Ramp {
+  readonly width: number
+  readonly start: readonly [number, number, number]
+  readonly end: readonly [number, number, number]
+}
+
 export interface World {
   colliders: AABB[]
   bounds: Bounds
   pads: Pad[]
+  ramps?: readonly Ramp[]
   /** 1 = gravedad normal; menos = gravedad lunar */
   gravityScale: number
 }
@@ -100,15 +108,36 @@ function hits(colliders: AABB[], x: number, y: number, z: number, out: AABB[]) {
 const scratch: AABB[] = []
 const probe: AABB[] = []
 
-function moveAxis(body: Body, axis: 0 | 2, delta: number, colliders: AABB[]) {
+/** Height of the bridge surface beneath the player's footprint. */
+export function rampHeight(ramp: Ramp, x: number, z: number): number | null {
+  const dx = ramp.end[0] - ramp.start[0], dz = ramp.end[2] - ramp.start[2]
+  const length = Math.hypot(dx, dz)
+  if (length < 1e-6) return null
+  const along = ((x - ramp.start[0]) * dx + (z - ramp.start[2]) * dz) / length
+  const across = Math.abs((x - ramp.start[0]) * dz - (z - ramp.start[2]) * dx) / length
+  if (along < -HALF || along > length + HALF || across > ramp.width / 2 + HALF) return null
+  const t = Math.max(0, Math.min(1, along / length))
+  return ramp.start[1] + t * (ramp.end[1] - ramp.start[1])
+}
+
+function moveAxis(body: Body, axis: 0 | 2, delta: number, colliders: AABB[], ramps: readonly Ramp[]) {
   if (delta === 0) return
   const p = body.pos
   const next: [number, number, number] = [p[0], p[1], p[2]]
   next[axis] += delta
 
+  // Follow a slope continuously. The rise limit also allows a small native bridge lip.
+  if (body.grounded && body.vel[1] <= 0) {
+    for (const ramp of ramps) {
+      const height = rampHeight(ramp, next[0], next[2])
+      if (height !== null && height > next[1] && height - next[1] <= STEP_MAX) next[1] = height
+    }
+  }
+
   const found = hits(colliders, next[0], next[1], next[2], scratch)
   if (found.length === 0) {
     p[axis] = next[axis]
+    p[1] = next[1]
     return
   }
 
@@ -116,7 +145,7 @@ function moveAxis(body: Body, axis: 0 | 2, delta: number, colliders: AABB[]) {
   if (body.grounded) {
     let top = -Infinity
     for (const b of found) top = Math.max(top, b.max[1])
-    const rise = top - p[1]
+    const rise = top - next[1]
     if (rise > 0 && rise <= STEP_MAX && hits(colliders, next[0], top, next[2], probe).length === 0) {
       p[axis] = next[axis]
       p[1] = top
@@ -138,7 +167,7 @@ function moveAxis(body: Body, axis: 0 | 2, delta: number, colliders: AABB[]) {
 }
 
 /** Altura del suelo bajo los pies dentro de un margen, o null si no hay. */
-function groundBelow(body: Body, colliders: AABB[], reach: number): number | null {
+function groundBelow(body: Body, colliders: AABB[], reach: number, ramps: readonly Ramp[]): number | null {
   const [x, y, z] = body.pos
   let best: number | null = y - reach <= 0 ? 0 : null
   for (const b of colliders) {
@@ -147,11 +176,15 @@ function groundBelow(body: Body, colliders: AABB[], reach: number): number | nul
       if (top <= y + 1e-4 && top >= y - reach && (best === null || top > best)) best = top
     }
   }
+  for (const ramp of ramps) {
+    const top = rampHeight(ramp, x, z)
+    if (top !== null && top <= y + 1e-4 && top >= y - reach && (best === null || top > best)) best = top
+  }
   return best
 }
 
 export function stepBody(body: Body, controls: Controls, dt: number, world: World) {
-  const { colliders, bounds, pads, gravityScale } = world
+  const { colliders, bounds, pads, gravityScale, ramps = [] } = world
   const wasGrounded = body.grounded
   body.justJumped = false
   body.justLanded = false
@@ -201,8 +234,8 @@ export function stepBody(body: Body, controls: Controls, dt: number, world: Worl
     body.justDoubleJumped = true
   }
 
-  moveAxis(body, 0, body.vel[0] * dt, colliders)
-  moveAxis(body, 2, body.vel[2] * dt, colliders)
+  moveAxis(body, 0, body.vel[0] * dt, colliders, ramps)
+  moveAxis(body, 2, body.vel[2] * dt, colliders, ramps)
 
   body.pos[0] = Math.min(bounds.maxX, Math.max(bounds.minX, body.pos[0]))
   body.pos[2] = Math.min(bounds.maxZ, Math.max(bounds.minZ, body.pos[2]))
@@ -225,11 +258,23 @@ export function stepBody(body: Body, controls: Controls, dt: number, world: Worl
       body.vel[1] = 0
     }
   }
+  // A bridge is a surface: land on it when descending; do not teleport up from underneath.
+  for (const ramp of ramps) {
+    const top = rampHeight(ramp, body.pos[0], body.pos[2])
+    if (top === null) continue
+    if (body.vel[1] <= 0 && body.pos[1] >= top - .01 && nextY <= top) {
+      nextY = Math.max(nextY, top)
+      grounded = true
+    } else if (body.vel[1] > 0 && body.pos[1] + HEIGHT <= top && nextY + HEIGHT > top) {
+      nextY = Math.min(nextY, top - HEIGHT)
+      body.vel[1] = 0
+    }
+  }
   body.pos[1] = nextY
 
   // Al bajar escalones, seguir pegado al suelo en lugar de "volar".
   if (!grounded && wasGrounded && !jumped) {
-    const ground = groundBelow(body, colliders, STEP_MAX)
+    const ground = groundBelow(body, colliders, STEP_MAX, ramps)
     if (ground !== null) {
       body.pos[1] = ground
       grounded = true

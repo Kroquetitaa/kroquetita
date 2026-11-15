@@ -1,3 +1,5 @@
+import { blenderGeometry } from '../world/blenderGeometry'
+import { blenderAssembly } from '../world/blenderAssembly'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { Lang, Localized } from '../data/career'
 import { talkers, type Talker } from '../data/folk'
@@ -116,31 +118,15 @@ const tint = (id: ZoneId) => zoneById(id)?.color ?? '#ffffff'
 
 /* ---------- Qué hay en cada sitio ---------- */
 
-const arcade = world.props.arcade
-const spot = (center: readonly number[]): [number, number] => [center[0], center[2]]
-
 /** Dónde está cada cosa de la sala de romper (x, z) */
-const SMASH_SPOTS: Partial<Record<Smashable, [number, number]>> = {
-  tests: spot(arcade.tests.center),
-  network: spot(arcade.network.center),
-  gauss: spot(arcade.gauss.center),
-  dice: [(arcade.dice.pen.minX + arcade.dice.pen.maxX) / 2, (arcade.dice.pen.minZ + arcade.dice.pen.maxZ) / 2],
-  graph: spot(arcade.graph.center),
-  prs: spot(arcade.prs.center),
-  legacy: spot(arcade.legacy.center),
-  pinata: spot(arcade.pinata.center),
-  stack: spot(arcade.stack.center),
-  table: spot(arcade.table.center),
-  overfit: spot(arcade.overfit.center),
-}
+const SMASH_SPOTS: Partial<Record<Smashable, [number, number]>> = Object.fromEntries(
+  blenderGeometry.breakables.map(target => [target.id, [target.position[0], target.position[2]]]),
+)
 
-const isMate = (id: string) => (TEAMMATES as readonly string[]).includes(id)
 
-/** Zona en la que cuenta cada personaje: los que andan sueltos por el parque son de la plaza. */
+/** Each character is shown in the district where they actually stand. */
 function homeOf(talker: Talker): ZoneId {
-  if (isMate(talker.id)) return 'team'
-  const zone = zoneAt(talker.position[0], talker.position[1])?.id
-  return !zone || zone === 'career' ? 'plaza' : zone
+  return zoneAt(talker.position[0], talker.position[1])?.id ?? 'plaza'
 }
 
 /** Dónde va la etiqueta de cada zona respecto a su recinto (por defecto, dentro y abajo) */
@@ -224,6 +210,32 @@ function paintStatic(ctx: CanvasRenderingContext2D, v: View, ratio: number, deta
   ctx.lineJoin = 'round'
   ctx.lineWidth = 1
 
+  // The same floors, streets and observatory bridge as the Blender assembly.
+  for (const surface of blenderAssembly.surfaces) {
+    if (!surface.name.startsWith('Satin_floor') && !surface.name.startsWith('Glossy_')) continue
+    rounded(ctx, ...boxRect(v, surface.center, surface.size), 2)
+    ctx.fillStyle = surface.district === 'brain_inside' ? 'rgba(196,165,255,.24)' : 'rgba(129,164,193,.12)'
+    ctx.strokeStyle = 'rgba(167,205,228,.2)'
+    ctx.fill()
+    ctx.stroke()
+  }
+  for (const ramp of blenderAssembly.ramps) {
+    ctx.beginPath()
+    ctx.moveTo(px(v, ramp.start[0]), py(v, ramp.start[2]))
+    ctx.lineTo(px(v, ramp.end[0]), py(v, ramp.end[2]))
+    ctx.lineWidth = Math.max(1, ramp.width * v.scale)
+    ctx.strokeStyle = 'rgba(196,165,255,.35)'
+    ctx.stroke()
+  }
+  ctx.lineWidth = 1
+  if (detail) {
+    const observatory = blenderAssembly.districts.brain_inside.position
+    ctx.fillStyle = '#d7c9ff'
+    ctx.font = `600 10px ${FONT}`
+    ctx.textAlign = 'center'
+    ctx.fillText(game.lang === 'es' ? 'OBSERVATORIO' : 'OBSERVATORY', px(v, observatory[0]), py(v, observatory[2]))
+  }
+
   if (detail) {
     // Cuadrícula tenue cada diez unidades, para dar escala.
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.045)'
@@ -259,18 +271,6 @@ function paintStatic(ctx: CanvasRenderingContext2D, v: View, ratio: number, deta
       const [x, y, w, h] = rect(v, collider.min[0], collider.min[2], collider.max[0], collider.max[2])
       ctx.fillRect(x, y, Math.max(1, w), Math.max(1, h))
     }
-
-    // Baldosas de luz que llevan a cada sala.
-    const tiles = Math.max(1.5, 0.5 * v.scale)
-    const trail = (path: ReadonlyArray<readonly number[]>, color: string) => {
-      ctx.fillStyle = color
-      for (const tile of path) ctx.fillRect(px(v, tile[0]) - tiles / 2, py(v, tile[2]) - tiles / 2, tiles, tiles)
-    }
-    ctx.globalAlpha = 0.5
-    trail(world.props.campus.path, tint('library'))
-    trail(arcade.path, tint('arcade'))
-    trail(lab.path, tint('lab'))
-    ctx.globalAlpha = 1
 
     // El recorrido de la trayectoria: de caja en caja, en orden.
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.34)'
@@ -628,7 +628,7 @@ function useProgress() {
         return {
           done: TEAMMATES.filter((mate) => talked.includes(mate)).length,
           total: TEAMMATES.length,
-          label: { es: 'compañeros', en: 'teammates' },
+          label: { es: 'compañeros encontrados', en: 'teammates found' },
         }
       case 'gym':
         return { done: trained ? 1 : 0, total: 1, label: { es: 'medalla', en: 'medal' } }

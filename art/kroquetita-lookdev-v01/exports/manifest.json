@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "units": "metres",
+  "up": "+Y",
+  "forward": "+Z",
+  "assets": {
+    "avatar": {
+      "file": "avatar.glb",
+      "bytes": 323236,
+      "mesh_objects": 54,
+      "root": "AvatarRoot",
+      "animation": "Idle"
+    },
+    "coffee_machine": {
+      "file": "coffee_machine.glb",
+      "bytes": 916888,
+      "mesh_objects": 47,
+      "root": "CoffeeRoot",
+      "animation": null
+    },
+    "plaza_module": {
+      "file": "plaza_module.glb",
+      "bytes": 517196,
+      "mesh_objects": 63,
+      "root": "GroundRoot",
+      "animation": null
+    }
+  }
+}
