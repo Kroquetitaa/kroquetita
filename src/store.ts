@@ -42,8 +42,8 @@ export type CameraMode = 'wide' | 'chase'
 export type Panel = 'map' | 'photo' | 'train' | 'scores'
 /** Calidad gráfica: 'auto' baja sola si el equipo no llega */
 export type Quality = 'auto' | 'high' | 'low'
-/** Compañeros de trabajo que hay en la plaza (los cinco dan una medalla) */
-export const TEAMMATES = ['alex', 'dani', 'josete', 'cristian', 'pablo'] as const
+/** Compañeros de trabajo que hay en la plaza (hablar con todos da una medalla) */
+export const TEAMMATES = ['alex', 'josete', 'cristian', 'pablo'] as const
 
 /** Encargos que piden los personajes (los textos están en i18n) */
 export const QUESTS = ['recruiter', 'guide', 'qa', 'sysadmin', 'intern', 'librarian'] as const

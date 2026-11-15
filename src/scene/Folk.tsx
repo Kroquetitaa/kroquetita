@@ -50,10 +50,9 @@ interface MateLook {
   held: 'none' | 'tablet' | 'laptop' | 'mug'
 }
 const MATES: Partial<Record<Kit, MateLook>> = {
-  alex: { hair: '#2a1b12', style: 'side', extra: 'none', held: 'tablet' },
-  dani: { hair: '#6b4a2b', style: 'short', extra: 'glasses', held: 'laptop' },
-  josete: { hair: '#1c1c22', style: 'tall', extra: 'none', held: 'mug' },
-  cristian: { hair: '#3b2416', style: 'short', extra: 'headset', held: 'none' },
+  alex: { hair: '#2a1b12', style: 'side', extra: 'none', held: 'none' },
+  josete: { hair: '#1c1c22', style: 'tall', extra: 'none', held: 'laptop' },
+  cristian: { hair: '#3b2416', style: 'short', extra: 'glasses', held: 'tablet' },
   pablo: { hair: '#8a5a2b', style: 'side', extra: 'cap', held: 'mug' },
 }
 
