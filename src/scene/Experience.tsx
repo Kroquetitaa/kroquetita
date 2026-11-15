@@ -28,6 +28,9 @@ import { CityDistricts, CityStationProximity } from './CityDistricts'
 import { BrainRoom } from './BrainRoom'
 import { useCityLife } from '../game/cityLife'
 import { DevSceneStats } from './DevSceneStats'
+import { CityDimensionalEffects } from '../dimensions/CityDimensionalEffects'
+import { useWindowMotion, windowMotion } from '../dimensions/windowMotion'
+import type { DimensionCameraInput } from '../dimensions/protocol'
 
 // Las salas grandes viajan en paquetes aparte y se montan cuando la portada ya se ve (ver Zone.tsx).
 const Seasonal = lazy(() => import('./Seasonal').then((m) => ({ default: m.Seasonal })))
@@ -55,7 +58,7 @@ function Lights() {
     const t = clock.elapsedTime
     const { day, golden } = atmosphere
     if (sun.current) {
-      sun.current.intensity = 1.65 + day * 1.9
+      sun.current.intensity = 1.65 + day * 1.9 + windowMotion.strength * .12
       sun.current.color.copy(moonColor.current).lerp(dayColor.current, day).lerp(goldenColor.current, golden * 0.8)
       // One shadow-casting sun, following the player, also lights the new districts.
       const follow = useGame.getState().mode === 'play' && useGame.getState().place === 'city'
@@ -220,14 +223,16 @@ function ShadowBudget({ low }: { low: boolean }) {
 /** Densidad de píxeles del modo 8 bits: el lienzo se pinta diminuto y se amplía sin suavizar */
 const RETRO_DPR = 0.2
 
-export function Experience() {
+export function Experience({ sendCamera }: { sendCamera?: (camera: DimensionCameraInput) => void }) {
   const quality = useGame((s) => s.quality)
   const retro = useGame((s) => s.retro)
   const place = useGame((s) => s.place)
   const [coarse] = useState(() => window.matchMedia('(pointer: coarse)').matches)
+  const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  useWindowMotion(true, reducedMotion)
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const update = () => { atmosphere.reducedMotion = media.matches }
+    const update = () => { atmosphere.reducedMotion = media.matches; setReducedMotion(media.matches) }
     update()
     media.addEventListener('change', update)
     return () => media.removeEventListener('change', update)
@@ -268,6 +273,7 @@ export function Experience() {
       <ExplorationCamera />
       <PhotoRig />
       <Lights />
+      <CityDimensionalEffects sendCamera={sendCamera} />
       <Suspense fallback={null}>
         <Reflections />
         {/* La ciudad entera: dentro del cerebro deja de pintarse */}

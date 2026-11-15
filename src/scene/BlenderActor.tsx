@@ -1,13 +1,15 @@
-import { Suspense, useLayoutEffect, useMemo, type ReactNode } from 'react'
+import { Suspense, useLayoutEffect, useMemo, useRef, type ReactNode } from 'react'
 import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { atmosphere } from './atmosphere'
 import { AssetBoundary } from './CityModel'
+import { windowMotion } from '../dimensions/windowMotion'
 
 type Joints = Record<string, { current: unknown }>
 type ActorMaterials = Record<string, THREE.Material>
 function Actor({ name, joints, materials }: { name: string; joints?: Joints; materials?: ActorMaterials }) {
+  const balance = useRef<THREE.Group>(null)
   const gltf = useGLTF(`/models/city/${name === 'avatar' ? name : `cast/${name}`}.glb`)
   const object = useMemo(() => {
     const clone = gltf.scene.clone(true)
@@ -30,10 +32,17 @@ function Actor({ name, joints, materials }: { name: string; joints?: Joints; mat
     return () => { for (const [mesh, material] of previous) mesh.material = material }
   }, [object, materials])
   const limbs = useMemo(() => object.getObjectByName('Legs'), [object])
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, dt) => {
     if ((name === 'boss' || name === 'bug') && limbs && !atmosphere.reducedMotion) limbs.rotation.y = Math.sin(clock.elapsedTime*16)*.1
+    if (balance.current) {
+      const active = !atmosphere.reducedMotion
+      const tiltZ = THREE.MathUtils.clamp(-windowMotion.acceleration.x * .12 - windowMotion.velocity.x * .05, -.03, .03)
+      const tiltX = THREE.MathUtils.clamp(windowMotion.acceleration.y * .09, -.03, .03)
+      balance.current.rotation.z = active ? THREE.MathUtils.damp(balance.current.rotation.z, tiltZ, 10, Math.min(dt, .05)) : 0
+      balance.current.rotation.x = active ? THREE.MathUtils.damp(balance.current.rotation.x, tiltX, 10, Math.min(dt, .05)) : 0
+    }
   })
-  return <primitive object={object} dispose={null} />
+  return <group ref={balance}><primitive object={object} dispose={null} /></group>
 }
 
 /** Bind the Blender joints to the original controller: dialogue, flight, chases and collisions survive. */

@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "assets:city": "node scripts/prepare-city-assets.mjs",
     "check:city": "node --experimental-strip-types scripts/check-city-integration.mjs",
-    "check:portals": "node --experimental-strip-types scripts/check-portals.mjs && node --experimental-strip-types scripts/check-portal-launch.mjs"
+    "check:portals": "node --experimental-strip-types scripts/check-portals.mjs && node --experimental-strip-types scripts/check-portal-launch.mjs && node --experimental-strip-types scripts/check-portal-story.mjs",
+    "check:dimensions": "node --experimental-strip-types scripts/check-dimensions.mjs && node --experimental-strip-types scripts/check-lens-projection.mjs"
   },
   "dependencies": {
     "@fontsource/poppins": "^5.3.0",

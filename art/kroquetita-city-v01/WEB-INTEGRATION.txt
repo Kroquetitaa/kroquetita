@@ -118,7 +118,7 @@ cámaras, actores, interacciones, luz, reflejos y tamaños de pantalla.
 El rendimiento depende del equipo. El proyecto sigue disponible en local.
 
 PORTALES: VALIDACIÓN REGISTRADA
-check:portals ejecuta check-portals.mjs y check-portal-launch.mjs: topología,
+check:portals ejecuta check-portals.mjs, check-portal-launch.mjs y check-portal-story.mjs: topología,
 anclajes, puertas temporales, disponibilidad de modelos, autoridad del host,
 separación/reconexión, cierre, mensajes antiguos, StrictMode, modo integrado,
 localStorage, popup bloqueado y recuperación de la ventana invitada.
@@ -126,8 +126,22 @@ QA real de escritorio 15/11/2026: Chrome conectó las ventanas lado a lado con
 progreso 15 s en ambas; separarlas en 20 s mantuvo ambos lados en 20 s durante
 más de diez segundos; acercarlas reanudó la historia. Ambas completaron 32 s
 y mostraron CONTEXTO RECUPERADO, sin errores en los registros de Chrome.
-La vista 390x844 cargó el modo integrado automáticamente. Su pausa/reanudación
-seguía pendiente de comprobación en este registro; no sustituye QA en móvil físico.
+La vista 390x844 cargó el modo integrado automáticamente: pausa estable a 23 s,
+cruce aéreo por encima del suelo, reanudación hasta 32 s y vuelta a la ciudad.
+Se validan 553.392 poses, continuidad y orden del reparto. No sustituye QA en móvil físico.
+
+TRES CAPAS Y MOVIMIENTO DE VENTANA
+dimensions/README.md documenta ciudad, subsuelo y origen, protocolo, fuentes
+Blender editables, regeneración y pruebas. La segunda ventana de la misma
+URL descubre el subsuelo; la tercera revela el origen en el solape común.
+Ambos mundos GLB suman 2.017.388 bytes y reutilizan las coordenadas de ciudad.
+La cámara del anfitrión se comparte; arrastrar su ventana produce una sacudida
+visual acotada, sin cambiar las posiciones físicas ni las colisiones.
+La vista de una pantalla permite tocar secretos para acercarse a sus detalles.
+QA real: detección automática de tres ventanas, triple intersección, cambio
+de cámara, límite de cuarta ventana, cierre/promoción y respuesta al desplazamiento.
+check:dimensions comprueba también fallback, BFCache, limpieza y 1.800 puntos
+de proyección. Consultar dimensions/README.md para límites de zoom y DPI.
 
 REVISIÓN FINAL DE INTERFAZ
 El selector de cámaras usa cuatro tarjetas con iconos, foco visible y cierre
