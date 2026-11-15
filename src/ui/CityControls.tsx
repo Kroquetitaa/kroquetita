@@ -9,6 +9,7 @@ import { warp } from '../game/state'
 import { unlockAudio } from '../game/audio'
 import { zones } from '../world/zones'
 import './city.css'
+import { usePortalLaunch } from '../portal/launch'
 
 function Workshop({ title, eyebrow, children }: { title: string; eyebrow: string; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -132,7 +133,10 @@ function CityWelcome() {
     <div className="city-welcome-scenes" role="group" aria-label={es ? 'Escenas de la ciudad' : 'City scenes'}>
       {choices.map(c => <button key={c.id} aria-pressed={district === c.id} onClick={() => useCityLife.getState().previewDistrict(c.id as typeof district)}>{c.name}</button>)}
     </div>
-    <button className="city-welcome-enter" onClick={enter}>{es ? 'Entrar y explorar' : 'Step inside & explore'} <span aria-hidden="true">↗</span></button>
+    <div className="city-welcome-actions">
+      <button className="city-welcome-enter" onClick={enter}>{es ? 'Entrar y explorar' : 'Step inside & explore'} <span aria-hidden="true">↗</span></button>
+      <button className="city-portal-enter" onClick={() => usePortalLaunch.getState().launch()}>{es ? 'El pato y los portales' : 'The duck and the portals'} <span aria-hidden="true">✦</span></button>
+    </div>
   </section>
 }
 

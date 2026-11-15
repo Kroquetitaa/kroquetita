@@ -19,6 +19,8 @@ La portada muestra el mapa completo. Al entrar se puede elegir cámara **cercana
 
 La carga dura un mínimo de **3,6 segundos** y muestra cinco asistentes de IA persiguiendo a un pato. Las hojas de marcha se renderizan desde los modelos Blender: ocho fotogramas por personaje, con PNG y WebP en `public/images/loading/`. El mínimo permite ver la escena; la carga real puede durar más según el equipo.
 
+**El pato y los portales** amplía esa persecución a dos ventanas. Se abre desde la portada o con **Abrir otra dimensión** junto a THE CORE. Sus 32 segundos de historia se pausan al separar las ventanas durante los cruces; los portales admiten los cuatro bordes, hasta 120 px de separación y un solape perpendicular mínimo de 100 px. Hay alternativa en una pantalla para móvil, popup bloqueado o elección del visitante. Las ventanas deben compartir navegador, perfil y origen web. El diorama Blender específico pesa **545.992 bytes (aprox. 546 kB)**, más los seis personajes reutilizados. Fuente editable, protocolo, límites de DPI y procedimiento de QA en [portal/README.md](portal/README.md).
+
 La navegación combina comprobación del trayecto por barrido y rutas A* para evitar atravesar obstáculos. El dron usa también **95 volúmenes elevados**, extraídos de los GLB fuente. `check-city-movement.mjs` comprueba paredes finas, desvíos, espacios ocupados, huellas reales del reparto y recorridos terrestres y aéreos.
 
 ## Contrato entre Blender y Three.js
@@ -46,6 +48,7 @@ npm run assets:city
 node --experimental-strip-types scripts/prepare-air-obstacles.mjs
 npm run check:city
 node --experimental-strip-types scripts/check-city-movement.mjs
+npm run check:portals
 npm run build
 ```
 

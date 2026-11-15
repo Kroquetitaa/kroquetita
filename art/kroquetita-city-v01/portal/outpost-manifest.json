@@ -1,0 +1,52 @@
+{
+  "file": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\public\\models\\portal\\outpost.glb",
+  "bytes": 545992,
+  "triangles": 18218,
+  "meshes": 28,
+  "baseSize": [
+    10,
+    0.38,
+    3.4
+  ],
+  "lane": {
+    "z": 0,
+    "minX": -5,
+    "maxX": 5,
+    "y": 0
+  },
+  "hooks": {
+    "Hook_Core": [
+      -3.2,
+      1.95,
+      -0.36
+    ],
+    "Hook_Coffee": [
+      3,
+      1.3,
+      -0.32
+    ],
+    "Hook_Lane_Entry": [
+      -4.65,
+      0.02,
+      0
+    ],
+    "Hook_Lane_Exit": [
+      4.65,
+      0.02,
+      0
+    ]
+  },
+  "dynamic": [
+    "CoffeeLid",
+    "Core_Brain",
+    "Portal_Neuron"
+  ],
+  "coffeeLid": {
+    "position": [
+      3,
+      1.38,
+      -1.17
+    ],
+    "openRotationX": -0.85
+  }
+}
