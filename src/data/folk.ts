@@ -15,7 +15,6 @@ export type TalkerId =
   | 'pochita'
   | 'librarian'
   | 'alex'
-  | 'dani'
   | 'josete'
   | 'cristian'
   | 'pablo'
@@ -397,139 +396,195 @@ export const josebaShouts: Localized<string[]> = {
 
 /**
  * El equipo: compañeros de trabajo de verdad, en un corrillo entre la plaza y
- * la sala de conceptos. Lo que dicen aquí son bromas escritas para el juego,
- * no citas suyas: cuando cada uno mande su frase, se cambia en este fichero.
+ * la sala de conceptos. Lo que dicen son bromas escritas para el juego a
+ * partir del papel de cada uno, no citas suyas.
  */
 export const teamSpot: [number, number] = [21.6, 21.2]
 
 talkers.push(
   {
+    // El CEO: el que anima y pone a todos a remar en la misma dirección.
     id: 'alex',
-    name: { es: 'Alex · CEO', en: 'Alex · CEO' },
+    name: { es: 'Alex', en: 'Alex' },
     color: '#1f2430',
     accent: '#ffd60a',
-    position: [21.6, 18.5],
-    facing: 0,
+    position: [20.3, 18.5],
+    facing: 0.1,
     scripts: [
       {
         es: [
-          'Soy Alex, el CEO. Sí, el jefe de Sergio.',
-          'Me dijo: «es un portfolio». Yo veo un videojuego.',
-          'Los dos tenemos razón, que es como acaban nuestras reuniones.',
+          '¡Equipo! Soy Alex. Venga, chicos, que entre todos podemos.',
+          'Unifiquémonos: un objetivo, un equipo y, a ser posible, un solo Excel.',
+          'Si remamos todos hacia el mismo lado, llegamos. Y si no, al menos damos vueltas juntos.',
         ],
         en: [
-          'I am Alex, the CEO. Yes, Sergio\'s boss.',
-          'He told me: "it is a portfolio". I see a video game.',
-          'We are both right, which is how our meetings usually end.',
+          'Team! I am Alex. Come on, folks, together we can do this.',
+          'Let us align: one goal, one team and, if at all possible, one single spreadsheet.',
+          'If we all row the same way, we get there. And if not, at least we go in circles together.',
         ],
       },
       {
-        es: ['¿Otra vuelta? Aquí sigo, de reunión en reunión.', 'Esta, al menos, tiene monedas.'],
-        en: ['Another lap? Still here, going from meeting to meeting.', 'At least this one has coins.'],
+        es: [
+          '¿Otra vez por aquí? Así me gusta, con actitud.',
+          'Recuerda: no hay problemas, hay oportunidades con fecha de entrega.',
+          'Y la fecha de entrega era ayer. Pero con actitud.',
+        ],
+        en: [
+          'Back again? That is the attitude I like.',
+          'Remember: there are no problems, only opportunities with a deadline.',
+          'And the deadline was yesterday. But with attitude.',
+        ],
+      },
+      {
+        es: [
+          'He tenido una visión: sinergias.',
+          'Todavía no sé entre qué y qué. Eso ya lo aterrizáis vosotros.',
+          'Venga, chicos, unifiquémonos. Luego os convoco para definir qué significa.',
+        ],
+        en: [
+          'I have had a vision: synergies.',
+          'Between what and what, I do not know yet. You will land that part.',
+          'Come on, team, let us align. I will send an invite later to define what that means.',
+        ],
       },
     ],
   },
   {
-    id: 'dani',
-    name: { es: 'Dani', en: 'Dani' },
-    color: '#2f7bff',
-    accent: '#19e6ff',
-    position: [16.4, 18.7],
-    facing: 0.35,
-    scripts: [
-      {
-        es: [
-          'Soy Dani. Trabajo con Sergio.',
-          'Tú le dices «una cosita rápida» y vuelve con tres agentes y un grafo.',
-          'Lo peor es que luego funciona.',
-        ],
-        en: [
-          'I am Dani. I work with Sergio.',
-          'You ask for "one quick thing" and you get three agents and a graph back.',
-          'The worst part is that it then works.',
-        ],
-      },
-      {
-        es: ['Un consejo: no le preguntes por los embeddings antes del café.', 'Después tampoco, que se anima y ya no para.'],
-        en: ['A tip: do not ask about embeddings before coffee.', 'Not after it either. That only gets the talk going.'],
-      },
-    ],
-  },
-  {
+    // Ingeniero de backend.
     id: 'josete',
-    name: { es: 'Josete', en: 'Josete' },
+    name: { es: 'Josete · Backend', en: 'Josete · Backend' },
     color: '#3b7a57',
     accent: '#3df2b0',
-    position: [19, 19.7],
-    facing: 0.15,
+    position: [17.7, 19.5],
+    facing: 0.3,
     scripts: [
       {
         es: [
-          'Josete, encantado.',
-          'Yo soy el que dice «eso no entra en este sprint».',
-          'Y Sergio, el que lo acaba metiendo. Llevamos así una temporada y nos va bien.',
+          'Josete, backend. Lo que no se ve y hace que todo lo demás funcione.',
+          'Sergio me pide «un endpoint rapidito». No existen: hay endpoints y hay deuda técnica.',
+          'Me dijo «es solo un campo más». Llevo tres migraciones.',
         ],
         en: [
-          'Josete, nice to meet you.',
-          'I am the one who says "that does not fit in this sprint".',
-          'And Sergio is the one who fits it in anyway. It has worked for a while now.',
+          'Josete, backend. The part nobody sees that makes everything else work.',
+          'Sergio asks me for "a quick little endpoint". Those do not exist: there are endpoints and there is technical debt.',
+          'He said "it is just one more field". I am on my third migration.',
         ],
       },
       {
-        es: ['¿Has roto ya algo en la sala de la derecha?', 'Yo voy cuando falla el pipeline. Voy bastante.'],
-        en: ['Have you broken anything in the room on the right yet?', 'I go there when the pipeline fails. I go a lot.'],
+        es: [
+          '¿Has roto ya algo en la sala de la derecha?',
+          'Yo voy cuando alguien lanza un DELETE sin WHERE.',
+          'La última vez fui yo. No se lo digas a nadie.',
+        ],
+        en: [
+          'Have you broken anything in the room on the right yet?',
+          'I go there whenever someone runs a DELETE without a WHERE.',
+          'Last time it was me. Do not tell anyone.',
+        ],
+      },
+      {
+        es: [
+          'El frontend es la cara bonita. Yo soy los riñones.',
+          'Nadie me da las gracias cuando la API responde en veinte milisegundos.',
+          'Pero que tarde dos segundos y verás qué rápido se aprenden mi nombre.',
+        ],
+        en: [
+          'The frontend is the pretty face. I am the kidneys.',
+          'Nobody thanks me when the API answers in twenty milliseconds.',
+          'But let it take two seconds and watch how fast they learn my name.',
+        ],
       },
     ],
   },
   {
+    // Desarrollador, y el que lo prueba todo antes de que explote.
     id: 'cristian',
-    name: { es: 'Cristian', en: 'Cristian' },
+    name: { es: 'Cristian · Dev y QA', en: 'Cristian · Dev & QA' },
     color: '#7a3b6b',
     accent: '#ff4d8d',
-    position: [24.2, 19.7],
-    facing: -0.15,
+    position: [22.9, 19.5],
+    facing: -0.1,
     scripts: [
       {
         es: [
-          'Cristian. Si algo de aquí va rápido, es cosa mía.',
-          'Si va lento, es de Sergio. Es broma. Más o menos.',
-          'Pregúntale cuántas pestañas tiene abiertas. Yo dejé de contar en cien.',
+          'Cristian, desarrollador. Y el que lo prueba todo antes de que explote.',
+          '¿«En mi máquina funciona»? Perfecto: desplegamos tu máquina.',
+          'He encontrado tres bugs en esta plaza. Dos se mueven. Písalos.',
         ],
         en: [
-          'Cristian. If anything here runs fast, that was me.',
-          'If it runs slow, that was Sergio. Kidding. More or less.',
-          'Ask about the number of open tabs. I stopped counting at a hundred.',
+          'Cristian, developer. And the one who tests everything before it blows up.',
+          '"It works on my machine"? Perfect: we will deploy your machine.',
+          'I found three bugs in this plaza. Two of them move. Step on them.',
         ],
       },
       {
-        es: ['Prueba la contrarreloj, que ahora hay tabla de récords.', 'Yo no pienso decir mi tiempo.'],
-        en: ['Try the time trial. There is a leaderboard now.', 'I am not telling you my time.'],
+        es: [
+          'Entro en un bar y pido una cerveza. Luego cero cervezas. Luego 99.999.',
+          'Pido menos una cerveza. Pido un lagarto. Todo en orden.',
+          'Entra un cliente de verdad, pregunta por el baño y el bar sale ardiendo.',
+        ],
+        en: [
+          'I walk into a bar and order one beer. Then zero beers. Then 99,999.',
+          'I order minus one beer. I order a lizard. All good.',
+          'A real customer walks in, asks where the toilet is, and the bar goes up in flames.',
+        ],
+      },
+      {
+        es: [
+          'Hay dos tipos de código: el que tiene tests y el que da sorpresas.',
+          'A mí las sorpresas me gustan en los cumpleaños, no los viernes a las seis.',
+          'Le he abierto una incidencia a la contrarreloj: el cronómetro no me deja ganar.',
+        ],
+        en: [
+          'There are two kinds of code: the kind with tests and the kind with surprises.',
+          'I like surprises on birthdays, not on Fridays at six.',
+          'I filed a ticket against the time trial: the stopwatch will not let me win.',
+        ],
       },
     ],
   },
   {
+    // Director de producto.
     id: 'pablo',
-    name: { es: 'Pablo', en: 'Pablo' },
+    name: { es: 'Pablo · Producto', en: 'Pablo · Product' },
     color: '#b5542b',
     accent: '#ff8a1e',
-    position: [26.8, 18.7],
-    facing: -0.35,
+    position: [25.5, 18.5],
+    facing: -0.3,
     scripts: [
       {
         es: [
-          'Soy Pablo. Yo venía a por café y me han puesto de personaje.',
-          'Ya que estoy: Sergio explica la IA con croquetas. Y se entiende.',
-          'No me preguntes por qué croquetas. Nadie lo sabe.',
+          'Soy Pablo, Director de Producto. Vengo a preguntar: «¿y esto qué problema resuelve?».',
+          'Tengo un roadmap precioso. Dura hasta la primera reunión con el cliente.',
+          'Esta web la habría lanzado como MVP: una caja y un botón. Sergio no me hizo caso.',
         ],
         en: [
-          'I am Pablo. I came for coffee and ended up as a character.',
-          'While I am here: Sergio explains AI with croquettes. And it makes sense.',
-          'Do not ask me why croquettes. Nobody knows.',
+          'I am Pablo, Director of Product. I am here to ask: "and what problem does this solve?".',
+          'I have a beautiful roadmap. It lasts until the first customer meeting.',
+          'I would have shipped this site as an MVP: one box and one button. Sergio did not listen.',
         ],
       },
       {
-        es: ['Al otro lado de la plaza hay una máquina para entrenar un modelo.', 'Yo lo sobreajusté a la primera. Con orgullo.'],
-        en: ['Across the plaza there is a machine for training a model.', 'I overfitted it on my first try. Proudly.'],
+        es: [
+          'He priorizado tu visita: era un must-have. Volver a hablar conmigo, un nice-to-have.',
+          'Todo lo que me cuentes va al backlog. El backlog es donde las ideas van a descansar.',
+        ],
+        en: [
+          'I prioritised your visit: it was a must-have. Talking to me again, a nice-to-have.',
+          'Whatever you tell me goes to the backlog. The backlog is where ideas go to rest.',
+        ],
+      },
+      {
+        es: [
+          'El usuario no sabe lo que quiere hasta que se lo enseñas.',
+          'Y cuando se lo enseñas, quiere otra cosa. A eso lo llamamos «iterar».',
+          'Por cierto, las croquetas no estaban en el roadmap. Las colaron en un sprint.',
+        ],
+        en: [
+          'Users do not know what they want until you show it to them.',
+          'And once you show it, they want something else. We call that "iterating".',
+          'By the way, the croquettes were never on the roadmap. Someone slipped them into a sprint.',
+        ],
       },
     ],
   },

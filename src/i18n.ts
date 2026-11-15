@@ -266,7 +266,7 @@ export const MEDALS: Record<Achievement, { title: Localized; hint: Localized }> 
   },
   teammates: {
     title: { es: 'Buen compañero', en: 'Team player' },
-    hint: { es: 'Habla con los cinco compañeros del equipo', en: 'Talk to all five teammates' },
+    hint: { es: 'Habla con todo el equipo', en: 'Talk to the whole team' },
   },
   trainer: {
     title: { es: 'Ni corto ni sobreajustado', en: 'Neither under nor overfit' },
