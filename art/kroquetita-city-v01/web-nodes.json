@@ -1,0 +1,4699 @@
+{
+  "plaza": [
+    {
+      "name": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        12.140000343322754,
+        3.554220072637761,
+        8.140000343322754
+      ],
+      "data": {
+        "Status": "Art prototype: modular assets and animation clips. Web interaction not wired.",
+        "Lighting preset": "golden",
+        "Construction stage": 8,
+        "Tour": "Select CAM / Tour 90 seconds; range 300-2460 at 24fps."
+      }
+    },
+    {
+      "name": "plaza_Root",
+      "parent": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        12.140000343322754,
+        3.554220072637761,
+        8.140000343322754
+      ],
+      "data": {
+        "name": "plaza_Root",
+        "module": "plaza",
+        "forward": "-Y in Blender / +Z in GLB",
+        "units": "metres",
+        "footprint_blender_xy": [
+          12,
+          8
+        ]
+      }
+    },
+    {
+      "name": "AvatarRoot",
+      "parent": "plaza_Root",
+      "position": [
+        -2.200000047683716,
+        0,
+        2
+      ],
+      "size": [
+        0.6858159894797711,
+        0.8504250034166496,
+        0.5184582066957295
+      ],
+      "data": {
+        "name": "AvatarRoot",
+        "character": "Kroquetita",
+        "lookdev": "vinyl-voxel-v01",
+        "forward_axis": "-Y",
+        "nominal_height_m": 1.05,
+        "idle_clip": "Idle, frames 1-96",
+        "mesh_count": 54
+      }
+    },
+    {
+      "name": "Body",
+      "parent": "AvatarRoot",
+      "position": [
+        -2.200000047683716,
+        0,
+        2
+      ],
+      "size": [
+        0.6858159894797711,
+        0.8504250034166496,
+        0.5184582066957295
+      ],
+      "data": {
+        "name": "Body",
+        "semantic_part": "Body"
+      }
+    },
+    {
+      "name": "Arm_L",
+      "parent": "Body",
+      "position": [
+        -2.443493795940348,
+        0.3564999610781676,
+        2.0429345268303702
+      ],
+      "size": [
+        0.1623917901870815,
+        0.36627496783286384,
+        0.24558362275903223
+      ],
+      "data": {
+        "name": "Arm_L",
+        "semantic_part": "Arm_L"
+      }
+    },
+    {
+      "name": "Arm_R",
+      "parent": "Body",
+      "position": [
+        -1.9565062656750927,
+        0.3564999610781676,
+        1.957065467218242
+      ],
+      "size": [
+        0.1716476414109216,
+        0.36627496783286384,
+        0.2841950695123636
+      ],
+      "data": {
+        "name": "Arm_R",
+        "semantic_part": "Arm_R"
+      }
+    },
+    {
+      "name": "Head",
+      "parent": "Body",
+      "position": [
+        -2.199001553568639,
+        0.44850000852346383,
+        2.0056627402848264
+      ],
+      "size": [
+        0.5469659257316253,
+        0.47150001610070413,
+        0.5184582066957295
+      ],
+      "data": {
+        "name": "Head",
+        "semantic_part": "Head"
+      }
+    },
+    {
+      "name": "Leg_L",
+      "parent": "AvatarRoot",
+      "position": [
+        -2.2939997475563145,
+        0.34500000655651064,
+        2.016574686886717
+      ],
+      "size": [
+        0.20268673767907686,
+        0.365700000952184,
+        0.29130591367175374
+      ],
+      "data": {
+        "name": "Leg_L",
+        "semantic_part": "Leg_L"
+      }
+    },
+    {
+      "name": "Leg_R",
+      "parent": "AvatarRoot",
+      "position": [
+        -2.1060000440431987,
+        0.34500000655651064,
+        1.983425259550791
+      ],
+      "size": [
+        0.20268673767907686,
+        0.365700000952184,
+        0.29130591367175374
+      ],
+      "data": {
+        "name": "Leg_R",
+        "semantic_part": "Leg_R"
+      }
+    },
+    {
+      "name": "CoffeeRoot",
+      "parent": "plaza_Root",
+      "position": [
+        -4.699999809265137,
+        0,
+        1.7999999523162842
+      ],
+      "size": [
+        1.6099003423379035,
+        2.2000000961124897,
+        1.401906786356646
+      ],
+      "data": {
+        "name": "CoffeeRoot",
+        "nominal_body_size": "1.5 x 2.2 x 1.2 in glTF XYZ"
+      }
+    },
+    {
+      "name": "Body_back",
+      "parent": "CoffeeRoot",
+      "position": [
+        -4.649826160496958,
+        1.25,
+        1.3226294819954247
+      ],
+      "size": [
+        1.4069646160391804,
+        1.7599999458187199,
+        0.3656722958375389
+      ],
+      "data": {
+        "name": "Body_back"
+      }
+    },
+    {
+      "name": "Body_base",
+      "parent": "CoffeeRoot",
+      "position": [
+        -4.699999809265137,
+        0.20000000298023224,
+        1.7999999523162842
+      ],
+      "size": [
+        1.5596663018531647,
+        0.4000000059604645,
+        1.292668202180156
+      ],
+      "data": {
+        "name": "Body_base"
+      }
+    },
+    {
+      "name": "Body_left",
+      "parent": "CoffeeRoot",
+      "position": [
+        -5.356384346741864,
+        1.1399999856948853,
+        1.7310111704628846
+      ],
+      "size": [
+        0.29713108955007606,
+        1.8799999952316284,
+        1.2049244535275618
+      ],
+      "data": {
+        "name": "Body_left"
+      }
+    },
+    {
+      "name": "Body_right",
+      "parent": "CoffeeRoot",
+      "position": [
+        -4.0436150939540365,
+        1.1399999856948853,
+        1.868988752860826
+      ],
+      "size": [
+        0.29713108955007606,
+        1.8799999952316284,
+        1.2049244535275623
+      ],
+      "data": {
+        "name": "Body_right"
+      }
+    },
+    {
+      "name": "Body_upper",
+      "parent": "CoffeeRoot",
+      "position": [
+        -4.699999809265137,
+        1.690000057220459,
+        1.7999999523162842
+      ],
+      "size": [
+        1.5617568687346446,
+        0.8999999761581421,
+        1.2947587690616356
+      ],
+      "data": {
+        "name": "Body_upper"
+      }
+    },
+    {
+      "name": "ServeSocket",
+      "parent": "CoffeeRoot",
+      "position": [
+        -4.725086658570749,
+        1.100000023841858,
+        2.0386854245892114
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "ServeSocket"
+      }
+    },
+    {
+      "name": "SteamSocket",
+      "parent": "CoffeeRoot",
+      "position": [
+        -4.726131923320347,
+        0.800000011920929,
+        2.0486304562417965
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "SteamSocket"
+      }
+    },
+    {
+      "name": "Floor_joint",
+      "parent": "plaza_Root",
+      "position": [
+        -5,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint"
+      }
+    },
+    {
+      "name": "Floor_joint001",
+      "parent": "plaza_Root",
+      "position": [
+        -4,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.001"
+      }
+    },
+    {
+      "name": "Floor_joint002",
+      "parent": "plaza_Root",
+      "position": [
+        -3,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.002"
+      }
+    },
+    {
+      "name": "Floor_joint003",
+      "parent": "plaza_Root",
+      "position": [
+        -2,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.003"
+      }
+    },
+    {
+      "name": "Floor_joint004",
+      "parent": "plaza_Root",
+      "position": [
+        -1,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.004"
+      }
+    },
+    {
+      "name": "Floor_joint005",
+      "parent": "plaza_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.005"
+      }
+    },
+    {
+      "name": "Floor_joint006",
+      "parent": "plaza_Root",
+      "position": [
+        1,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.006"
+      }
+    },
+    {
+      "name": "Floor_joint007",
+      "parent": "plaza_Root",
+      "position": [
+        2,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.007"
+      }
+    },
+    {
+      "name": "Floor_joint008",
+      "parent": "plaza_Root",
+      "position": [
+        3,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.008"
+      }
+    },
+    {
+      "name": "Floor_joint009",
+      "parent": "plaza_Root",
+      "position": [
+        4,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.009"
+      }
+    },
+    {
+      "name": "Floor_joint010",
+      "parent": "plaza_Root",
+      "position": [
+        5,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.010"
+      }
+    },
+    {
+      "name": "Floor_joint011",
+      "parent": "plaza_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        3
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.011"
+      }
+    },
+    {
+      "name": "Floor_joint012",
+      "parent": "plaza_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        2
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.012"
+      }
+    },
+    {
+      "name": "Floor_joint013",
+      "parent": "plaza_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        1
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.013"
+      }
+    },
+    {
+      "name": "Floor_joint014",
+      "parent": "plaza_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.014"
+      }
+    },
+    {
+      "name": "Floor_joint015",
+      "parent": "plaza_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -1
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.015"
+      }
+    },
+    {
+      "name": "Floor_joint016",
+      "parent": "plaza_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -2
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.016"
+      }
+    },
+    {
+      "name": "Floor_joint017",
+      "parent": "plaza_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -3
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.017"
+      }
+    },
+    {
+      "name": "Hook_Coffee",
+      "parent": "plaza_Root",
+      "position": [
+        -4.699999809265137,
+        1,
+        2.5999999046325684
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Coffee",
+        "interaction": "Coffee boost: preserve existing game logic"
+      }
+    },
+    {
+      "name": "Hook_Map",
+      "parent": "plaza_Root",
+      "position": [
+        0,
+        0.800000011920929,
+        0.6000000238418579
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Map",
+        "interaction": "Open the route selector and fast travel"
+      }
+    },
+    {
+      "name": "Hook_Photo",
+      "parent": "plaza_Root",
+      "position": [
+        4.5,
+        0.800000011920929,
+        2.700000047683716
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Photo",
+        "interaction": "Start a cinematic souvenir or photo"
+      }
+    },
+    {
+      "name": "Hook_Team",
+      "parent": "plaza_Root",
+      "position": [
+        3.549999952316284,
+        1.100000023841858,
+        -0.25
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Team",
+        "interaction": "Team conversations"
+      }
+    },
+    {
+      "name": "Hook_TimeMachine",
+      "parent": "plaza_Root",
+      "position": [
+        0,
+        1,
+        -2.299999952316284
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_TimeMachine",
+        "interaction": "Scrub career growth from 2021 to 2026"
+      }
+    },
+    {
+      "name": "Hook_Training",
+      "parent": "plaza_Root",
+      "position": [
+        -3.549999952316284,
+        0.800000011920929,
+        1.2000000476837158
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Training",
+        "interaction": "Open the existing model training minigame"
+      }
+    },
+    {
+      "name": "Team_Designer",
+      "parent": "plaza_Root",
+      "position": [
+        4.699999809265137,
+        0,
+        -0.6499999761581421
+      ],
+      "size": [
+        0.6599999591708183,
+        1.1899999603629112,
+        0.42099997494369745
+      ],
+      "data": {
+        "name": "Team_Designer"
+      }
+    },
+    {
+      "name": "Team_Engineer",
+      "parent": "plaza_Root",
+      "position": [
+        2.4000000953674316,
+        0,
+        -0.699999988079071
+      ],
+      "size": [
+        0.6599999591708183,
+        1.1899999603629112,
+        0.42099997494369745
+      ],
+      "data": {
+        "name": "Team_Engineer"
+      }
+    },
+    {
+      "name": "Time_Slider",
+      "parent": "plaza_Root",
+      "position": [
+        1.899999976158142,
+        0,
+        0
+      ],
+      "size": [
+        0.12999999523162842,
+        0.11999999731779099,
+        0.10000000149011612
+      ],
+      "data": {
+        "name": "Time_Slider"
+      }
+    }
+  ],
+  "career": [
+    {
+      "name": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        18.139999389648438,
+        9.555000461637974,
+        8.140000343322754
+      ],
+      "data": {
+        "Status": "Art prototype: modular assets and animation clips. Web interaction not wired.",
+        "Lighting preset": "golden",
+        "Construction stage": 8,
+        "Tour": "Select CAM / Tour 90 seconds; range 300-2460 at 24fps."
+      }
+    },
+    {
+      "name": "career_Root",
+      "parent": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        18.139999389648438,
+        9.555000461637974,
+        8.140000343322754
+      ],
+      "data": {
+        "name": "career_Root",
+        "module": "career",
+        "forward": "-Y in Blender / +Z in GLB",
+        "units": "metres",
+        "footprint_blender_xy": [
+          18,
+          8
+        ],
+        "district": "career",
+        "preview_frame": 150
+      }
+    },
+    {
+      "name": "Career_Stage_01_Plexus_Tech",
+      "parent": "career_Root",
+      "position": [
+        -6.699999809265137,
+        0,
+        1.6200000047683716
+      ],
+      "size": [
+        2.2699999809265137,
+        1.8999999463558197,
+        2.0030001499418906
+      ],
+      "data": {
+        "name": "Career_Stage_01_Plexus_Tech",
+        "stage_index": 0,
+        "title": "Plexus Tech",
+        "start": "2021-03",
+        "end": "2021-06",
+        "discipline": "fullstack",
+        "brand_color_reference": "#19e6ff"
+      }
+    },
+    {
+      "name": "Hook_Career_Stage_01",
+      "parent": "Career_Stage_01_Plexus_Tech",
+      "position": [
+        -6.089999675750732,
+        1.4900000095367432,
+        2.059999942779541
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Stage_01",
+        "hook_kind": "stage_target"
+      }
+    },
+    {
+      "name": "Career_Stage_02_Dedeeit",
+      "parent": "career_Root",
+      "position": [
+        -4.019999980926514,
+        0,
+        1.6200000047683716
+      ],
+      "size": [
+        2.2699999809265137,
+        2.189999997615814,
+        2.0030001499418906
+      ],
+      "data": {
+        "name": "Career_Stage_02_Dedeeit",
+        "stage_index": 1,
+        "title": "Dedeeit",
+        "start": "2021-06",
+        "end": "2022-01",
+        "discipline": "frontend",
+        "brand_color_reference": "#3df2b0"
+      }
+    },
+    {
+      "name": "Hook_Career_Stage_02",
+      "parent": "Career_Stage_02_Dedeeit",
+      "position": [
+        -3.4099998474121094,
+        1.8600000143051147,
+        2.059999942779541
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Stage_02",
+        "hook_kind": "stage_target"
+      }
+    },
+    {
+      "name": "Career_Stage_03_Emiral",
+      "parent": "career_Root",
+      "position": [
+        -1.340000033378601,
+        0,
+        1.6200000047683716
+      ],
+      "size": [
+        2.2699999809265137,
+        2.6400000751018524,
+        2.0030001499418906
+      ],
+      "data": {
+        "name": "Career_Stage_03_Emiral",
+        "stage_index": 2,
+        "title": "Emiral",
+        "start": "2022-01",
+        "end": "2022-07",
+        "discipline": "fullstack",
+        "brand_color_reference": "#ffd60a"
+      }
+    },
+    {
+      "name": "Hook_Career_Stage_03",
+      "parent": "Career_Stage_03_Emiral",
+      "position": [
+        -0.7300000190734863,
+        2.2300000190734863,
+        2.059999942779541
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Stage_03",
+        "hook_kind": "stage_target"
+      }
+    },
+    {
+      "name": "Career_Stage_04_Sectorea_IT",
+      "parent": "career_Root",
+      "position": [
+        1.340000033378601,
+        0,
+        1.6200000047683716
+      ],
+      "size": [
+        2.2699999809265137,
+        3.049999937415123,
+        2.003000150171645
+      ],
+      "data": {
+        "name": "Career_Stage_04_Sectorea_IT",
+        "stage_index": 3,
+        "title": "Sectorea IT",
+        "start": "2022-10",
+        "end": "2023-05",
+        "discipline": "mobile",
+        "brand_color_reference": "#2f7bff"
+      }
+    },
+    {
+      "name": "Hook_Career_Stage_04",
+      "parent": "Career_Stage_04_Sectorea_IT",
+      "position": [
+        1.9500000476837158,
+        2.5999999046325684,
+        2.059999942779541
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Stage_04",
+        "hook_kind": "stage_target"
+      }
+    },
+    {
+      "name": "Career_Stage_05_Pepper_Spain",
+      "parent": "career_Root",
+      "position": [
+        4.019999980926514,
+        0,
+        1.6200000047683716
+      ],
+      "size": [
+        2.2699999809265137,
+        3.420000061392784,
+        2.003000150171645
+      ],
+      "data": {
+        "name": "Career_Stage_05_Pepper_Spain",
+        "stage_index": 4,
+        "title": "Pepper Spain",
+        "start": "2022-10",
+        "end": "2023-09",
+        "discipline": "mobile",
+        "brand_color_reference": "#ff4d6d"
+      }
+    },
+    {
+      "name": "Hook_Career_Stage_05",
+      "parent": "Career_Stage_05_Pepper_Spain",
+      "position": [
+        4.630000114440918,
+        2.9700000286102295,
+        2.059999942779541
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Stage_05",
+        "hook_kind": "stage_target"
+      }
+    },
+    {
+      "name": "Career_Stage_06_Packar",
+      "parent": "career_Root",
+      "position": [
+        6.699999809265137,
+        0,
+        1.6200000047683716
+      ],
+      "size": [
+        2.2699999809265137,
+        3.8299999237060547,
+        2.0030001499418906
+      ],
+      "data": {
+        "name": "Career_Stage_06_Packar",
+        "stage_index": 5,
+        "title": "Packar",
+        "start": "2022-09",
+        "end": "2024-04",
+        "discipline": "lead",
+        "brand_color_reference": "#ff9f1c"
+      }
+    },
+    {
+      "name": "Hook_Career_Stage_06",
+      "parent": "Career_Stage_06_Packar",
+      "position": [
+        7.309999942779541,
+        3.3399999141693115,
+        2.059999942779541
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Stage_06",
+        "hook_kind": "stage_target"
+      }
+    },
+    {
+      "name": "Career_Stage_07_Tyris_Software",
+      "parent": "career_Root",
+      "position": [
+        5.360000133514404,
+        0,
+        -1.8200000524520874
+      ],
+      "size": [
+        2.2699999809265137,
+        4.039999902248383,
+        2.0030000309623555
+      ],
+      "data": {
+        "name": "Career_Stage_07_Tyris_Software",
+        "stage_index": 6,
+        "title": "Tyris Software",
+        "start": "2024-04",
+        "end": "2026-04",
+        "discipline": "frontend",
+        "brand_color_reference": "#8b5cf6"
+      }
+    },
+    {
+      "name": "Hook_Career_Stage_07",
+      "parent": "Career_Stage_07_Tyris_Software",
+      "position": [
+        5.970000267028809,
+        3.7100000381469727,
+        -1.380000114440918
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Stage_07",
+        "hook_kind": "stage_target"
+      }
+    },
+    {
+      "name": "Career_Stage_08_Sportian",
+      "parent": "career_Root",
+      "position": [
+        2.680000066757202,
+        0,
+        -1.8200000524520874
+      ],
+      "size": [
+        2.2699999809265137,
+        4.570000410079956,
+        2.0030000309623555
+      ],
+      "data": {
+        "name": "Career_Stage_08_Sportian",
+        "stage_index": 7,
+        "title": "Sportian",
+        "start": "2024-04",
+        "end": "2026-04",
+        "discipline": "lead",
+        "brand_color_reference": "#22d3ee"
+      }
+    },
+    {
+      "name": "Hook_Career_Stage_08",
+      "parent": "Career_Stage_08_Sportian",
+      "position": [
+        3.2899999618530273,
+        4.079999923706055,
+        -1.380000114440918
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Stage_08",
+        "hook_kind": "stage_target"
+      }
+    },
+    {
+      "name": "Career_Stage_09_Izertis",
+      "parent": "career_Root",
+      "position": [
+        0,
+        0,
+        -1.8200000524520874
+      ],
+      "size": [
+        2.2699999809265137,
+        5.000000096857548,
+        2.003000030732601
+      ],
+      "data": {
+        "name": "Career_Stage_09_Izertis",
+        "stage_index": 8,
+        "title": "Izertis",
+        "start": "2024-01",
+        "end": "2026-01",
+        "discipline": "blockchain",
+        "brand_color_reference": "#e8454f"
+      }
+    },
+    {
+      "name": "Hook_Career_Stage_09",
+      "parent": "Career_Stage_09_Izertis",
+      "position": [
+        0.6100000143051147,
+        4.449999809265137,
+        -1.380000114440918
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Stage_09",
+        "hook_kind": "stage_target"
+      }
+    },
+    {
+      "name": "Career_Stage_10_Santander",
+      "parent": "career_Root",
+      "position": [
+        -2.680000066757202,
+        0,
+        -1.8200000524520874
+      ],
+      "size": [
+        2.2699999809265137,
+        5.300000071525574,
+        2.0030000309623555
+      ],
+      "data": {
+        "name": "Career_Stage_10_Santander",
+        "stage_index": 9,
+        "title": "Santander",
+        "start": "2026-01",
+        "end": "2026-06",
+        "discipline": "data",
+        "brand_color_reference": "#ec0000"
+      }
+    },
+    {
+      "name": "Hook_Career_Stage_10",
+      "parent": "Career_Stage_10_Santander",
+      "position": [
+        -2.070000171661377,
+        4.820000171661377,
+        -1.380000114440918
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Stage_10",
+        "hook_kind": "stage_target"
+      }
+    },
+    {
+      "name": "Career_Stage_11_TheAIBusiness",
+      "parent": "career_Root",
+      "position": [
+        -5.360000133514404,
+        0,
+        -1.8200000524520874
+      ],
+      "size": [
+        2.2699999809265137,
+        5.759999863803387,
+        2.0030000308347145
+      ],
+      "data": {
+        "name": "Career_Stage_11_TheAIBusiness",
+        "stage_index": 10,
+        "title": "TheAIBusiness",
+        "start": "2026-06",
+        "end": "present",
+        "discipline": "ai",
+        "brand_color_reference": "#ff6a2b"
+      }
+    },
+    {
+      "name": "Hook_Career_Stage_11",
+      "parent": "Career_Stage_11_TheAIBusiness",
+      "position": [
+        -4.75,
+        5.190000057220459,
+        -1.380000114440918
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Stage_11",
+        "hook_kind": "stage_target"
+      }
+    },
+    {
+      "name": "Floor_joint018",
+      "parent": "career_Root",
+      "position": [
+        -8,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.018"
+      }
+    },
+    {
+      "name": "Floor_joint019",
+      "parent": "career_Root",
+      "position": [
+        -7,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.019"
+      }
+    },
+    {
+      "name": "Floor_joint020",
+      "parent": "career_Root",
+      "position": [
+        -6,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.020"
+      }
+    },
+    {
+      "name": "Floor_joint021",
+      "parent": "career_Root",
+      "position": [
+        -5,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.021"
+      }
+    },
+    {
+      "name": "Floor_joint022",
+      "parent": "career_Root",
+      "position": [
+        -4,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.022"
+      }
+    },
+    {
+      "name": "Floor_joint023",
+      "parent": "career_Root",
+      "position": [
+        -3,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.023"
+      }
+    },
+    {
+      "name": "Floor_joint024",
+      "parent": "career_Root",
+      "position": [
+        -2,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.024"
+      }
+    },
+    {
+      "name": "Floor_joint025",
+      "parent": "career_Root",
+      "position": [
+        -1,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.025"
+      }
+    },
+    {
+      "name": "Floor_joint026",
+      "parent": "career_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.026"
+      }
+    },
+    {
+      "name": "Floor_joint027",
+      "parent": "career_Root",
+      "position": [
+        1,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.027"
+      }
+    },
+    {
+      "name": "Floor_joint028",
+      "parent": "career_Root",
+      "position": [
+        2,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.028"
+      }
+    },
+    {
+      "name": "Floor_joint029",
+      "parent": "career_Root",
+      "position": [
+        3,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.029"
+      }
+    },
+    {
+      "name": "Floor_joint030",
+      "parent": "career_Root",
+      "position": [
+        4,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.030"
+      }
+    },
+    {
+      "name": "Floor_joint031",
+      "parent": "career_Root",
+      "position": [
+        5,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.031"
+      }
+    },
+    {
+      "name": "Floor_joint032",
+      "parent": "career_Root",
+      "position": [
+        6,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.032"
+      }
+    },
+    {
+      "name": "Floor_joint033",
+      "parent": "career_Root",
+      "position": [
+        7,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.033"
+      }
+    },
+    {
+      "name": "Floor_joint034",
+      "parent": "career_Root",
+      "position": [
+        8,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        7.940000057220459
+      ],
+      "data": {
+        "name": "Floor joint.034"
+      }
+    },
+    {
+      "name": "Floor_joint035",
+      "parent": "career_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        3
+      ],
+      "size": [
+        17.940000534057617,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.035"
+      }
+    },
+    {
+      "name": "Floor_joint036",
+      "parent": "career_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        2
+      ],
+      "size": [
+        17.940000534057617,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.036"
+      }
+    },
+    {
+      "name": "Floor_joint037",
+      "parent": "career_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        1
+      ],
+      "size": [
+        17.940000534057617,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.037"
+      }
+    },
+    {
+      "name": "Floor_joint038",
+      "parent": "career_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        17.940000534057617,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.038"
+      }
+    },
+    {
+      "name": "Floor_joint039",
+      "parent": "career_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -1
+      ],
+      "size": [
+        17.940000534057617,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.039"
+      }
+    },
+    {
+      "name": "Floor_joint040",
+      "parent": "career_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -2
+      ],
+      "size": [
+        17.940000534057617,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.040"
+      }
+    },
+    {
+      "name": "Floor_joint041",
+      "parent": "career_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -3
+      ],
+      "size": [
+        17.940000534057617,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.041"
+      }
+    },
+    {
+      "name": "Hook_Career_BrainPortal",
+      "parent": "career_Root",
+      "position": [
+        0,
+        6.099999904632568,
+        -1.4500000476837158
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_BrainPortal",
+        "hook_kind": "portal"
+      }
+    },
+    {
+      "name": "Hook_Career_Camera",
+      "parent": "career_Root",
+      "position": [
+        0,
+        8.800000190734863,
+        13.5
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Camera",
+        "hook_kind": "camera_position"
+      }
+    },
+    {
+      "name": "Hook_Career_CoreFocus",
+      "parent": "career_Root",
+      "position": [
+        0,
+        8.020000457763672,
+        -2.1500000953674316
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_CoreFocus",
+        "hook_kind": "camera_target"
+      }
+    },
+    {
+      "name": "Hook_Career_Entrance",
+      "parent": "career_Root",
+      "position": [
+        0,
+        0.05000000074505806,
+        3.5999999046325684
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Entrance",
+        "hook_kind": "entrance"
+      }
+    },
+    {
+      "name": "Hook_Career_Lookout",
+      "parent": "career_Root",
+      "position": [
+        0,
+        6.150000095367432,
+        -0.949999988079071
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Career_Lookout",
+        "hook_kind": "destination"
+      }
+    }
+  ],
+  "library": [
+    {
+      "name": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        12.140000343322754,
+        5.909999877214432,
+        12.140000343322754
+      ],
+      "data": {
+        "Status": "Art prototype: modular assets and animation clips. Web interaction not wired.",
+        "Lighting preset": "golden",
+        "Construction stage": 8,
+        "Tour": "Select CAM / Tour 90 seconds; range 300-2460 at 24fps."
+      }
+    },
+    {
+      "name": "library_Root",
+      "parent": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        12.140000343322754,
+        5.909999877214432,
+        12.140000343322754
+      ],
+      "data": {
+        "name": "library_Root",
+        "module": "library",
+        "forward": "-Y in Blender / +Z in GLB",
+        "units": "metres",
+        "footprint_blender_xy": [
+          12,
+          12
+        ],
+        "district_id": "library",
+        "asset_role": "district",
+        "front_axis": "-Y"
+      }
+    },
+    {
+      "name": "Floor_joint042",
+      "parent": "library_Root",
+      "position": [
+        -5,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.042"
+      }
+    },
+    {
+      "name": "Floor_joint043",
+      "parent": "library_Root",
+      "position": [
+        -4,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.043"
+      }
+    },
+    {
+      "name": "Floor_joint044",
+      "parent": "library_Root",
+      "position": [
+        -3,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.044"
+      }
+    },
+    {
+      "name": "Floor_joint045",
+      "parent": "library_Root",
+      "position": [
+        -2,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.045"
+      }
+    },
+    {
+      "name": "Floor_joint046",
+      "parent": "library_Root",
+      "position": [
+        -1,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.046"
+      }
+    },
+    {
+      "name": "Floor_joint047",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.047"
+      }
+    },
+    {
+      "name": "Floor_joint048",
+      "parent": "library_Root",
+      "position": [
+        1,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.048"
+      }
+    },
+    {
+      "name": "Floor_joint049",
+      "parent": "library_Root",
+      "position": [
+        2,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.049"
+      }
+    },
+    {
+      "name": "Floor_joint050",
+      "parent": "library_Root",
+      "position": [
+        3,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.050"
+      }
+    },
+    {
+      "name": "Floor_joint051",
+      "parent": "library_Root",
+      "position": [
+        4,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.051"
+      }
+    },
+    {
+      "name": "Floor_joint052",
+      "parent": "library_Root",
+      "position": [
+        5,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.052"
+      }
+    },
+    {
+      "name": "Floor_joint053",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        5
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.053"
+      }
+    },
+    {
+      "name": "Floor_joint054",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        4
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.054"
+      }
+    },
+    {
+      "name": "Floor_joint055",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        3
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.055"
+      }
+    },
+    {
+      "name": "Floor_joint056",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        2
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.056"
+      }
+    },
+    {
+      "name": "Floor_joint057",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        1
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.057"
+      }
+    },
+    {
+      "name": "Floor_joint058",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.058"
+      }
+    },
+    {
+      "name": "Floor_joint059",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -1
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.059"
+      }
+    },
+    {
+      "name": "Floor_joint060",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -2
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.060"
+      }
+    },
+    {
+      "name": "Floor_joint061",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -3
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.061"
+      }
+    },
+    {
+      "name": "Floor_joint062",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -4
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.062"
+      }
+    },
+    {
+      "name": "Floor_joint063",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -5
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.063"
+      }
+    },
+    {
+      "name": "Hook_Library_BookSummit",
+      "parent": "library_Root",
+      "position": [
+        -2.6500000953674316,
+        3.4600000381469727,
+        -2.140000104904175
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Library_BookSummit",
+        "semantic_role": "arrival"
+      }
+    },
+    {
+      "name": "Hook_Library_Entry",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0.18000000715255737,
+        5.5
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Library_Entry",
+        "semantic_role": "arrival"
+      }
+    },
+    {
+      "name": "Hook_Library_Read",
+      "parent": "library_Root",
+      "position": [
+        0.75,
+        0,
+        -1.25
+      ],
+      "size": [
+        1.350000023841858,
+        1.3914407483981028,
+        1.100000023841858
+      ],
+      "data": {
+        "name": "Hook_Library_Read",
+        "semantic_role": "interact",
+        "action": "open_education"
+      }
+    },
+    {
+      "name": "Hook_Library_Seat",
+      "parent": "library_Root",
+      "position": [
+        3.299999952316284,
+        0.9599999785423279,
+        0.15000000596046448
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Library_Seat",
+        "semantic_role": "seat"
+      }
+    },
+    {
+      "name": "Library_Book_01",
+      "parent": "library_Root",
+      "position": [
+        -2.6500000953674316,
+        0.23000000417232513,
+        3.5999999046325684
+      ],
+      "size": [
+        3.2799999713897705,
+        0.46000000834465027,
+        2.1599998605228468
+      ],
+      "data": {
+        "name": "Library_Book_01",
+        "semantic_role": "education_book",
+        "education_index": 0,
+        "education_title": "Formación profesional en electrónica y equipos eléctricos"
+      }
+    },
+    {
+      "name": "Hook_Library_Cover_01",
+      "parent": "Library_Book_01",
+      "position": [
+        -4.289999961853027,
+        0.42000001668930054,
+        3.5999999046325684
+      ],
+      "size": [
+        3.2799999713897705,
+        0.07999999821186066,
+        2.119999885559082
+      ],
+      "data": {
+        "name": "Hook_Library_Cover_01",
+        "semantic_role": "book_cover_hinge",
+        "axis": "Y"
+      }
+    },
+    {
+      "name": "Library_Book_02",
+      "parent": "library_Root",
+      "position": [
+        -2.6500000953674316,
+        0.6499999761581421,
+        2.7799999713897705
+      ],
+      "size": [
+        3.2799999713897705,
+        0.4599999934434891,
+        2.1600000947615223
+      ],
+      "data": {
+        "name": "Library_Book_02",
+        "semantic_role": "education_book",
+        "education_index": 1,
+        "education_title": "Grado Medio en Microrredes Informáticas"
+      }
+    },
+    {
+      "name": "Hook_Library_Cover_02",
+      "parent": "Library_Book_02",
+      "position": [
+        -4.289999961853027,
+        0.8399999737739563,
+        2.7799999713897705
+      ],
+      "size": [
+        3.2799999713897705,
+        0.07999999821186066,
+        2.119999885559082
+      ],
+      "data": {
+        "name": "Hook_Library_Cover_02",
+        "semantic_role": "book_cover_hinge",
+        "axis": "Y"
+      }
+    },
+    {
+      "name": "Library_Book_03",
+      "parent": "library_Root",
+      "position": [
+        -2.6500000953674316,
+        1.0700000524520874,
+        1.9600000381469727
+      ],
+      "size": [
+        3.2799999713897705,
+        0.4599999338388443,
+        2.159999856228738
+      ],
+      "data": {
+        "name": "Library_Book_03",
+        "semantic_role": "education_book",
+        "education_index": 2,
+        "education_title": "Certificado en Redes WAN (CEX)"
+      }
+    },
+    {
+      "name": "Hook_Library_Cover_03",
+      "parent": "Library_Book_03",
+      "position": [
+        -4.289999961853027,
+        1.2599999904632568,
+        1.9600000381469727
+      ],
+      "size": [
+        3.2799999713897705,
+        0.07999999821186066,
+        2.119999885559082
+      ],
+      "data": {
+        "name": "Hook_Library_Cover_03",
+        "semantic_role": "book_cover_hinge",
+        "axis": "Y"
+      }
+    },
+    {
+      "name": "Library_Book_04",
+      "parent": "library_Root",
+      "position": [
+        -2.6500000953674316,
+        1.4900000095367432,
+        1.1399999856948853
+      ],
+      "size": [
+        3.2799999713897705,
+        0.4600001126527786,
+        2.1599999755522328
+      ],
+      "data": {
+        "name": "Library_Book_04",
+        "semantic_role": "education_book",
+        "education_index": 3,
+        "education_title": "Grado Superior en Desarrollo de Aplicaciones Multiplataforma"
+      }
+    },
+    {
+      "name": "Hook_Library_Cover_04",
+      "parent": "Library_Book_04",
+      "position": [
+        -4.289999961853027,
+        1.6800000667572021,
+        1.1399999856948853
+      ],
+      "size": [
+        3.2799999713897705,
+        0.07999999821186066,
+        2.119999885559082
+      ],
+      "data": {
+        "name": "Hook_Library_Cover_04",
+        "semantic_role": "book_cover_hinge",
+        "axis": "Y"
+      }
+    },
+    {
+      "name": "Library_Book_05",
+      "parent": "library_Root",
+      "position": [
+        -2.6500000953674316,
+        1.909999966621399,
+        0.3199999928474426
+      ],
+      "size": [
+        3.2799999713897705,
+        0.4599998742341995,
+        2.1600000945559534
+      ],
+      "data": {
+        "name": "Library_Book_05",
+        "semantic_role": "education_book",
+        "education_index": 4,
+        "education_title": "Grado Superior en Gestión Web y Multimedia"
+      }
+    },
+    {
+      "name": "Hook_Library_Cover_05",
+      "parent": "Library_Book_05",
+      "position": [
+        -4.289999961853027,
+        2.0999999046325684,
+        0.3199999928474426
+      ],
+      "size": [
+        3.2799999713897705,
+        0.07999999821186066,
+        2.119999885559082
+      ],
+      "data": {
+        "name": "Hook_Library_Cover_05",
+        "semantic_role": "book_cover_hinge",
+        "axis": "Y"
+      }
+    },
+    {
+      "name": "Library_Book_06",
+      "parent": "library_Root",
+      "position": [
+        -2.6500000953674316,
+        2.3299999237060547,
+        -0.5
+      ],
+      "size": [
+        3.2799999713897705,
+        0.4600001126527786,
+        2.159999975346664
+      ],
+      "data": {
+        "name": "Library_Book_06",
+        "semantic_role": "education_book",
+        "education_index": 5,
+        "education_title": "Campus de desarrollo con Sage X3"
+      }
+    },
+    {
+      "name": "Hook_Library_Cover_06",
+      "parent": "Library_Book_06",
+      "position": [
+        -4.289999961853027,
+        2.5199999809265137,
+        -0.5
+      ],
+      "size": [
+        3.2799999713897705,
+        0.07999999821186066,
+        2.119999885559082
+      ],
+      "data": {
+        "name": "Hook_Library_Cover_06",
+        "semantic_role": "book_cover_hinge",
+        "axis": "Y"
+      }
+    },
+    {
+      "name": "Library_Book_07",
+      "parent": "library_Root",
+      "position": [
+        -2.6500000953674316,
+        2.75,
+        -1.3200000524520874
+      ],
+      "size": [
+        3.2799999713897705,
+        0.4600001126527786,
+        2.1599999755522328
+      ],
+      "data": {
+        "name": "Library_Book_07",
+        "semantic_role": "education_book",
+        "education_index": 6,
+        "education_title": "Bootcamp Full Stack Developer"
+      }
+    },
+    {
+      "name": "Hook_Library_Cover_07",
+      "parent": "Library_Book_07",
+      "position": [
+        -4.289999961853027,
+        2.940000057220459,
+        -1.3200000524520874
+      ],
+      "size": [
+        3.2799999713897705,
+        0.07999999821186066,
+        2.119999885559082
+      ],
+      "data": {
+        "name": "Hook_Library_Cover_07",
+        "semantic_role": "book_cover_hinge",
+        "axis": "Y"
+      }
+    },
+    {
+      "name": "Library_Book_08",
+      "parent": "library_Root",
+      "position": [
+        -2.6500000953674316,
+        3.1700000762939453,
+        -2.140000104904175
+      ],
+      "size": [
+        3.2799999713897705,
+        0.4600001126527786,
+        2.1599999754380277
+      ],
+      "data": {
+        "name": "Library_Book_08",
+        "semantic_role": "education_book",
+        "education_index": 7,
+        "education_title": "Ingeniería en Inteligencia Artificial (Computer Science)"
+      }
+    },
+    {
+      "name": "Hook_Library_Cover_08",
+      "parent": "Library_Book_08",
+      "position": [
+        -4.289999961853027,
+        3.3600001335144043,
+        -2.140000104904175
+      ],
+      "size": [
+        3.2799999713897705,
+        0.07999999821186066,
+        2.119999885559082
+      ],
+      "data": {
+        "name": "Hook_Library_Cover_08",
+        "semantic_role": "book_cover_hinge",
+        "axis": "Y"
+      }
+    },
+    {
+      "name": "Library_Left_PlatformEdge",
+      "parent": "library_Root",
+      "position": [
+        -5.650000095367432,
+        0.12999999523162842,
+        0
+      ],
+      "size": [
+        0.18000000715255737,
+        0.25999999046325684,
+        10.800000190734863
+      ],
+      "data": {
+        "name": "Library_Left_PlatformEdge"
+      }
+    },
+    {
+      "name": "Library_MonumentalArch",
+      "parent": "library_Root",
+      "position": [
+        0,
+        0,
+        4.650000095367432
+      ],
+      "size": [
+        10.450000405311584,
+        5.479999870061874,
+        0.949999988079071
+      ],
+      "data": {
+        "name": "Library_MonumentalArch"
+      }
+    },
+    {
+      "name": "Library_ReadingNook",
+      "parent": "library_Root",
+      "position": [
+        3.299999952316284,
+        0,
+        -0.10000000149011612
+      ],
+      "size": [
+        3.289999842643738,
+        2.8099998980760574,
+        1.6500000059604645
+      ],
+      "data": {
+        "name": "Library_ReadingNook"
+      }
+    },
+    {
+      "name": "Library_Right_PlatformEdge",
+      "parent": "library_Root",
+      "position": [
+        5.650000095367432,
+        0.12999999523162842,
+        0
+      ],
+      "size": [
+        0.18000000715255737,
+        0.25999999046325684,
+        10.800000190734863
+      ],
+      "data": {
+        "name": "Library_Right_PlatformEdge"
+      }
+    },
+    {
+      "name": "Library_Shelf_East",
+      "parent": "library_Root",
+      "position": [
+        3.3499999046325684,
+        0,
+        -4.650000095367432
+      ],
+      "size": [
+        4.14000004529953,
+        4.599999904632568,
+        0.8500000238418579
+      ],
+      "data": {
+        "name": "Library_Shelf_East"
+      }
+    },
+    {
+      "name": "Library_Shelf_West",
+      "parent": "library_Root",
+      "position": [
+        -3.3499999046325684,
+        0,
+        -4.650000095367432
+      ],
+      "size": [
+        4.14000004529953,
+        4.599999904632568,
+        0.8500000238418579
+      ],
+      "data": {
+        "name": "Library_Shelf_West"
+      }
+    }
+  ],
+  "bugs": [
+    {
+      "name": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        12.140000343322754,
+        4.542000108242036,
+        12.140000343322754
+      ],
+      "data": {
+        "Status": "Art prototype: modular assets and animation clips. Web interaction not wired.",
+        "Lighting preset": "golden",
+        "Construction stage": 8,
+        "Tour": "Select CAM / Tour 90 seconds; range 300-2460 at 24fps."
+      }
+    },
+    {
+      "name": "bugs_Root",
+      "parent": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        12.140000343322754,
+        4.542000108242036,
+        12.140000343322754
+      ],
+      "data": {
+        "name": "bugs_Root",
+        "module": "bugs",
+        "forward": "-Y in Blender / +Z in GLB",
+        "units": "metres",
+        "footprint_blender_xy": [
+          12,
+          12
+        ],
+        "district_id": "bugs",
+        "asset_role": "district",
+        "front_axis": "-Y"
+      }
+    },
+    {
+      "name": "Breakable_dice",
+      "parent": "bugs_Root",
+      "position": [
+        4.199999809265137,
+        0,
+        2.5
+      ],
+      "size": [
+        2.2200000286102295,
+        1,
+        2.060000070286834
+      ],
+      "data": {
+        "name": "Breakable_dice",
+        "semantic_role": "breakable",
+        "breakable_id": "dice",
+        "rest_state": "intact"
+      }
+    },
+    {
+      "name": "dice_Die_00",
+      "parent": "Breakable_dice",
+      "position": [
+        3.7699997425079346,
+        0.6399999856948853,
+        2.619999885559082
+      ],
+      "size": [
+        0.7200000286102295,
+        0.7200000286102295,
+        0.7642334289848804
+      ],
+      "data": {
+        "name": "dice_Die_00"
+      }
+    },
+    {
+      "name": "dice_Body_00",
+      "parent": "dice_Die_00",
+      "position": [
+        3.7699997425079346,
+        0.6399999856948853,
+        2.619999885559082
+      ],
+      "size": [
+        0.7200000286102295,
+        0.7200000286102295,
+        0.7200000286102295
+      ],
+      "data": {
+        "name": "dice_Body_00"
+      }
+    },
+    {
+      "name": "dice_Die_01",
+      "parent": "Breakable_dice",
+      "position": [
+        4.62999963760376,
+        0.6399999856948853,
+        2.319999933242798
+      ],
+      "size": [
+        0.7200000286102295,
+        0.7200000286102295,
+        0.7642331905663013
+      ],
+      "data": {
+        "name": "dice_Die_01"
+      }
+    },
+    {
+      "name": "dice_Body_01",
+      "parent": "dice_Die_01",
+      "position": [
+        4.62999963760376,
+        0.6399999856948853,
+        2.319999933242798
+      ],
+      "size": [
+        0.7200000286102295,
+        0.7200000286102295,
+        0.7200000286102295
+      ],
+      "data": {
+        "name": "dice_Body_01"
+      }
+    },
+    {
+      "name": "Breakable_gauss",
+      "parent": "bugs_Root",
+      "position": [
+        1.399999976158142,
+        0,
+        2.5
+      ],
+      "size": [
+        2.2200000286102295,
+        1.89000004529953,
+        2.0600000703943215
+      ],
+      "data": {
+        "name": "Breakable_gauss",
+        "semantic_role": "breakable",
+        "breakable_id": "gauss",
+        "rest_state": "intact"
+      }
+    },
+    {
+      "name": "Breakable_graph",
+      "parent": "bugs_Root",
+      "position": [
+        -4.199999809265137,
+        0,
+        -0.3499999940395355
+      ],
+      "size": [
+        2.2200000286102295,
+        2.0300000309944153,
+        2.059999951185032
+      ],
+      "data": {
+        "name": "Breakable_graph",
+        "semantic_role": "breakable",
+        "breakable_id": "graph",
+        "rest_state": "intact"
+      }
+    },
+    {
+      "name": "Breakable_legacy",
+      "parent": "bugs_Root",
+      "position": [
+        1.399999976158142,
+        0,
+        -0.3499999940395355
+      ],
+      "size": [
+        2.2200000286102295,
+        2.450000047683716,
+        2.059999951185032
+      ],
+      "data": {
+        "name": "Breakable_legacy",
+        "semantic_role": "breakable",
+        "breakable_id": "legacy",
+        "rest_state": "intact"
+      }
+    },
+    {
+      "name": "Breakable_network",
+      "parent": "bugs_Root",
+      "position": [
+        -1.399999976158142,
+        0,
+        2.5
+      ],
+      "size": [
+        2.2200000286102295,
+        1.8600000441074371,
+        2.0600000703943215
+      ],
+      "data": {
+        "name": "Breakable_network",
+        "semantic_role": "breakable",
+        "breakable_id": "network",
+        "rest_state": "intact"
+      }
+    },
+    {
+      "name": "Breakable_overfit",
+      "parent": "bugs_Root",
+      "position": [
+        1.399999976158142,
+        0,
+        -3.200000047683716
+      ],
+      "size": [
+        2.2200000286102295,
+        1.899999976158142,
+        2.0599998319757424
+      ],
+      "data": {
+        "name": "Breakable_overfit",
+        "semantic_role": "breakable",
+        "breakable_id": "overfit",
+        "rest_state": "intact"
+      }
+    },
+    {
+      "name": "Breakable_pinata",
+      "parent": "bugs_Root",
+      "position": [
+        4.199999809265137,
+        0,
+        -0.3499999940395355
+      ],
+      "size": [
+        2.2200000286102295,
+        2.2719763964414597,
+        2.0599999548825867
+      ],
+      "data": {
+        "name": "Breakable_pinata",
+        "semantic_role": "breakable",
+        "breakable_id": "pinata",
+        "rest_state": "intact"
+      }
+    },
+    {
+      "name": "pinata_BugBody",
+      "parent": "Breakable_pinata",
+      "position": [
+        4.199999809265137,
+        1.2300000190734863,
+        -0.3499999940395355
+      ],
+      "size": [
+        0.8407594561576843,
+        0.9399999976158142,
+        0.7996016144752502
+      ],
+      "data": {
+        "name": "pinata_BugBody"
+      }
+    },
+    {
+      "name": "Breakable_prs",
+      "parent": "bugs_Root",
+      "position": [
+        -1.399999976158142,
+        0,
+        -0.3499999940395355
+      ],
+      "size": [
+        2.2200000286102295,
+        1.3902399820585682,
+        2.059999951185032
+      ],
+      "data": {
+        "name": "Breakable_prs",
+        "semantic_role": "breakable",
+        "breakable_id": "prs",
+        "rest_state": "intact"
+      }
+    },
+    {
+      "name": "Breakable_stack",
+      "parent": "bugs_Root",
+      "position": [
+        -4.199999809265137,
+        0,
+        -3.200000047683716
+      ],
+      "size": [
+        2.2200000286102295,
+        1.9200000539422035,
+        2.0599998319757424
+      ],
+      "data": {
+        "name": "Breakable_stack",
+        "semantic_role": "breakable",
+        "breakable_id": "stack",
+        "rest_state": "intact"
+      }
+    },
+    {
+      "name": "Breakable_table",
+      "parent": "bugs_Root",
+      "position": [
+        -1.399999976158142,
+        0,
+        -3.200000047683716
+      ],
+      "size": [
+        2.2200000286102295,
+        1.5199999958276749,
+        2.0599998319757424
+      ],
+      "data": {
+        "name": "Breakable_table",
+        "semantic_role": "breakable",
+        "breakable_id": "table",
+        "rest_state": "intact"
+      }
+    },
+    {
+      "name": "Breakable_tests",
+      "parent": "bugs_Root",
+      "position": [
+        -4.199999809265137,
+        0,
+        2.5
+      ],
+      "size": [
+        2.2200000286102295,
+        2.075000047683716,
+        2.0600000703943215
+      ],
+      "data": {
+        "name": "Breakable_tests",
+        "semantic_role": "breakable",
+        "breakable_id": "tests",
+        "rest_state": "intact"
+      }
+    },
+    {
+      "name": "Floor_joint064",
+      "parent": "bugs_Root",
+      "position": [
+        -5,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.064"
+      }
+    },
+    {
+      "name": "Floor_joint065",
+      "parent": "bugs_Root",
+      "position": [
+        -4,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.065"
+      }
+    },
+    {
+      "name": "Floor_joint066",
+      "parent": "bugs_Root",
+      "position": [
+        -3,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.066"
+      }
+    },
+    {
+      "name": "Floor_joint067",
+      "parent": "bugs_Root",
+      "position": [
+        -2,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.067"
+      }
+    },
+    {
+      "name": "Floor_joint068",
+      "parent": "bugs_Root",
+      "position": [
+        -1,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.068"
+      }
+    },
+    {
+      "name": "Floor_joint069",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.069"
+      }
+    },
+    {
+      "name": "Floor_joint070",
+      "parent": "bugs_Root",
+      "position": [
+        1,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.070"
+      }
+    },
+    {
+      "name": "Floor_joint071",
+      "parent": "bugs_Root",
+      "position": [
+        2,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.071"
+      }
+    },
+    {
+      "name": "Floor_joint072",
+      "parent": "bugs_Root",
+      "position": [
+        3,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.072"
+      }
+    },
+    {
+      "name": "Floor_joint073",
+      "parent": "bugs_Root",
+      "position": [
+        4,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.073"
+      }
+    },
+    {
+      "name": "Floor_joint074",
+      "parent": "bugs_Root",
+      "position": [
+        5,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.074"
+      }
+    },
+    {
+      "name": "Floor_joint075",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        5
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.075"
+      }
+    },
+    {
+      "name": "Floor_joint076",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        4
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.076"
+      }
+    },
+    {
+      "name": "Floor_joint077",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        3
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.077"
+      }
+    },
+    {
+      "name": "Floor_joint078",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        2
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.078"
+      }
+    },
+    {
+      "name": "Floor_joint079",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        1
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.079"
+      }
+    },
+    {
+      "name": "Floor_joint080",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.080"
+      }
+    },
+    {
+      "name": "Floor_joint081",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -1
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.081"
+      }
+    },
+    {
+      "name": "Floor_joint082",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -2
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.082"
+      }
+    },
+    {
+      "name": "Floor_joint083",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -3
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.083"
+      }
+    },
+    {
+      "name": "Floor_joint084",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -4
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.084"
+      }
+    },
+    {
+      "name": "Floor_joint085",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -5
+      ],
+      "size": [
+        11.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.085"
+      }
+    },
+    {
+      "name": "Hook_Bugs_Balcony",
+      "parent": "bugs_Root",
+      "position": [
+        3.450000047683716,
+        3.3399999141693115,
+        -4.550000190734863
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Bugs_Balcony",
+        "semantic_role": "arrival"
+      }
+    },
+    {
+      "name": "Hook_Bugs_Boss",
+      "parent": "bugs_Root",
+      "position": [
+        4.199999809265137,
+        0,
+        -3
+      ],
+      "size": [
+        1.9083276093006134,
+        2.470000132918358,
+        0.9170767664909363
+      ],
+      "data": {
+        "name": "Hook_Bugs_Boss",
+        "semantic_role": "boss",
+        "animation_ready": true
+      }
+    },
+    {
+      "name": "Boss_Body",
+      "parent": "Hook_Bugs_Boss",
+      "position": [
+        4.199999809265137,
+        0.8799999952316284,
+        -3
+      ],
+      "size": [
+        0.949999988079071,
+        0.8299999833106995,
+        0.7200000286102295
+      ],
+      "data": {
+        "name": "Boss_Body"
+      }
+    },
+    {
+      "name": "Hook_Bugs_BossHead",
+      "parent": "Hook_Bugs_Boss",
+      "position": [
+        4.199999809265137,
+        1.6299999952316284,
+        -2.9800000190734863
+      ],
+      "size": [
+        1.1399999856948853,
+        1.1800001412630081,
+        0.9170767664909363
+      ],
+      "data": {
+        "name": "Hook_Bugs_BossHead"
+      }
+    },
+    {
+      "name": "Hook_Bugs_Entry",
+      "parent": "bugs_Root",
+      "position": [
+        0,
+        0.18000000715255737,
+        5.550000190734863
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Bugs_Entry",
+        "semantic_role": "arrival"
+      }
+    },
+    {
+      "name": "Hook_Restore",
+      "parent": "bugs_Root",
+      "position": [
+        -4.920000076293945,
+        0,
+        4.650000095367432
+      ],
+      "size": [
+        0.8500000238418579,
+        1.2400000095367432,
+        1.022076964378357
+      ],
+      "data": {
+        "name": "Hook_Restore",
+        "semantic_role": "interact",
+        "action": "restore_district_energy"
+      }
+    },
+    {
+      "name": "Hook_Restore_Lever",
+      "parent": "Hook_Restore",
+      "position": [
+        -4.650000095367432,
+        0.47999998927116394,
+        5.050000190734863
+      ],
+      "size": [
+        0.21466198563575745,
+        0.43180745539490506,
+        0.29615441407908083
+      ],
+      "data": {
+        "name": "Hook_Restore_Lever",
+        "semantic_role": "lever",
+        "axis": "X"
+      }
+    }
+  ],
+  "lab": [
+    {
+      "name": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        14.140000343322754,
+        4.159999966621399,
+        12.140000343322754
+      ],
+      "data": {
+        "Status": "Art prototype: modular assets and animation clips. Web interaction not wired.",
+        "Lighting preset": "golden",
+        "Construction stage": 8,
+        "Tour": "Select CAM / Tour 90 seconds; range 300-2460 at 24fps."
+      }
+    },
+    {
+      "name": "lab_Root",
+      "parent": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        14.140000343322754,
+        4.159999966621399,
+        12.140000343322754
+      ],
+      "data": {
+        "name": "lab_Root",
+        "module": "lab",
+        "forward": "-Y in Blender / +Z in GLB",
+        "units": "metres",
+        "footprint_blender_xy": [
+          14,
+          12
+        ],
+        "district": "Interactive AI concept laboratory",
+        "footprint": "14 x 12 metres"
+      }
+    },
+    {
+      "name": "Exhibit_agents_Agent0_Body",
+      "parent": "lab_Root",
+      "position": [
+        -2.2799999713897705,
+        0.9599999785423279,
+        0.05000000074505806
+      ],
+      "size": [
+        0.23000000417232513,
+        0.25,
+        0.2199999988079071
+      ],
+      "data": {
+        "name": "Exhibit_agents_Agent0_Body"
+      }
+    },
+    {
+      "name": "Exhibit_agents_Agent1_Body",
+      "parent": "lab_Root",
+      "position": [
+        -1.600000023841858,
+        0.9599999785423279,
+        0.05000000074505806
+      ],
+      "size": [
+        0.23000000417232513,
+        0.25,
+        0.2199999988079071
+      ],
+      "data": {
+        "name": "Exhibit_agents_Agent1_Body"
+      }
+    },
+    {
+      "name": "Exhibit_agents_Agent2_Body",
+      "parent": "lab_Root",
+      "position": [
+        -0.9200000166893005,
+        0.9599999785423279,
+        0.05000000074505806
+      ],
+      "size": [
+        0.23000000417232513,
+        0.25,
+        0.2199999988079071
+      ],
+      "data": {
+        "name": "Exhibit_agents_Agent2_Body"
+      }
+    },
+    {
+      "name": "Exhibit_multiagent_Team0_Body",
+      "parent": "lab_Root",
+      "position": [
+        -2.299999952316284,
+        0.9399999976158142,
+        3.25
+      ],
+      "size": [
+        0.23000000417232513,
+        0.25,
+        0.2199999988079071
+      ],
+      "data": {
+        "name": "Exhibit_multiagent_Team0_Body"
+      }
+    },
+    {
+      "name": "Exhibit_multiagent_Team1_Body",
+      "parent": "lab_Root",
+      "position": [
+        -0.8999999761581421,
+        0.9399999976158142,
+        3.25
+      ],
+      "size": [
+        0.23000000417232513,
+        0.25,
+        0.2199999988079071
+      ],
+      "data": {
+        "name": "Exhibit_multiagent_Team1_Body"
+      }
+    },
+    {
+      "name": "Exhibit_multiagent_Team2_Body",
+      "parent": "lab_Root",
+      "position": [
+        -1.600000023841858,
+        0.9399999976158142,
+        3.759999990463257
+      ],
+      "size": [
+        0.23000000417232513,
+        0.25,
+        0.2199999988079071
+      ],
+      "data": {
+        "name": "Exhibit_multiagent_Team2_Body"
+      }
+    },
+    {
+      "name": "Exhibit_multiagent_Team3_Body",
+      "parent": "lab_Root",
+      "position": [
+        -1.600000023841858,
+        0.9399999976158142,
+        2.740000009536743
+      ],
+      "size": [
+        0.23000000417232513,
+        0.25,
+        0.2199999988079071
+      ],
+      "data": {
+        "name": "Exhibit_multiagent_Team3_Body"
+      }
+    },
+    {
+      "name": "Floor_joint108",
+      "parent": "lab_Root",
+      "position": [
+        -6,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.108"
+      }
+    },
+    {
+      "name": "Floor_joint109",
+      "parent": "lab_Root",
+      "position": [
+        -5,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.109"
+      }
+    },
+    {
+      "name": "Floor_joint110",
+      "parent": "lab_Root",
+      "position": [
+        -4,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.110"
+      }
+    },
+    {
+      "name": "Floor_joint111",
+      "parent": "lab_Root",
+      "position": [
+        -3,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.111"
+      }
+    },
+    {
+      "name": "Floor_joint112",
+      "parent": "lab_Root",
+      "position": [
+        -2,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.112"
+      }
+    },
+    {
+      "name": "Floor_joint113",
+      "parent": "lab_Root",
+      "position": [
+        -1,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.113"
+      }
+    },
+    {
+      "name": "Floor_joint114",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.114"
+      }
+    },
+    {
+      "name": "Floor_joint115",
+      "parent": "lab_Root",
+      "position": [
+        1,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.115"
+      }
+    },
+    {
+      "name": "Floor_joint116",
+      "parent": "lab_Root",
+      "position": [
+        2,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.116"
+      }
+    },
+    {
+      "name": "Floor_joint117",
+      "parent": "lab_Root",
+      "position": [
+        3,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.117"
+      }
+    },
+    {
+      "name": "Floor_joint118",
+      "parent": "lab_Root",
+      "position": [
+        4,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.118"
+      }
+    },
+    {
+      "name": "Floor_joint119",
+      "parent": "lab_Root",
+      "position": [
+        5,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.119"
+      }
+    },
+    {
+      "name": "Floor_joint120",
+      "parent": "lab_Root",
+      "position": [
+        6,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        0.01600000075995922,
+        0.004000000189989805,
+        11.9399995803833
+      ],
+      "data": {
+        "name": "Floor joint.120"
+      }
+    },
+    {
+      "name": "Floor_joint121",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        5
+      ],
+      "size": [
+        13.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.121"
+      }
+    },
+    {
+      "name": "Floor_joint122",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        4
+      ],
+      "size": [
+        13.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.122"
+      }
+    },
+    {
+      "name": "Floor_joint123",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        3
+      ],
+      "size": [
+        13.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.123"
+      }
+    },
+    {
+      "name": "Floor_joint124",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        2
+      ],
+      "size": [
+        13.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.124"
+      }
+    },
+    {
+      "name": "Floor_joint125",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        1
+      ],
+      "size": [
+        13.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.125"
+      }
+    },
+    {
+      "name": "Floor_joint126",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        0
+      ],
+      "size": [
+        13.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.126"
+      }
+    },
+    {
+      "name": "Floor_joint127",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -1
+      ],
+      "size": [
+        13.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.127"
+      }
+    },
+    {
+      "name": "Floor_joint128",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -2
+      ],
+      "size": [
+        13.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.128"
+      }
+    },
+    {
+      "name": "Floor_joint129",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -3
+      ],
+      "size": [
+        13.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.129"
+      }
+    },
+    {
+      "name": "Floor_joint130",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -4
+      ],
+      "size": [
+        13.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.130"
+      }
+    },
+    {
+      "name": "Floor_joint131",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.0010000000474974513,
+        -5
+      ],
+      "size": [
+        13.9399995803833,
+        0.004000000189989805,
+        0.01600000075995922
+      ],
+      "data": {
+        "name": "Floor joint.131"
+      }
+    },
+    {
+      "name": "Hook_Concept_agents",
+      "parent": "lab_Root",
+      "position": [
+        -1.600000023841858,
+        1.2000000476837158,
+        1.1699999570846558
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Concept_agents",
+        "interaction_hook": "06 / AGENTES"
+      }
+    },
+    {
+      "name": "Hook_Concept_attention",
+      "parent": "lab_Root",
+      "position": [
+        4.800000190734863,
+        1.2000000476837158,
+        -2.0299999713897705
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Concept_attention",
+        "interaction_hook": "04 / ATENCION"
+      }
+    },
+    {
+      "name": "Hook_Concept_diffusion",
+      "parent": "lab_Root",
+      "position": [
+        4.800000190734863,
+        1.2000000476837158,
+        1.1699999570846558
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Concept_diffusion",
+        "interaction_hook": "08 / DIFUSION"
+      }
+    },
+    {
+      "name": "Hook_Concept_gradient",
+      "parent": "lab_Root",
+      "position": [
+        1.600000023841858,
+        1.2000000476837158,
+        1.1699999570846558
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Concept_gradient",
+        "interaction_hook": "07 / GRADIENTE"
+      }
+    },
+    {
+      "name": "Hook_Concept_graph",
+      "parent": "lab_Root",
+      "position": [
+        -1.600000023841858,
+        1.2000000476837158,
+        -2.0299999713897705
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Concept_graph",
+        "interaction_hook": "02 / CONOCIMIENTO"
+      }
+    },
+    {
+      "name": "Hook_Concept_lora",
+      "parent": "lab_Root",
+      "position": [
+        4.800000190734863,
+        1.2000000476837158,
+        4.369999885559082
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Concept_lora",
+        "interaction_hook": "12 / LORA"
+      }
+    },
+    {
+      "name": "Hook_Concept_mcp",
+      "parent": "lab_Root",
+      "position": [
+        -4.800000190734863,
+        1.2000000476837158,
+        4.369999885559082
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Concept_mcp",
+        "interaction_hook": "09 / MCP"
+      }
+    },
+    {
+      "name": "Hook_Concept_multiagent",
+      "parent": "lab_Root",
+      "position": [
+        -1.600000023841858,
+        1.2000000476837158,
+        4.369999885559082
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Concept_multiagent",
+        "interaction_hook": "10 / MULTIAGENTE"
+      }
+    },
+    {
+      "name": "Hook_Concept_neural",
+      "parent": "lab_Root",
+      "position": [
+        -4.800000190734863,
+        1.2000000476837158,
+        -2.0299999713897705
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Concept_neural",
+        "interaction_hook": "01 / RED NEURONAL"
+      }
+    },
+    {
+      "name": "Hook_Concept_rag",
+      "parent": "lab_Root",
+      "position": [
+        -4.800000190734863,
+        1.2000000476837158,
+        1.1699999570846558
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Concept_rag",
+        "interaction_hook": "05 / RAG"
+      }
+    },
+    {
+      "name": "Hook_Concept_rl",
+      "parent": "lab_Root",
+      "position": [
+        1.600000023841858,
+        1.2000000476837158,
+        4.369999885559082
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Concept_rl",
+        "interaction_hook": "11 / REFUERZO"
+      }
+    },
+    {
+      "name": "Hook_Concept_vectors",
+      "parent": "lab_Root",
+      "position": [
+        1.600000023841858,
+        1.2000000476837158,
+        -2.0299999713897705
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Concept_vectors",
+        "interaction_hook": "03 / VECTORES"
+      }
+    },
+    {
+      "name": "Hook_Power_Core",
+      "parent": "lab_Root",
+      "position": [
+        -1.2999999523162842,
+        0.6000000238418579,
+        5.699999809265137
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Power_Core",
+        "interaction_hook": "mission power relay: energia"
+      }
+    },
+    {
+      "name": "Hook_Power_Data",
+      "parent": "lab_Root",
+      "position": [
+        0,
+        0.6000000238418579,
+        5.699999809265137
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Power_Data",
+        "interaction_hook": "mission power relay: datos"
+      }
+    },
+    {
+      "name": "Hook_Power_Link",
+      "parent": "lab_Root",
+      "position": [
+        1.2999999523162842,
+        0.6000000238418579,
+        5.699999809265137
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Power_Link",
+        "interaction_hook": "mission power relay: enlace"
+      }
+    }
+  ],
+  "avatar": [
+    {
+      "name": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        0.5725003257393837,
+        0.7395000183023512,
+        0.4259999981150031
+      ],
+      "data": {
+        "Status": "Art prototype: modular assets and animation clips. Web interaction not wired.",
+        "Lighting preset": "golden",
+        "Construction stage": 8,
+        "Tour": "Select CAM / Tour 90 seconds; range 300-2460 at 24fps."
+      }
+    },
+    {
+      "name": "AvatarRoot",
+      "parent": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        0.5725003257393837,
+        0.7395000183023512,
+        0.4259999981150031
+      ],
+      "data": {
+        "name": "AvatarRoot",
+        "character": "Kroquetita",
+        "lookdev": "vinyl-voxel-v01",
+        "forward_axis": "-Y",
+        "nominal_height_m": 1.05,
+        "idle_clip": "Idle, frames 1-96",
+        "mesh_count": 54
+      }
+    },
+    {
+      "name": "Body",
+      "parent": "AvatarRoot",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        0.5725003257393837,
+        0.7395000183023512,
+        0.4259999981150031
+      ],
+      "data": {
+        "name": "Body",
+        "semantic_part": "Body"
+      }
+    },
+    {
+      "name": "Arm_L",
+      "parent": "Body",
+      "position": [
+        -0.21500016748905182,
+        0.3099999725818634,
+        0
+      ],
+      "size": [
+        0.11600000411272049,
+        0.31849999353289604,
+        0.20750000467523932
+      ],
+      "data": {
+        "name": "Arm_L",
+        "semantic_part": "Arm_L"
+      }
+    },
+    {
+      "name": "Arm_R",
+      "parent": "Body",
+      "position": [
+        0.21500016748905182,
+        0.3099999725818634,
+        0
+      ],
+      "size": [
+        0.11949998885393143,
+        0.31849999353289604,
+        0.2475000061094761
+      ],
+      "data": {
+        "name": "Arm_R",
+        "semantic_part": "Arm_R"
+      }
+    },
+    {
+      "name": "Head",
+      "parent": "Body",
+      "position": [
+        0,
+        0.39000001549720764,
+        0.005000114440917969
+      ],
+      "size": [
+        0.4370000045746565,
+        0.4100000225007534,
+        0.4259999981150031
+      ],
+      "data": {
+        "name": "Head",
+        "semantic_part": "Head"
+      }
+    },
+    {
+      "name": "Leg_L",
+      "parent": "AvatarRoot",
+      "position": [
+        -0.08299999684095383,
+        0.30000001192092896,
+        0
+      ],
+      "size": [
+        0.14000000059604645,
+        0.3179999925196171,
+        0.2355000041425228
+      ],
+      "data": {
+        "name": "Leg_L",
+        "semantic_part": "Leg_L"
+      }
+    },
+    {
+      "name": "Leg_R",
+      "parent": "AvatarRoot",
+      "position": [
+        0.08299999684095383,
+        0.30000001192092896,
+        0
+      ],
+      "size": [
+        0.14000000059604645,
+        0.3179999925196171,
+        0.2355000041425228
+      ],
+      "data": {
+        "name": "Leg_R",
+        "semantic_part": "Leg_R"
+      }
+    }
+  ],
+  "transport": [
+    {
+      "name": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        59,
+        6.601728471382961,
+        61.54000092603421
+      ],
+      "data": {
+        "Status": "Art prototype: modular assets and animation clips. Web interaction not wired.",
+        "Lighting preset": "golden",
+        "Construction stage": 8,
+        "Tour": "Select CAM / Tour 90 seconds; range 300-2460 at 24fps."
+      }
+    },
+    {
+      "name": "transport_Root",
+      "parent": "KROQUETITA__Ciudad_completa",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "size": [
+        59,
+        6.601728471382961,
+        61.54000092603421
+      ],
+      "data": {
+        "name": "transport_Root",
+        "module": "transport",
+        "forward": "-Y in Blender / +Z in GLB",
+        "units": "metres"
+      }
+    },
+    {
+      "name": "Drone_FlightHeight",
+      "parent": "transport_Root",
+      "position": [
+        0,
+        1.2000000476837158,
+        0
+      ],
+      "size": [
+        1.5799998939037323,
+        0.3499999940395355,
+        1.3799998462200165
+      ],
+      "data": {
+        "name": "Drone_FlightHeight"
+      }
+    },
+    {
+      "name": "Drone_Idle",
+      "parent": "Drone_FlightHeight",
+      "position": [
+        -3,
+        4.200000047683716,
+        4
+      ],
+      "size": [
+        1.5799998939037323,
+        0.3499999940395355,
+        1.3799998462200165
+      ],
+      "data": {
+        "name": "Drone_Idle"
+      }
+    },
+    {
+      "name": "Hook_Station_ESTE",
+      "parent": "transport_Root",
+      "position": [
+        27,
+        3.5,
+        -3
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Station_ESTE",
+        "interaction": "Board panoramic transport"
+      }
+    },
+    {
+      "name": "Hook_Station_NORTE",
+      "parent": "transport_Root",
+      "position": [
+        0,
+        3.5,
+        -32
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Station_NORTE",
+        "interaction": "Board panoramic transport"
+      }
+    },
+    {
+      "name": "Hook_Station_OESTE",
+      "parent": "transport_Root",
+      "position": [
+        -27,
+        3.5,
+        -3
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Station_OESTE",
+        "interaction": "Board panoramic transport"
+      }
+    },
+    {
+      "name": "Hook_Station_SUR",
+      "parent": "transport_Root",
+      "position": [
+        0,
+        3.5,
+        26
+      ],
+      "size": [
+        0,
+        0,
+        0
+      ],
+      "data": {
+        "name": "Hook_Station_SUR",
+        "interaction": "Board panoramic transport"
+      }
+    },
+    {
+      "name": "Monorail_Train",
+      "parent": "transport_Root",
+      "position": [
+        25.077856063842773,
+        3.4800000190734863,
+        -13.74616527557373
+      ],
+      "size": [
+        2.14893795080809,
+        1.3250000923871994,
+        3.14169730191351
+      ],
+      "data": {
+        "name": "Monorail_Train"
+      }
+    }
+  ]
+}

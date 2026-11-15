@@ -1,0 +1,460 @@
+{
+  "version": 1,
+  "units": "metres",
+  "up": "+Y",
+  "forward": "+Z",
+  "rest_pose_frame": 150,
+  "assets": {
+    "transport": {
+      "file": "transport.glb",
+      "bytes": 785972,
+      "root": "transport_Root",
+      "mesh_objects": 115,
+      "triangles": 27872,
+      "animations": [
+        {
+          "name": "Drone_Hover",
+          "duration_seconds": 4,
+          "channels": 1
+        },
+        {
+          "name": "Monorail_Loop",
+          "duration_seconds": 20.041666666666668,
+          "channels": 2
+        }
+      ],
+      "hooks": [
+        "Hook_Station_ESTE",
+        "Hook_Station_NORTE",
+        "Hook_Station_OESTE",
+        "Hook_Station_SUR"
+      ],
+      "checks": [
+        "GLB 2.0 length",
+        "single identity root",
+        "embedded buffers",
+        "no cameras or lights",
+        "finite animation times",
+        "rest pose preserved"
+      ],
+      "assembly_position_blender": [
+        0,
+        0,
+        0
+      ],
+      "assembly_position_gltf": [
+        0,
+        0,
+        0
+      ],
+      "assembly_parent": null
+    },
+    "plaza": {
+      "file": "plaza.glb",
+      "bytes": 1740364,
+      "root": "plaza_Root",
+      "mesh_objects": 200,
+      "triangles": 56882,
+      "animations": [
+        {
+          "name": "Idle",
+          "duration_seconds": 4,
+          "channels": 5
+        },
+        {
+          "name": "Time_2021_2026",
+          "duration_seconds": 6.25,
+          "channels": 1
+        }
+      ],
+      "hooks": [
+        "Hook_Coffee",
+        "Hook_Map",
+        "Hook_Photo",
+        "Hook_Team",
+        "Hook_TimeMachine",
+        "Hook_Training"
+      ],
+      "checks": [
+        "GLB 2.0 length",
+        "single identity root",
+        "embedded buffers",
+        "no cameras or lights",
+        "finite animation times",
+        "rest pose preserved"
+      ],
+      "assembly_position_blender": [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      "assembly_position_gltf": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "assembly_parent": null
+    },
+    "career": {
+      "file": "career.glb",
+      "bytes": 1503896,
+      "root": "career_Root",
+      "mesh_objects": 244,
+      "triangles": 44612,
+      "animations": [
+        {
+          "name": "CareerTimeline",
+          "duration_seconds": 6.25,
+          "channels": 11
+        }
+      ],
+      "hooks": [
+        "Hook_Career_Stage_01",
+        "Hook_Career_Stage_02",
+        "Hook_Career_Stage_03",
+        "Hook_Career_Stage_04",
+        "Hook_Career_Stage_05",
+        "Hook_Career_Stage_06",
+        "Hook_Career_Stage_07",
+        "Hook_Career_Stage_08",
+        "Hook_Career_Stage_09",
+        "Hook_Career_Stage_10",
+        "Hook_Career_Stage_11",
+        "Hook_Career_BrainPortal",
+        "Hook_Career_Camera",
+        "Hook_Career_CoreFocus",
+        "Hook_Career_Entrance",
+        "Hook_Career_Lookout"
+      ],
+      "checks": [
+        "GLB 2.0 length",
+        "single identity root",
+        "embedded buffers",
+        "no cameras or lights",
+        "finite animation times",
+        "rest pose preserved"
+      ],
+      "assembly_position_blender": [
+        0.0,
+        9.0,
+        0.0
+      ],
+      "assembly_position_gltf": [
+        0.0,
+        0.0,
+        -9.0
+      ],
+      "assembly_parent": null
+    },
+    "library": {
+      "file": "library.glb",
+      "bytes": 764240,
+      "root": "library_Root",
+      "mesh_objects": 143,
+      "triangles": 24350,
+      "animations": [],
+      "hooks": [
+        "Hook_Library_BookSummit",
+        "Hook_Library_Entry",
+        "Hook_Library_Read",
+        "Hook_Library_Seat",
+        "Hook_Library_Cover_01",
+        "Hook_Library_Cover_02",
+        "Hook_Library_Cover_03",
+        "Hook_Library_Cover_04",
+        "Hook_Library_Cover_05",
+        "Hook_Library_Cover_06",
+        "Hook_Library_Cover_07",
+        "Hook_Library_Cover_08"
+      ],
+      "checks": [
+        "GLB 2.0 length",
+        "single identity root",
+        "embedded buffers",
+        "no cameras or lights",
+        "finite animation times",
+        "rest pose preserved"
+      ],
+      "assembly_position_blender": [
+        -17.0,
+        8.0,
+        0.0
+      ],
+      "assembly_position_gltf": [
+        -17.0,
+        0.0,
+        -8.0
+      ],
+      "assembly_parent": null
+    },
+    "bugs": {
+      "file": "bugs.glb",
+      "bytes": 1113772,
+      "root": "bugs_Root",
+      "mesh_objects": 200,
+      "triangles": 34451,
+      "animations": [],
+      "hooks": [
+        "Hook_Bugs_Balcony",
+        "Hook_Bugs_BossHead",
+        "Hook_Bugs_Boss",
+        "Hook_Bugs_Entry",
+        "Hook_Restore_Lever",
+        "Hook_Restore"
+      ],
+      "checks": [
+        "GLB 2.0 length",
+        "single identity root",
+        "embedded buffers",
+        "no cameras or lights",
+        "finite animation times",
+        "rest pose preserved"
+      ],
+      "assembly_position_blender": [
+        17.0,
+        8.0,
+        0.0
+      ],
+      "assembly_position_gltf": [
+        17.0,
+        0.0,
+        -8.0
+      ],
+      "assembly_parent": null
+    },
+    "hangar": {
+      "file": "hangar.glb",
+      "bytes": 747840,
+      "root": "hangar_Root",
+      "mesh_objects": 124,
+      "triangles": 21641,
+      "animations": [
+        {
+          "name": "Demo_Before_After",
+          "duration_seconds": 4,
+          "channels": 3
+        }
+      ],
+      "hooks": [
+        "Hook_Demo_agents",
+        "Hook_Demo_data",
+        "Hook_Demo_load"
+      ],
+      "checks": [
+        "GLB 2.0 length",
+        "single identity root",
+        "embedded buffers",
+        "no cameras or lights",
+        "finite animation times",
+        "rest pose preserved"
+      ],
+      "assembly_position_blender": [
+        -17.0,
+        -9.0,
+        0.0
+      ],
+      "assembly_position_gltf": [
+        -17.0,
+        0.0,
+        9.0
+      ],
+      "assembly_parent": null
+    },
+    "lab": {
+      "file": "lab.glb",
+      "bytes": 1426172,
+      "root": "lab_Root",
+      "mesh_objects": 247,
+      "triangles": 44849,
+      "animations": [],
+      "hooks": [
+        "Hook_Concept_agents",
+        "Hook_Concept_attention",
+        "Hook_Concept_diffusion",
+        "Hook_Concept_gradient",
+        "Hook_Concept_graph",
+        "Hook_Concept_lora",
+        "Hook_Concept_mcp",
+        "Hook_Concept_multiagent",
+        "Hook_Concept_neural",
+        "Hook_Concept_rag",
+        "Hook_Concept_rl",
+        "Hook_Concept_vectors",
+        "Hook_Power_Core",
+        "Hook_Power_Data",
+        "Hook_Power_Link"
+      ],
+      "checks": [
+        "GLB 2.0 length",
+        "single identity root",
+        "embedded buffers",
+        "no cameras or lights",
+        "finite animation times",
+        "rest pose preserved"
+      ],
+      "assembly_position_blender": [
+        0.0,
+        -12.0,
+        0.0
+      ],
+      "assembly_position_gltf": [
+        0.0,
+        0.0,
+        12.0
+      ],
+      "assembly_parent": null
+    },
+    "factory": {
+      "file": "factory.glb",
+      "bytes": 790756,
+      "root": "factory_Root",
+      "mesh_objects": 147,
+      "triangles": 24050,
+      "animations": [
+        {
+          "name": "Factory_Conveyor",
+          "duration_seconds": 4,
+          "channels": 4
+        }
+      ],
+      "hooks": [
+        "Hook_Agents",
+        "Hook_Input",
+        "Hook_Output",
+        "Hook_Retrieval"
+      ],
+      "checks": [
+        "GLB 2.0 length",
+        "single identity root",
+        "embedded buffers",
+        "no cameras or lights",
+        "finite animation times",
+        "rest pose preserved"
+      ],
+      "assembly_position_blender": [
+        17.0,
+        -9.0,
+        0.0
+      ],
+      "assembly_position_gltf": [
+        17.0,
+        0.0,
+        9.0
+      ],
+      "assembly_parent": null
+    },
+    "brain_inside": {
+      "file": "brain_inside.glb",
+      "bytes": 700752,
+      "root": "brain_inside_Root",
+      "mesh_objects": 105,
+      "triangles": 20959,
+      "animations": [],
+      "hooks": [
+        "Hook_Brain_Camera",
+        "Hook_Brain_Centre",
+        "Hook_Brain_Entrance",
+        "Hook_Brain_ReturnToCareer",
+        "Hook_Brain_Telescope",
+        "Hook_Skill_Agents",
+        "Hook_Skill_Blockchain",
+        "Hook_Skill_Data",
+        "Hook_Skill_Data_Science",
+        "Hook_Skill_Frontend",
+        "Hook_Skill_IA",
+        "Hook_Skill_LLM",
+        "Hook_Skill_Next_js",
+        "Hook_Skill_NLP",
+        "Hook_Skill_Node",
+        "Hook_Skill_Python",
+        "Hook_Skill_RAG",
+        "Hook_Skill_React",
+        "Hook_Skill_React_Native",
+        "Hook_Skill_Swift",
+        "Hook_Skill_Systems",
+        "Hook_Skill_Three_js"
+      ],
+      "checks": [
+        "GLB 2.0 length",
+        "single identity root",
+        "embedded buffers",
+        "no cameras or lights",
+        "finite animation times",
+        "rest pose preserved"
+      ],
+      "assembly_position_blender": [
+        0.0,
+        24.0,
+        4.5
+      ],
+      "assembly_position_gltf": [
+        0.0,
+        4.5,
+        -24.0
+      ],
+      "assembly_parent": null
+    },
+    "coffee_machine": {
+      "file": "coffee_machine.glb",
+      "bytes": 918220,
+      "root": "CoffeeRoot",
+      "mesh_objects": 47,
+      "triangles": 31550,
+      "animations": [],
+      "hooks": [],
+      "checks": [
+        "GLB 2.0 length",
+        "single identity root",
+        "embedded buffers",
+        "no cameras or lights",
+        "finite animation times",
+        "rest pose preserved"
+      ],
+      "assembly_position_blender": [
+        -4.699999809265137,
+        -1.7999999523162842,
+        0.0
+      ],
+      "assembly_position_gltf": [
+        -4.699999809265137,
+        0.0,
+        1.7999999523162842
+      ],
+      "assembly_parent": "plaza_Root"
+    },
+    "avatar": {
+      "file": "avatar.glb",
+      "bytes": 323400,
+      "root": "AvatarRoot",
+      "mesh_objects": 54,
+      "triangles": 10344,
+      "animations": [
+        {
+          "name": "Idle",
+          "duration_seconds": 4,
+          "channels": 5
+        }
+      ],
+      "hooks": [],
+      "checks": [
+        "GLB 2.0 length",
+        "single identity root",
+        "embedded buffers",
+        "no cameras or lights",
+        "finite animation times",
+        "rest pose preserved"
+      ],
+      "assembly_position_blender": [
+        -2.200000047683716,
+        -2.0,
+        0.0
+      ],
+      "assembly_position_gltf": [
+        -2.200000047683716,
+        0.0,
+        2.0
+      ],
+      "assembly_parent": "plaza_Root"
+    }
+  }
+}

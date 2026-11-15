@@ -1,0 +1,73 @@
+.city-weather,.city-workshop,.brain-guide{position:fixed;z-index:40;pointer-events:auto;color:#f4f2ff;font-family:inherit}
+.city-backdrop{position:fixed;inset:0;z-index:39;pointer-events:auto;background:#060b1615}
+.city-welcome{position:fixed;left:var(--gutter);bottom:calc(var(--gutter) + 72px);z-index:20;width:min(410px,37vw);padding:22px;border:1px solid #d7ddfa25;border-radius:20px;background:linear-gradient(140deg,#22263bed,#11182bf5);box-shadow:0 16px 60px #04081944;color:#f4f2ff;pointer-events:auto}
+.city-welcome-scenes{display:flex;gap:5px;margin:0 0 22px}.city-welcome button{font:inherit;color:inherit;cursor:pointer}.city-welcome-scenes button{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;border:1px solid #ffffff20;border-radius:9px;background:#ffffff06;padding:10px 5px;font-size:11px;min-height:40px}.city-welcome-scenes i{font-size:9px;font-style:normal;color:#99aac8}.city-welcome-scenes [aria-pressed=true]{background:#ffbd771b;border-color:#ffbd7777;color:#ffd5ae}.city-welcome h2{font-size:24px;line-height:1.2;letter-spacing:-.6px;font-weight:500;margin:0 0 12px}.city-welcome p{font-size:12px;line-height:1.7;color:#b9c4d9;margin:0 0 19px}.city-welcome-enter{display:flex;justify-content:space-between;align-items:center;width:100%;padding:12px 15px;border:0;border-radius:10px;background:#ffc18b;color:#241d2b!important;font-size:12px!important;font-weight:600!important;min-height:44px}.city-welcome button:focus-visible{outline:2px solid #c5e5ff;outline-offset:3px}.city-welcome-scenes button:hover{background:#ffffff15}.city-welcome-enter:hover{background:#ffd4ad}
+@media(max-aspect-ratio:1/1){.city-welcome{left:var(--gutter);bottom:calc(var(--gutter) + 62px);width:calc(100vw - 2 * var(--gutter));padding:16px 18px}.city-welcome-scenes{margin-bottom:14px}.city-welcome h2{font-size:21px;margin-bottom:8px}.city-welcome .city-eyebrow{display:none}.city-welcome p{font-size:11px;margin-bottom:12px}}
+@media(max-height:650px) and (min-aspect-ratio:1/1){.city-welcome{bottom:var(--gutter);padding:14px;width:39vw}.city-welcome h2{font-size:18px}.city-welcome p,.city-welcome .city-eyebrow{display:none}.city-welcome-scenes{margin-bottom:12px}}
+.city-weather{right:120px;top:24px;width:230px}
+.city-weather button,.city-workshop button,.brain-guide button{font:inherit;cursor:pointer;color:inherit;border:1px solid #ffffff22;background:#ffffff08;border-radius:10px;transition:background .18s,border-color .18s}
+.city-weather button:hover,.city-workshop button:hover,.brain-guide button:hover{background:#ffffff18;border-color:#ffffff55}
+.city-weather button:focus-visible,.city-workshop :focus-visible,.brain-guide :focus-visible{outline:2px solid #b7dfff;outline-offset:3px}
+.city-weather-toggle{display:flex;align-items:center;gap:9px;min-height:44px;padding:9px 14px;width:100%;background:#111727d9!important;backdrop-filter:blur(16px);box-shadow:0 6px 25px #0002;font-size:12px!important}
+.city-weather-toggle i{margin-left:auto;font-style:normal;color:#b7c9de}
+.city-weather-popover{background:#111727ed;backdrop-filter:blur(20px);padding:16px;margin-top:8px;border:1px solid #ffffff21;border-radius:16px;box-shadow:0 16px 48px #0005}
+.city-eyebrow{display:block;font-size:9px;font-weight:600;letter-spacing:1.6px;color:#b4c4dc;margin-bottom:12px;line-height:1.5}
+.city-hours{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.city-hours button{padding:9px 5px;font-size:10px}.city-hours b{display:block;font-size:22px;line-height:1.5;font-weight:400}
+.city-weather [aria-pressed=true],.city-workshop [aria-pressed=true]{border-color:#ffbd77;background:#ffbd771b}
+.city-rain{width:100%;margin-top:12px;padding:10px 8px;text-align:left;font-size:10px!important;display:flex;justify-content:space-between;gap:6px}
+.city-workshop,.brain-guide{top:110px;right:24px;width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 140px);overflow:auto;background:linear-gradient(145deg,#20273aee,#0e1426f5);backdrop-filter:blur(22px);border:1px solid #bbc9f035;box-shadow:0 24px 90px #0006;border-radius:22px;padding:24px;box-sizing:border-box;scrollbar-width:thin}
+.city-workshop header,.brain-guide header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.city-workshop h2,.brain-guide h2{font-size:24px;line-height:1.15;letter-spacing:-.8px;margin:0 0 18px}
+.city-workshop h3{font-size:16px;line-height:1.4;margin:20px 0 10px}
+.city-close{flex:0 0 38px;width:38px;height:38px;font-size:24px!important;line-height:1}
+.city-workshop p,.brain-guide p{font-size:12px;line-height:1.75;color:#c6ccdc;margin:0 0 18px}
+.city-workshop label{display:block;font-size:11px;color:#c6ccdc;margin:15px 0 8px}.city-workshop label strong{float:right;color:#ffbf79}
+.city-workshop input:not([type=range]),.brain-guide input{box-sizing:border-box;width:100%;border:1px solid #c2cfff30;border-radius:10px;padding:12px;background:#060b1699;color:#fff;font:inherit;font-size:12px;min-height:44px}
+.city-workshop input[type=range]{width:100%;accent-color:#ffb97d;min-height:35px}
+.city-chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 18px}.city-chips button,.city-chips span{font-size:10px;padding:6px 9px;border:1px solid #ffffff1c;border-radius:7px;color:#c4cede}
+.city-workshop .city-primary{width:100%;padding:13px;background:#ffc18b;color:#1a1520;font-weight:600;font-size:12px;border:0}
+.city-workshop button:disabled{opacity:.55;cursor:default}
+.factory-steps{list-style:none;padding:0;margin:24px 0 14px;display:flex;gap:5px;justify-content:space-between}.factory-steps li{width:20%;text-align:center;font-size:9px;line-height:1.4;color:#73809b}.factory-steps i{font-style:normal;width:25px;height:25px;margin:0 auto 7px;display:grid;place-items:center;border:1px solid #7687a044;border-radius:50%;font-size:11px}.factory-steps .is-lit{color:#ffbd7d}.factory-steps .is-lit i{border-color:#ffbd7d;background:#ffbd771a;box-shadow:0 0 18px #ffb34718}
+.city-workshop progress{width:100%;height:5px;accent-color:#ffbd7d}.factory-result{margin-top:22px}.factory-result:empty{display:none}
+.city-tabs,.city-switch{display:flex;gap:6px;margin:0 0 18px}.city-tabs button,.city-switch button{flex:1;padding:10px 6px;font-size:11px;min-height:42px}
+.city-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:18px 0}.city-metrics div{border:1px solid #ffffff13;background:#030a1644;border-radius:12px;padding:12px 8px}.city-metrics strong{display:block;font-size:26px;font-weight:500;color:#ffca98}.city-metrics span{font-size:9px;color:#abb9d3;line-height:1.4;display:block}
+.city-workshop small{font-size:10px;line-height:1.6;color:#9aa9c3;display:block}
+.demo-flow{position:relative;height:44px;overflow:hidden;border-radius:10px;background:repeating-linear-gradient(90deg,#ffffff08 0 1px,transparent 1px 40px),#081020}.demo-flow i{position:absolute;top:17px;left:-10px;width:10px;height:10px;border-radius:3px;background:#ff997c;animation:city-packet 4s infinite linear}.demo-flow.is-improved i{background:#89e1b3;animation-duration:1.5s}
+@keyframes city-packet{0%{left:-10px}65%{left:55%}80%{left:55%}100%{left:105%}}
+.brain-guide{left:24px;right:auto;top:94px;width:335px}.brain-guide input{margin-bottom:20px}.brain-links{display:flex;gap:7px;flex-wrap:wrap;max-height:28dvh;overflow:auto}.brain-links button{padding:7px 10px;text-align:left;font-size:11px}.brain-links small{display:block;color:#8799bc;font-size:8px;margin-top:3px;text-transform:uppercase}.brain-guide footer{font-size:10px;color:#a7b5cd;margin-top:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}.brain-guide footer button{padding:9px;font-size:10px}
+@media(max-width:900px){.city-weather{right:120px;top:20px;width:195px}.city-weather-toggle{margin-left:auto;width:auto}.city-weather-toggle span{display:none}.city-weather-popover{padding:12px}}
+@media(max-width:700px){.city-weather{right:106px}.city-workshop{top:auto;bottom:16px;right:16px;padding:20px;max-height:65dvh;border-radius:20px}.brain-guide{top:auto;bottom:14px;left:14px;width:calc(100vw - 28px);padding:18px;max-height:39dvh}.brain-guide h2{font-size:20px;margin-bottom:8px}.brain-guide p{display:none}.brain-guide input{margin-bottom:12px}.brain-links{max-height:13dvh}.brain-guide footer{margin-top:12px}.brain-guide .city-eyebrow{margin-bottom:8px}}
+.overlay.is-brain .quests,.overlay.is-brain .talk-prompt,.overlay.is-brain .hints,.overlay.is-brain .toolbar,.overlay.is-brain .coins,.overlay.is-brain .touch{display:none}
+@media(prefers-reduced-motion:reduce){.demo-flow i{animation:none;left:45%}.city-weather button,.city-workshop button,.brain-guide button{transition:none}}
+@media(min-width:701px) and (max-aspect-ratio:1/1){.brain-guide{top:auto;bottom:20px;left:20px;width:calc(100vw - 40px);max-height:35dvh}.brain-guide p{display:none}.brain-links{max-height:11dvh}.brain-guide h2{font-size:20px;margin-bottom:8px}}
+/* Opaque glass avoids compositor rectangles on embedded WebViews and is cheaper on phones. */
+.city-weather-toggle,.city-weather-popover,.city-workshop,.brain-guide{backdrop-filter:none}
+@media(max-width:700px){.city-workshop{max-height:56dvh}}
+
+.city-welcome-map { width:min(360px,30vw); padding:18px; }
+.city-welcome-map .city-welcome-scenes { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin:12px 0; }
+.city-welcome-map .city-welcome-scenes button { min-height:32px; font-size:11px; padding:7px 8px; }
+.city-welcome-map .city-welcome-scenes button:first-child { grid-column:1/-1; }
+.city-welcome-map h2 { font-size:22px; }
+@media (max-aspect-ratio:1/1) {
+ .city-welcome-map { width:calc(100% - var(--gutter)*2); bottom:calc(var(--gutter) + 58px); padding:12px 14px; }
+ .city-welcome-map .city-welcome-scenes { display:flex; overflow-x:auto; margin:7px 0; padding-bottom:3px; }
+ .city-welcome-map .city-welcome-scenes button { flex-shrink:0; white-space:nowrap; }
+ .city-welcome-map h2 { font-size:18px; margin:0; }
+}
+.city-welcome-map { left:50%; transform:translateX(-50%); width:min(1060px,calc(100% - var(--gutter)*2)); display:grid; grid-template-columns:1fr auto; column-gap:24px; padding:15px 18px; bottom:calc(var(--gutter) + 56px); }
+.city-welcome-map .city-eyebrow { grid-column:1; font-size:9px; }
+.city-welcome-map h2 { grid-column:1; font-size:19px; margin:5px 0 0; }
+.city-welcome-map .city-welcome-scenes { grid-column:1; display:flex; gap:5px; margin:10px 0 0; overflow-x:auto; padding-bottom:2px; }
+.city-welcome-map .city-welcome-scenes button { white-space:nowrap; flex:1 0 auto; min-height:32px; font-size:10px; }
+.city-welcome-map .city-welcome-enter { grid-column:2; grid-row:1 / 4; align-self:center; width:180px; margin:0; }
+@media (max-width:900px) {
+ .city-welcome-map { column-gap:12px; }
+ .city-welcome-map .city-welcome-enter { width:140px; font-size:11px; }
+}
+@media (max-aspect-ratio:1/1) {
+ .city-welcome-map { display:block; padding:12px 14px; }
+ .city-welcome-map .city-welcome-enter { width:100%; margin-top:8px; }
+ .city-welcome-map h2 { font-size:17px; }
+}

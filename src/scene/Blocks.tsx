@@ -1,13 +1,15 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
 import * as THREE from 'three'
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import fontBold from '@fontsource/poppins/files/poppins-latin-600-normal.woff?url'
 import fontRegular from '@fontsource/poppins/files/poppins-latin-400-normal.woff?url'
 import { periodOf } from '../data/career'
 import { sfx } from '../game/audio'
 import { playerSay } from '../game/events'
 import { body } from '../game/state'
+import { isWorldClick } from '../game/worldClick'
 import { say } from '../i18n'
 import { useGame } from '../store'
 import { LID, world, type Block, type Launcher } from '../world/layout'
@@ -90,6 +92,8 @@ function Monolith({ block, stone, plate }: { block: Block; stone: THREE.Texture;
     return texture
   }, [tier, plate, stone, width, height])
   const glass = useMemo(() => new THREE.Color('#0b0e16').lerp(new THREE.Color(accent), 0.16), [accent])
+  const shell = useMemo(() => new RoundedBoxGeometry(width, height, depth, 2, 0.08), [width, height, depth])
+  useEffect(() => () => shell.dispose(), [shell])
   // Cascotes al pie de las cajas de piedra, distintos en cada una.
   const rubble = useMemo(() => {
     let seed = 11 + index * 97
@@ -165,6 +169,7 @@ function Monolith({ block, stone, plate }: { block: Block; stone: THREE.Texture;
   })
 
   const select = (e: ThreeEvent<PointerEvent | MouseEvent>) => {
+    if (!isWorldClick(e)) return
     e.stopPropagation()
     useGame.getState().setStage(index, true)
   }
@@ -178,17 +183,16 @@ function Monolith({ block, stone, plate }: { block: Block; stone: THREE.Texture;
         </mesh>
       )}
 
-      <mesh position={[0, height / 2, 0]} castShadow receiveShadow onPointerOver={select} onClick={select}>
-        <boxGeometry args={[width, height, depth]} />
+      <mesh geometry={shell} position={[0, height / 2, 0]} castShadow receiveShadow onPointerOver={select} onClick={select}>
         {tier === 'stone' && (
           <meshStandardMaterial
             ref={face}
             color="#5b606b"
-            roughness={0.92}
+            roughness={0.72}
             metalness={0.05}
             map={surface}
             bumpMap={surface}
-            bumpScale={0.7}
+            bumpScale={0.26}
             emissive={accent}
             emissiveIntensity={0}
           />
@@ -475,7 +479,7 @@ function Launchers() {
       if (playing && s.cooldown === 0 && body.grounded && body.ballistic === 0) {
         const dx = body.pos[0] - launcher.from[0]
         const dz = body.pos[2] - launcher.from[2]
-        if (Math.abs(body.pos[1] - launcher.from[1]) < 0.06 && dx * dx + dz * dz < 0.62 * 0.62)
+        if (Math.abs(body.pos[1] - launcher.from[1]) < 0.06 && dx * dx + dz * dz < 0.30 * 0.30)
           fire(launcher, i)
       }
 
@@ -502,10 +506,10 @@ function Launchers() {
           position={launcher.from}
         >
           <mesh position-y={0.04} material={DARK_METAL} castShadow>
-            <cylinderGeometry args={[0.6, 0.68, 0.1, 28]} />
+            <cylinderGeometry args={[0.25, 0.29, 0.06, 28]} />
           </mesh>
           <mesh rotation-x={FLAT} position-y={0.1} material={material}>
-            <planeGeometry args={[1.3, 1.3]} />
+            <planeGeometry args={[0.57, 0.57]} />
           </mesh>
         </group>
       ))}
@@ -563,7 +567,11 @@ function Landing() {
     const game = useGame.getState()
     if (game.mode !== 'play' || !body.grounded) return
     // Llegar a la cima tiene premio.
-    if (body.pos[1] > world.top - 0.1 && !(game.summitReached && game.boss !== 'none')) game.reachSummit()
+    const summit = world.props.summit
+    if (Math.abs(body.pos[1] - world.top) < 0.12 &&
+        Math.abs(body.pos[0] - summit.center[0]) < summit.size[0] / 2 &&
+        Math.abs(body.pos[2] - summit.center[2]) < summit.size[2] / 2 &&
+        !(game.summitReached && game.boss !== 'none')) game.reachSummit()
     for (const block of world.blocks) {
       if (
         Math.abs(body.pos[1] - block.height) < 0.1 &&
@@ -582,17 +590,20 @@ function Landing() {
   return null
 }
 
-export function Blocks() {
+export function Blocks({ architecture = true }: { architecture?: boolean }) {
   const stone = useMemo(() => createStoneTexture(), [])
   const plate = useMemo(() => createPlateTexture(), [])
   return (
     <>
-      {world.blocks.map((block) => (
+      {architecture && world.blocks.map((block) => (
         <Monolith key={block.index} block={block} stone={stone} plate={plate} />
       ))}
       <Launchers />
-      <Summit />
+      {architecture && <Summit />}
       <Landing />
     </>
   )
 }
+
+/** The original launch/jump game, independent of the architectural renderer. */
+export function GameplayPlatforms() { return <><Launchers /><Landing /></> }

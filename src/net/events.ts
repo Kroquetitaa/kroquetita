@@ -34,6 +34,12 @@ export const EVENT_FAMILIES = [
   'secret', // secret:<id> (huevos de pascua)
   'terminal', // se ha abierto el terminal
   'link', // link:<destino> (LinkedIn, GitHub…)
+  'brain', // se ha entrado en el cerebro; brain:<tipo de nodo>
+  'factory', // factory:<resultado> (croqueta fabricada)
+  'hangar', // hangar:<máquina>
+  'era', // se ha usado la máquina del tiempo
+  'mission', // mission:<paso>
+  'memory', // recuerdo de la visita
 ] as const
 
 const PATTERN = /^[a-z0-9_]{1,16}(:[a-z0-9_-]{1,24})?$/

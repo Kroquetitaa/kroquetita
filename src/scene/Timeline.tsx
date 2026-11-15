@@ -6,6 +6,7 @@ import fontBold from '@fontsource/poppins/files/poppins-latin-600-normal.woff?ur
 import fontRegular from '@fontsource/poppins/files/poppins-latin-400-normal.woff?url'
 import { useUI } from '../i18n'
 import { useGame } from '../store'
+import { isWorldClick } from '../game/worldClick'
 import { world } from '../world/layout'
 import { introProgress } from './intro'
 import { createNeonMaterial } from './materials/shaders'
@@ -51,6 +52,7 @@ export function Timeline() {
   })
 
   const select = (index: number) => (e: ThreeEvent<PointerEvent | MouseEvent>) => {
+    if (!isWorldClick(e)) return
     e.stopPropagation()
     useGame.getState().setStage(index, true)
   }

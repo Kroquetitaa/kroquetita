@@ -31,7 +31,7 @@ const GAME_KEYS = new Set(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowR
 
 /** ¿Se está escribiendo en un campo de texto (el terminal)? Entonces las teclas no son del juego. */
 export const isTyping = (e: KeyboardEvent) =>
-  e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement
+  e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement
 
 export function bindKeyboard(isPlaying: () => boolean) {
   const onDown = (e: KeyboardEvent) => {

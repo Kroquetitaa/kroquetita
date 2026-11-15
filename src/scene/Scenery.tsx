@@ -1,7 +1,12 @@
+import { CityModel } from './CityModel'
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { body } from '../game/state'
+import { useGame } from '../store'
+import { cityAirNavigation } from '../game/cityNavigation'
+import { safeAirPoint, stepAirFlight, type AirPoint } from '../game/airNavigation'
+import { atmosphere } from './atmosphere'
 import { introProgress } from './intro'
 
 const LOOPS = [
@@ -81,41 +86,45 @@ function Racers() {
 }
 
 /** Dron mascota: sigue al jugador a su aire, flotando junto a su hombro. */
-function PetDrone() {
+export function PetDrone() {
   const group = useRef<THREE.Group>(null)
   const rotors = useRef<Array<THREE.Mesh | null>>([])
   const led = useRef<THREE.MeshBasicMaterial>(null)
   const target = useMemo(() => new THREE.Vector3(), [])
-  const started = useRef(false)
+  const flight = useRef({ started: false, player: [...body.pos] as AirPoint, appear: 0 })
+  const airspace = cityAirNavigation
 
   useFrame(({ clock }, delta) => {
     const g = group.current
-    if (!g) return
-    const t = clock.elapsedTime
+    if (!g || useGame.getState().place !== 'city') return
+    const t = clock.elapsedTime, dt = Math.min(delta, .05), still = atmosphere.reducedMotion
     target.set(
-      body.pos[0] - 0.85 + Math.sin(t * 0.9) * 0.25,
-      body.pos[1] + 1.7 + Math.sin(t * 2.3) * 0.12,
-      body.pos[2] - 0.25 + Math.cos(t * 0.7) * 0.25,
+      body.pos[0] - .85 + (still ? 0 : Math.sin(t * .9) * .25),
+      body.pos[1] + 1.7 + (still ? 0 : Math.sin(t * 2.3) * .12),
+      body.pos[2] - .25 + (still ? 0 : Math.cos(t * .7) * .25),
     )
-    if (!started.current) {
-      g.position.copy(target)
-      started.current = true
+    const f = flight.current
+    const travelled = Math.hypot(...body.pos.map((v, i) => v - f.player[i]))
+    if (!f.started || travelled > 8) {
+      g.position.set(...safeAirPoint(airspace, target.toArray() as AirPoint))
+      f.started = true; f.appear = 0
     }
+    f.player = [...body.pos]
     const before = g.position.x
-    g.position.lerp(target, 1 - Math.exp(-3.2 * Math.min(delta, 0.05)))
-    // Se inclina hacia donde se mueve y vigila al jugador.
-    g.rotation.set(0, Math.atan2(body.pos[0] - g.position.x, body.pos[2] - g.position.z), (before - g.position.x) * 6)
-    g.scale.setScalar(Math.max(0.001, introProgress(3.6, 1) * 0.6))
+    const wanted = Math.min(9 * dt, g.position.distanceTo(target) * (1 - Math.exp(-3.2 * dt)))
+    g.position.set(...stepAirFlight(airspace, g.position.toArray() as AirPoint, target.toArray() as AirPoint, wanted))
+    f.appear = Math.min(1, f.appear + dt * 4)
+    g.rotation.set(0, Math.atan2(body.pos[0] - g.position.x, body.pos[2] - g.position.z), still ? 0 : (before - g.position.x) * 6)
+    g.scale.setScalar(Math.max(.001, introProgress(3.6, 1) * .6 * f.appear))
+    if (!still) rotors.current.forEach((rotor, i) => { if (rotor) rotor.rotation.y = t * 38 * (i % 2 ? 1 : -1) })
+    if (led.current) led.current.color.setRGB(still ? .8 : Math.sin(t * 6) > .4 ? 4 : .3, .2, .2)
 
-    rotors.current.forEach((rotor, i) => {
-      if (rotor) rotor.rotation.y = t * 38 * (i % 2 ? 1 : -1)
-    })
-    // Luz de posición intermitente.
-    if (led.current) led.current.color.setRGB(Math.sin(t * 6) > 0.4 ? 4 : 0.3, 0.2, 0.2)
   })
 
   return (
     <group ref={group}>
+<CityModel name="drone" fallback={<>
+
       <mesh castShadow>
         <boxGeometry args={[0.5, 0.16, 0.5]} />
         <meshStandardMaterial color="#1c1e26" roughness={0.4} metalness={0.8} />
@@ -152,6 +161,8 @@ function PetDrone() {
           </mesh>
         </group>
       ))}
+
+</>} />
     </group>
   )
 }

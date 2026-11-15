@@ -17,6 +17,8 @@ import { PhotoPanel } from './PhotoPanel'
 import { Scores } from './Scores'
 import { Terminal } from './Terminal'
 import { TrainGame } from './TrainGame'
+import { CameraViews } from './CameraViews'
+import { LoadingCity } from './LoadingCity'
 
 const Icon = {
   camera: (
@@ -117,6 +119,9 @@ function MoreMenu({ playing, onClose }: { playing: boolean; onClose: () => void 
       )}
       <button type="button" role="menuitem" onClick={pick(() => setPanel('scores'))}>
         {t.menuScores} <kbd>L</kbd>
+      </button>
+      <button type="button" role="menuitem" onClick={pick(() => useGame.getState().enterBrain())}>
+        {t.stationPrompt.brain} <span aria-hidden="true">✧</span>
       </button>
       <button type="button" role="menuitem" onClick={pick(() => setTerminal(true))}>
         {t.menuTerminal} <kbd>T</kbd>
@@ -294,41 +299,6 @@ function StagePanel({ hidden }: { hidden: boolean }) {
         </span>
       </div>
     </section>
-  )
-}
-
-/** Topes de cada fase de la carga: motor 3D, escena, logos y shaders. */
-const STAGES = [0.45, 0.6, 0.85, 1]
-
-/**
- * Barra de carga. Avanza con hitos reales (llega el motor, se monta la escena,
- * cargan los logos, compilan los shaders) y, entre uno y otro, va subiendo
- * despacio hasta el tope de la fase para que nunca parezca parada.
- */
-function Loader() {
-  const t = useUI()
-  const progress = useGame((s) => s.progress)
-  const stage = STAGES.findIndex((cap) => progress < cap)
-  const index = stage === -1 ? STAGES.length - 1 : stage
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      const game = useGame.getState()
-      const cap = (STAGES.find((value) => game.progress < value) ?? 1) - 0.03
-      if (game.progress < cap) game.setProgress(game.progress + 0.006)
-    }, 220)
-    return () => window.clearInterval(timer)
-  }, [])
-
-  return (
-    <div className="loader" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
-      <span className="loader__bar">
-        <i style={{ transform: `scaleX(${progress})` }} />
-      </span>
-      <span className="loader__label">
-        {t.loading[index]} <b>{Math.round(progress * 100)}%</b>
-      </span>
-    </div>
   )
 }
 
@@ -741,7 +711,6 @@ export function Overlay() {
   const t = useUI()
   const ready = useGame((s) => s.ready)
   const mode = useGame((s) => s.mode)
-  const camera = useGame((s) => s.camera)
   const muted = useGame((s) => s.muted)
   const terminal = useGame((s) => s.terminal)
   const medalCount = useGame((s) => s.medals.length)
@@ -755,6 +724,7 @@ export function Overlay() {
   const near = useGame((s) => s.near)
   const talking = useGame((s) => s.talk !== null)
   const retro = useGame((s) => s.retro)
+  const place = useGame((s) => s.place)
   const party = useGame((s) => s.party)
   const crash = useGame((s) => s.crash)
   const bugs = useGame((s) => s.bugs)
@@ -779,7 +749,7 @@ export function Overlay() {
   const caffeinated = performance.now() < boostUntil
   const collected = useGame((s) => s.collected.length)
   const total = useGame((s) => s.total)
-  const { play, tour, exit, toggleCamera, toggleMuted, setPanel } = useGame.getState()
+  const { play, tour, exit, toggleMuted, setPanel } = useGame.getState()
 
   const playing = mode === 'play'
   const touring = mode === 'tour'
@@ -863,6 +833,11 @@ export function Overlay() {
         }
         return
       }
+      // Dentro del cerebro manda su propia interfaz: aquí solo se atiende a salir.
+      if (game.place === 'brain') {
+        if (e.code === 'Escape') game.leaveBrain()
+        return
+      }
       if (e.code === 'KeyL') {
         game.setPanel('scores')
         return
@@ -891,7 +866,7 @@ export function Overlay() {
       }
       if (e.code === 'KeyE' || e.code === 'KeyF') {
         // Si no hay nadie con quien hablar pero sí una máquina al alcance, se usa la máquina.
-        if (game.station && !game.near && !game.talk) game.setPanel(game.station)
+        if (game.station && !game.near && !game.talk) game.useStation(game.station)
         else interact()
       }
       if (e.code === 'KeyM') game.setPanel('map')
@@ -914,16 +889,16 @@ export function Overlay() {
   }
 
   return (
-    <div className={panel === 'photo' ? 'overlay is-photo' : 'overlay'}>
+    <div className={`overlay ${panel === 'photo' ? 'is-photo' : ''} ${place === 'brain' ? 'is-brain' : ''}`}>
       <div className={`curtain ${ready ? 'is-open' : ''}`} />
 
       <Brand />
       <LanguageSwitch />
 
       <Hero hidden={playing || touring} />
-      <StagePanel hidden={playing || !ready} />
+      <StagePanel hidden={!touring || !ready} />
 
-      {!ready && <Loader />}
+      {!ready && <LoadingCity />}
 
       <div className={`coins ${playing ? 'is-visible' : ''} ${won ? 'is-complete' : ''}`} aria-live="polite">
         <span className="coins__icon" aria-hidden="true" />
@@ -1003,9 +978,9 @@ export function Overlay() {
 
       <Dialogue />
       {playing && station && !near && !talking && !panel && (
-        <button type="button" className="pill pill--action talk-prompt" onClick={() => setPanel(station)}>
+        <button type="button" className="pill pill--action talk-prompt" onClick={() => useGame.getState().useStation(station)}>
           {!touch && <kbd>E</kbd>}
-          <span>{t.trainPrompt}</span>
+          <span>{t.stationPrompt[station]}</span>
         </button>
       )}
       <Minimap />
@@ -1073,14 +1048,7 @@ export function Overlay() {
             <button type="button" onClick={exit} title={t.exit} aria-label={t.exitLabel}>
               {Icon.exit}
             </button>
-            <button
-              type="button"
-              onClick={toggleCamera}
-              title={t.camera(camera === 'wide')}
-              aria-label={t.cameraLabel}
-            >
-              {Icon.camera}
-            </button>
+            <CameraViews />
             <button
               type="button"
               className={panel === 'map' ? 'is-on' : ''}

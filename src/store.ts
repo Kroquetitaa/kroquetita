@@ -9,7 +9,7 @@ import { world } from './world/layout'
 /** 'tour': la cámara recorre sola las cajas, sin jugar */
 export type Mode = 'intro' | 'play' | 'tour'
 export type Weather = 'auto' | 'clear' | 'rain' | 'storm'
-export type Daytime = 'auto' | 'night' | 'dawn'
+export type Daytime = 'auto' | 'night' | 'dawn' | 'day' | 'sunset'
 
 /** Logros que se pueden desbloquear (los textos están en i18n) */
 export const ACHIEVEMENTS = [
@@ -34,12 +34,21 @@ export const ACHIEVEMENTS = [
   'trainer',
   'photographer',
   'retro',
+  'insider',
+  'chef',
+  'pilot',
+  'timelord',
+  'restorer',
 ] as const
 export type Achievement = (typeof ACHIEVEMENTS)[number]
-export type CameraMode = 'wide' | 'chase'
+export type CameraMode = 'wide' | 'chase' | 'aerial' | 'free'
 
 /** Paneles a pantalla completa: solo hay uno abierto a la vez y, mientras, el jugador no se mueve */
-export type Panel = 'map' | 'photo' | 'train' | 'scores'
+export type Panel = 'map' | 'photo' | 'train' | 'scores' | 'factory' | 'hangar' | 'memory'
+/** Máquinas y entradas del escenario que se usan con la tecla E al estar delante */
+export type StationId = 'train' | 'factory' | 'brain' | 'hangar-0' | 'hangar-1' | 'hangar-2'
+/** Dónde está el jugador: en la ciudad o dentro del cerebro que flota sobre la cima */
+export type Place = 'city' | 'brain'
 /** Calidad gráfica: 'auto' baja sola si el equipo no llega */
 export type Quality = 'auto' | 'high' | 'low'
 /** Compañeros de trabajo que hay en la plaza (hablar con todos da una medalla) */
@@ -137,7 +146,10 @@ interface GameState {
   /** Panel abierto (mapa, modo foto, minijuego, récords) */
   panel: Panel | null
   /** Máquina del escenario que hay al alcance (tecla E), o null */
-  station: 'train' | null
+  station: StationId | null
+  place: Place
+  /** Qué máquina del hangar está abierta en el panel */
+  hangarDemo: number
   /** Modo 8 bits y calidad gráfica elegida */
   retro: boolean
   quality: Quality
@@ -202,6 +214,10 @@ interface GameState {
   setReady: () => void
   setPanel: (panel: Panel | null) => void
   setStation: (station: GameState['station']) => void
+  /** Usa la máquina o la entrada que hay delante */
+  useStation: (id: StationId) => void
+  enterBrain: () => void
+  leaveBrain: () => void
   toggleRetro: () => void
   setQuality: (quality: Quality) => void
   /** Marca la partida en curso como hecha con ayudas */
@@ -223,6 +239,7 @@ interface GameState {
   tour: () => void
   exit: () => void
   toggleCamera: () => void
+  setCamera: (camera: CameraMode) => void
   toggleMuted: () => void
   setLang: (lang: Lang) => void
   setWeather: (weather: Weather) => void
@@ -254,6 +271,8 @@ export const useGame = create<GameState>((set, get) => ({
   assisted: false,
   panel: null,
   station: null,
+  place: 'city',
+  hangarDemo: 0,
   retro: false,
   quality: initialQuality(),
   boss: 'none',
@@ -270,7 +289,7 @@ export const useGame = create<GameState>((set, get) => ({
   summitReached: false,
   lastQuest: null,
   mode: 'intro',
-  camera: 'wide',
+  camera: 'chase',
   muted: false,
   lang: initialLang(),
   weather: 'auto',
@@ -300,6 +319,20 @@ export const useGame = create<GameState>((set, get) => ({
     if (panel) track(`panel:${panel}`)
   },
   setStation: (station) => set((s) => (s.station === station ? s : { station })),
+  useStation: (id) => {
+    if (id === 'brain') get().enterBrain()
+    else if (id === 'train' || id === 'factory') get().setPanel(id)
+    else {
+      set({ hangarDemo: Number(id.slice(7)) })
+      get().setPanel('hangar')
+    }
+  },
+  enterBrain: () => {
+    if (!get().ready || get().place === 'brain') return
+    set({ mode: 'play', place: 'brain', panel: null, talk: null, near: null, station: null })
+    track('brain')
+  },
+  leaveBrain: () => set((s) => (s.place === 'city' ? s : { place: 'city' })),
   toggleRetro: () => {
     if (!get().retro) {
       get().unlock('retro')
@@ -391,11 +424,15 @@ export const useGame = create<GameState>((set, get) => ({
   },
   tour: () => {
     if (!get().ready) return
-    set({ mode: 'tour', stage: 0, stageHold: 0, talk: null, near: null, panel: null })
+    set({ mode: 'tour', stage: 0, stageHold: 0, talk: null, near: null, panel: null, place: 'city' })
     track('tour')
   },
-  exit: () => set({ mode: 'intro', talk: null, near: null, panel: null, station: null }),
-  toggleCamera: () => set((s) => ({ camera: s.camera === 'wide' ? 'chase' : 'wide' })),
+  exit: () => set({ mode: 'intro', talk: null, near: null, panel: null, station: null, place: 'city' }),
+  toggleCamera: () => set((s) => {
+    const views: CameraMode[] = ['chase', 'wide', 'aerial', 'free']
+    return { camera: views[(views.indexOf(s.camera) + 1) % views.length] }
+  }),
+  setCamera: camera => set({ camera }),
   toggleMuted: () => set((s) => ({ muted: !s.muted })),
   setLang: (lang) => {
     try {

@@ -3,9 +3,11 @@ import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
 import { sfx } from '../game/audio'
 import { body } from '../game/state'
+import { isWorldClick } from '../game/worldClick'
 import { introProgress } from './intro'
 import { createGlowMaterial, uTime } from './materials/shaders'
 import { loadImage, voxelize, type Crop, type VoxelLogoData } from './voxelize'
+import { atmosphere } from './atmosphere'
 
 /** Lado mayor del logo en unidades de mundo y grosor de los vóxeles. */
 const SIZE = 1.7
@@ -15,6 +17,7 @@ interface Uniforms {
   assemble: { value: number }
   burst: { value: number }
   hover: { value: number }
+  motion: { value: number }
 }
 
 /**
@@ -31,11 +34,13 @@ function createVoxelMaterial(u: Uniforms) {
     shader.uniforms.uAssemble = u.assemble
     shader.uniforms.uBurst = u.burst
     shader.uniforms.uHover = u.hover
+    shader.uniforms.uMotion = u.motion
     shader.vertexShader = shader.vertexShader
       .replace(
         '#include <common>',
         /* glsl */ `#include <common>
         uniform float uTime;
+        uniform float uMotion;
         uniform float uAssemble;
         uniform float uBurst;
         attribute vec3 aScatter;
@@ -59,9 +64,9 @@ function createVoxelMaterial(u: Uniforms) {
         #endif
         vec3 away = normalize(aScatter + vec3(0.0, -2.0, 0.0));
         mvPosition.xyz += aScatter * (1.0 - ve) + away * spread;
-        mvPosition.z += sin(uTime * 1.7 + mvPosition.x * 3.2 + mvPosition.y * 2.1) * 0.045 * ve;
+        mvPosition.z += sin(uTime * uMotion * 1.7 + mvPosition.x * 3.2 + mvPosition.y * 2.1) * 0.045 * ve * uMotion;
         // Brillo diagonal que barre el logo cada pocos segundos.
-        float band = fract((mvPosition.x * 0.6 + mvPosition.y) * 0.22 - uTime * 0.2);
+        float band = fract((mvPosition.x * 0.6 + mvPosition.y) * 0.22 - uTime * uMotion * 0.2);
         vShimmer = smoothstep(0.07, 0.0, abs(band - 0.5)) * ve;
         mvPosition = modelViewMatrix * mvPosition;
         gl_Position = projectionMatrix * mvPosition;`,
@@ -197,6 +202,8 @@ interface Props {
   index: number
   /** Se llama con el color dominante del logo cuando se conoce */
   onAccent?: (color: string) => void
+  /** Select the matching career stage without losing the logo's click effect. */
+  onSelect?: () => void
 }
 
 const worldPosition = new THREE.Vector3()
@@ -206,11 +213,11 @@ const worldPosition = new THREE.Vector3()
  * se abre al pasar el ratón, estalla y gira al hacer clic, y saluda con un
  * pulso cuando el jugador pasa cerca.
  */
-export function VoxelLogo({ url, crop, color, index, onAccent }: Props) {
+export function VoxelLogo({ url, crop, color, index, onAccent, onSelect }: Props) {
   const [data, setData] = useState<VoxelLogoData | 'error' | null>(url ? null : 'error')
   const sway = useRef<THREE.Group>(null)
   const uniforms = useMemo<Uniforms>(
-    () => ({ assemble: { value: 0 }, burst: { value: 0 }, hover: { value: 0 } }),
+    () => ({ assemble: { value: 0 }, burst: { value: 0 }, hover: { value: 0 }, motion: { value: 1 } }),
     [],
   )
   const halo = useMemo(() => createGlowMaterial(color, 0.55), [color])
@@ -250,7 +257,9 @@ export function VoxelLogo({ url, crop, color, index, onAccent }: Props) {
     document.body.style.cursor = ''
   }
   const onClick = (e: ThreeEvent<MouseEvent>) => {
+    if (!isWorldClick(e)) return
     e.stopPropagation()
+    onSelect?.()
     kick(9, Math.PI * 2)
     sfx.hologram()
   }
@@ -261,6 +270,17 @@ export function VoxelLogo({ url, crop, color, index, onAccent }: Props) {
     const dt = Math.min(delta, 1 / 20)
     const m = motion.current
     const t = state.clock.elapsedTime
+    uniforms.motion.value = atmosphere.reducedMotion ? 0 : 1
+    if (atmosphere.reducedMotion) {
+      uniforms.assemble.value = 1
+      uniforms.burst.value = 0
+      uniforms.hover.value = m.hovered ? 1 : 0
+      m.burst = m.velocity = m.spin = 0
+      g.rotation.set(0, 0, 0)
+      g.position.y = 0
+      g.scale.setScalar(1)
+      return
+    }
 
     // El jugador pasa cerca: el logo le saluda con un pulso.
     g.getWorldPosition(worldPosition)

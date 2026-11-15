@@ -1,3 +1,4 @@
+import { BlenderActor } from './BlenderActor'
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
@@ -11,6 +12,8 @@ import { body } from '../game/state'
 import { tr, useLang } from '../i18n'
 import { useGame } from '../store'
 import { world } from '../world/layout'
+import { cityNavigation } from '../game/cityNavigation'
+import { spawnGroundAgent, steerGround } from '../game/groundNavigation'
 import { Detail } from './Detail'
 import { introProgress } from './intro'
 import { createScreenMaterial } from './materials/blocks'
@@ -30,7 +33,6 @@ import { uDay } from './Weather'
 type Vec3 = [number, number, number]
 
 const CITY = world.props.city
-const PLAZA = world.plaza
 const FLAT = -Math.PI / 2
 
 const DARK = new THREE.MeshStandardMaterial({ color: '#16181e', roughness: 0.45, metalness: 0.75 })
@@ -170,7 +172,7 @@ function createSkylineMaterial() {
           // Baliza roja: un destello corto cada dos segundos, cada una a su aire.
           float on = step(fract(uTime * 0.5 + vSeed * 13.0), 0.2);
           vec3 beacon = vec3(1.0, 0.07, 0.05) * (0.2 + 2.2 * on);
-          gl_FragColor = vec4(mix(vec3(0.018, 0.02, 0.028), beacon, step(1.5, vPart)), 1.0);
+          gl_FragColor = vec4(mix(mix(vec3(0.018, 0.02, 0.028), vec3(0.18, 0.22, 0.3), uDay), beacon, step(1.5, vPart)), 1.0);
           return;
         }
         // Coordenadas de la cara en unidades de mundo (la azotea no lleva ventanas).
@@ -207,7 +209,9 @@ function createSkylineMaterial() {
         // Fondo discreto: las ventanas quedan claramente por debajo del brillo de las cajas.
         float glow = (0.14 + 0.24 * hash(key + 2.6)) * (1.0 - uDay * 0.75);
 
-        vec3 col = vec3(0.009, 0.011, 0.018);
+        vec3 facade = mix(vec3(0.16, 0.20, 0.28), vec3(0.26, 0.27, 0.34), vSeed);
+        float faceLight = 0.6 + 0.4 * max(0.0, dot(normalize(vN), normalize(vec3(-0.5, 0.8, 0.4))));
+        vec3 col = mix(vec3(0.009, 0.011, 0.018), facade * faceLight, uDay);
         // Un filo apenas más claro en la cornisa, para que se lea la silueta.
         col += vec3(0.01, 0.014, 0.024) * smoothstep(vSize.y - 0.3, vSize.y, vP.y) * wall;
         col += tint * glow * lit * pane.x * pane.y * inside * wall;
@@ -663,7 +667,7 @@ const BAR_AWAY = 2.8
  * de neón en el tejado, toldo a rayas, botellas, dos taburetes y una pantalla
  * al fondo. No hay camarero: el local, como dice el cartel, no se ha encontrado.
  */
-function Bar() {
+export function Bar() {
   const { center, size } = CITY.bar
   const [w, h, d] = size
   const lang = useLang()
@@ -821,59 +825,19 @@ const LED_OK = new THREE.Color(0.3, 2.2, 0.8)
 const LED_DIZZY = new THREE.Color(2.4, 1.3, 0.2)
 const LED_ALARM = new THREE.Color(2.6, 0.2, 0.15)
 
-/** Por dónde puede barrer: la plaza, sin pisar nunca la línea de tiempo. */
-const ROAM = {
-  minX: PLAZA.minX + 0.5,
-  maxX: PLAZA.maxX - 0.5,
-  minZ: PLAZA.minZ + ROOMBA_RADIUS + 0.1,
-  maxZ: PLAZA.maxZ,
-}
-/** Cosas del suelo que no son colisión pero que tampoco debe atravesar: x, z y radio. */
-const KEEP_OUT: Vec3[] = [
-  // Los taburetes que rodean la mesa de las IA.
-  [world.props.table.center[0], world.props.table.center[2], 2.55],
-  // El pato, mientras nadie lo mueva de su sitio.
-  [world.props.duck[0], world.props.duck[2], 0.6],
-  ...world.pads.map((pad): Vec3 => [pad.position[0], pad.position[2], pad.radius + 0.2]),
-  ...LAMPS.map(([x, z]): Vec3 => [x, z, 0.15]),
-  // Los personajes que charlan parados en la plaza (Folk).
-  [-18, 12.2, 0.7],
-  [-14.5, 9.8, 0.7],
-  [-1.8, 15, 0.8],
-  [14.6, 12.2, 0.8],
-]
-
-/** ¿Cabe el robot en ese punto? Ni fuera de la plaza ni contra un obstáculo. */
-function roombaFits(x: number, z: number) {
-  if (x < ROAM.minX || x > ROAM.maxX || z < ROAM.minZ || z > ROAM.maxZ) return false
-  const margin = ROOMBA_RADIUS + 0.15
-  // La lista se lee cada vez: algunas colisiones se mueven.
-  for (const c of world.colliders) {
-    if (c.min[1] > 0.6) continue
-    if (x > c.min[0] - margin && x < c.max[0] + margin && z > c.min[2] - margin && z < c.max[2] + margin) {
-      return false
-    }
-  }
-  for (const [kx, kz, radius] of KEEP_OUT) {
-    if (Math.hypot(x - kx, z - kz) < radius + ROOMBA_RADIUS) return false
-  }
-  return true
-}
-
 /**
  * Robot aspirador: barre la plaza en línea recta y gira cuando topa con algo,
  * dejando una estela de luz que se apaga. No tiene colisión: si le caes
  * encima, te hace rebotar, se marea y suelta una frase.
  */
-function Roomba() {
+export function Roomba() {
   const ring = useMemo(() => createNeonMaterial('#3df2b0', 1.2), [])
   const root = useRef<THREE.Group>(null)
   const led = useRef<THREE.MeshBasicMaterial>(null)
   const brushes = useRef<Array<THREE.Mesh | null>>([])
   const trail = useRef<THREE.InstancedMesh>(null)
   const state = useRef({
-    x: 8,
-    z: 14.3,
+    ...spawnGroundAgent(cityNavigation.roomba, [22.8, 14.6]),
     dir: 2.2,
     /** Giro pendiente (radianes, con signo) antes de seguir avanzando */
     turn: 0,
@@ -921,6 +885,7 @@ function Roomba() {
   }, [])
 
   useFrame(({ clock }, delta) => {
+    if (useGame.getState().place !== 'city') return
     const s = state.current
     const t = clock.elapsedTime
     const dt = Math.min(delta, 1 / 20)
@@ -958,27 +923,13 @@ function Roomba() {
       s.dir += step
       s.turn -= step
     } else {
-      const sin = Math.sin(s.dir)
-      const cos = Math.cos(s.dir)
-      const nx = s.x + sin * ROOMBA_SPEED * dt
-      const nz = s.z + cos * ROOMBA_SPEED * dt
-      // El jugador también es un obstáculo, pero solo si lo tiene delante.
-      const ahead = px * sin + pz * cos > 0 && Math.hypot(body.pos[0] - nx, body.pos[2] - nz) < 0.8
-      const bump = play && body.pos[1] < 0.4 && ahead
-      if (!bump && roombaFits(nx, nz)) {
-        s.x = nx
-        s.z = nz
-        s.since += ROOMBA_SPEED * dt
-        s.stuck = 0
-      } else if (++s.stuck > 12) {
-        // Encerrado (algo se le ha echado encima): sale hacia el centro de la plaza.
-        s.dir = Math.atan2((ROAM.minX + ROAM.maxX) / 2 - s.x, (ROAM.minZ + ROAM.maxZ) / 2 - s.z)
-        s.x += Math.sin(s.dir) * ROOMBA_SPEED * dt
-        s.z = Math.max(ROAM.minZ, s.z + Math.cos(s.dir) * ROOMBA_SPEED * dt)
-      } else {
-        // Topa: da media vuelta larga, hacia un lado al azar.
-        s.turn = (Math.random() < 0.5 ? -1 : 1) * Math.PI * (0.55 + Math.random() * 0.5)
-      }
+      const ahead = px * Math.sin(s.dir) + pz * Math.cos(s.dir) > 0 && Math.hypot(px, pz) < 1.1
+      if (!(play && body.pos[1] < .4 && ahead)) {
+        const move = steerGround(cityNavigation.roomba, s.x, s.z, s.dir, ROOMBA_SPEED * dt, s.line % 2 ? -1 : 1)
+        s.x = move.x; s.z = move.z; s.dir = move.heading
+        s.since += move.moved
+      } else s.turn = Math.PI * .7
+
     }
 
     const g = root.current
@@ -1019,6 +970,8 @@ function Roomba() {
   return (
     <Detail>
       <group ref={root}>
+<BlenderActor name="roomba" fallback={<>
+
         <mesh geometry={geometry.body} material={CASE} />
         <mesh geometry={geometry.ring} material={ring} />
         <mesh position={[0, ROOMBA_TOP, 0.2]}>
@@ -1036,6 +989,8 @@ function Roomba() {
             position={[side * 0.3, 0.03, 0.3]}
           />
         ))}
+
+</>} />
       </group>
       {/* Las motas se quedan donde cayeron: van en coordenadas de mundo */}
       <instancedMesh ref={trail} args={[geometry.dot, undefined, TRAIL]} frustumCulled={false}>
@@ -1058,7 +1013,6 @@ export function City() {
       <Lamps />
       <Benches />
       <Trees />
-      <Bar />
       <Roomba />
     </>
   )

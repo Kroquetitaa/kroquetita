@@ -225,10 +225,10 @@ function createPlacer() {
   ]
 
   const fits = (x: number, z: number, radius: number) => {
-    if (x < PLAZA.minX + radius || x > PLAZA.maxX - radius) return false
-    if (z < PLAZA.minZ + radius || z > PLAZA.maxZ - radius) return false
+    if (x < world.bounds.minX + radius || x > world.bounds.maxX - radius) return false
+    if (z < world.bounds.minZ + radius || z > world.bounds.maxZ - radius) return false
     for (const c of world.colliders) {
-      if (c.min[1] > 0.6) continue
+      if (c.min[1] > 0.6 || c.max[1] < .15) continue
       if (x > c.min[0] - radius && x < c.max[0] + radius && z > c.min[2] - radius && z < c.max[2] + radius) {
         return false
       }
@@ -237,6 +237,8 @@ function createPlacer() {
   }
 
   return (x: number, z: number, radius: number): [number, number] => {
+    x = Math.max(world.bounds.minX + radius, Math.min(world.bounds.maxX - radius, x))
+    z = Math.max(world.bounds.minZ + radius, Math.min(world.bounds.maxZ - radius, z))
     // Anillos cada vez más anchos alrededor del punto pedido.
     for (let ring = 0; ring <= 16; ring++) {
       const steps = ring === 0 ? 1 : 6 + ring * 2
@@ -250,7 +252,18 @@ function createPlacer() {
         }
       }
     }
-    return [x, z]
+    // A dense district may fill the local search; look across the native island.
+    let nearest: [number, number] | null = null
+    let distance = Infinity
+    for (let pz = world.bounds.minZ + radius; pz < world.bounds.maxZ - radius; pz += .75) {
+      for (let px = world.bounds.minX + radius; px < world.bounds.maxX - radius; px += .75) {
+        const d = (px - x) ** 2 + (pz - z) ** 2
+        if (d < distance && fits(px, pz, radius)) { nearest = [px, pz]; distance = d }
+      }
+    }
+    const at: [number, number] = nearest ?? [x, z]
+    taken.push([at[0], at[1], radius])
+    return at
   }
 }
 

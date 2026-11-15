@@ -1,3 +1,4 @@
+import { BlenderActor } from './BlenderActor'
 import { useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
@@ -10,6 +11,9 @@ import { body, shake } from '../game/state'
 import { currentLang, tr, useLang } from '../i18n'
 import { useGame } from '../store'
 import { world } from '../world/layout'
+import { cityNavigation } from '../game/cityNavigation'
+import { spawnGroundAgent, sweepGround } from '../game/groundNavigation'
+import { blenderAssembly } from '../world/blenderAssembly'
 import { introProgress } from './intro'
 import {
   createBurstGeometry,
@@ -22,6 +26,7 @@ import {
   uTime,
 } from './materials/shaders'
 import { Bubble } from './Player'
+import { CityModel } from './CityModel'
 
 const FLAT = -Math.PI / 2
 const smooth = (t: number) => t * t * (3 - 2 * t)
@@ -133,7 +138,7 @@ function Elevator() {
 
 // ---------------------------------------------------------------- Pato de goma
 
-const DUCK_RADIUS = 0.55
+const DUCK_RADIUS = cityNavigation.duck.radius
 const YELLOW = '#ffd426'
 /** Lo que protesta el pato, por orden, cada vez que lo empujas. */
 const DUCK_LINES: Localized<string[]> = {
@@ -150,8 +155,7 @@ function Duck() {
   const model = useRef<THREE.Group>(null)
   const [quack, setQuack] = useState({ text: '', shownAt: 0 })
   const state = useRef({
-    x: world.props.duck[0],
-    z: world.props.duck[2],
+    ...spawnGroundAgent(cityNavigation.duck, [world.props.duck[0], world.props.duck[2]]),
     vx: 0,
     vz: 0,
     heading: 0.6,
@@ -163,12 +167,13 @@ function Duck() {
   const lastRun = useRef(runId)
 
   useFrame(({ clock }, delta) => {
+    if (useGame.getState().place !== 'city') return
     const s = state.current
     const dt = Math.min(delta, 1 / 20)
     if (lastRun.current !== runId) {
       // Al reiniciar la partida vuelve a su sitio.
       lastRun.current = runId
-      Object.assign(s, { x: world.props.duck[0], z: world.props.duck[2], vx: 0, vz: 0 })
+      Object.assign(s, spawnGroundAgent(cityNavigation.duck, [world.props.duck[0], world.props.duck[2]]), { vx: 0, vz: 0 })
     }
 
     // Empujón del jugador.
@@ -184,8 +189,6 @@ function Duck() {
         s.vx = nx * push
         s.vz = nz * push
       }
-      s.x = body.pos[0] + nx * reach
-      s.z = body.pos[2] + nz * reach
       const now = performance.now()
       if (now - s.lastQuack > 600) {
         s.lastQuack = now
@@ -197,37 +200,11 @@ function Duck() {
       }
     }
 
-    s.x += s.vx * dt
-    s.z += s.vz * dt
+    const move = sweepGround(cityNavigation.duck, s.x, s.z, s.vx * dt, s.vz * dt, true)
+    s.x = move.x; s.z = move.z
     const drag = Math.exp(-1.5 * dt)
-    s.vx *= drag
-    s.vz *= drag
-
-    // Rebote contra todo lo que llegue al suelo (círculo contra caja).
-    for (const c of world.colliders) {
-      if (c.min[1] > 0.7 || c.max[1] < 0.05) continue
-      const cx = Math.min(c.max[0], Math.max(c.min[0], s.x))
-      const cz = Math.min(c.max[2], Math.max(c.min[2], s.z))
-      const ox = s.x - cx
-      const oz = s.z - cz
-      const d = Math.hypot(ox, oz)
-      if (d >= DUCK_RADIUS) continue
-      // Dentro de la caja no hay normal fiable: se le saca hacia la cámara.
-      const nx = d > 1e-4 ? ox / d : 0
-      const nz = d > 1e-4 ? oz / d : 1
-      s.x = cx + nx * DUCK_RADIUS
-      s.z = cz + nz * DUCK_RADIUS
-      const vn = s.vx * nx + s.vz * nz
-      if (vn < 0) {
-        s.vx -= 1.7 * vn * nx
-        s.vz -= 1.7 * vn * nz
-      }
-    }
-    const b = world.bounds
-    if (s.x < b.minX || s.x > b.maxX) s.vx *= -0.7
-    if (s.z < b.minZ || s.z > b.maxZ) s.vz *= -0.7
-    s.x = Math.min(b.maxX, Math.max(b.minX, s.x))
-    s.z = Math.min(b.maxZ, Math.max(b.minZ, s.z))
+    s.vx *= drag * (move.blocked ? -.45 : 1)
+    s.vz *= drag * (move.blocked ? -.45 : 1)
 
     const speed = Math.hypot(s.vx, s.vz)
     if (speed > 0.3) {
@@ -256,6 +233,8 @@ function Duck() {
   return (
     <group ref={group}>
       <group ref={model}>
+<BlenderActor name="duck" fallback={<>
+
         <mesh position={[0, 0.32, 0]} castShadow>
           <boxGeometry args={[0.72, 0.46, 0.92]} />
           {rubber}
@@ -284,6 +263,8 @@ function Duck() {
             <meshStandardMaterial color="#15131c" roughness={0.3} />
           </mesh>
         ))}
+
+</>} />
       </group>
       <group position-y={0.25}>
         <Bubble text={quack.text} shownAt={quack.shownAt} />
@@ -668,6 +649,7 @@ const COFFEE = world.props.coffee
 
 /** Máquina de café: acércate y sales con un rato de velocidad extra. */
 function CoffeeMachine() {
+  const placement = useMemo(() => new THREE.Matrix4().fromArray(blenderAssembly.standalone.coffee_machine.matrix), [])
   const steam = useMemo(
     () => createBurstMaterial('#c8d0e0', { speed: 0.5, gravity: -0.9, life: 1.3, size: 40 }),
     [],
@@ -676,7 +658,11 @@ function CoffeeMachine() {
   const neon = useMemo(() => createNeonMaterial('#ff9f1c', 1.3), [])
   const state = useRef({ ready: 0, nextSteam: 0 })
   const lang = useLang()
-  const front = COFFEE.center[2] + COFFEE.size[2] / 2
+  const steamSocket = blenderAssembly.standalone.coffee_machine.hooks.SteamSocket
+  const serving = useMemo(() => {
+    const socket = blenderAssembly.standalone.coffee_machine.hooks.ServeSocket
+    return new THREE.Vector3(0, 0, 1).transformDirection(placement).multiplyScalar(1.05).add(new THREE.Vector3(...socket))
+  }, [placement])
 
   useFrame(({ clock, gl, size }) => {
     const s = state.current
@@ -685,12 +671,12 @@ function CoffeeMachine() {
     // Echa vapor cada poco, sirva o no.
     if (t > s.nextSteam) {
       s.nextSteam = t + 1.6
-      steam.uniforms.uOrigin.value.set(COFFEE.center[0], COFFEE.center[1] + COFFEE.size[1] / 2, COFFEE.center[2])
+      steam.uniforms.uOrigin.value.set(...steamSocket)
       steam.uniforms.uStart.value = uTime.value
     }
     const game = useGame.getState()
     if (game.mode !== 'play' || t < s.ready || body.pos[1] > 0.5) return
-    if (Math.abs(body.pos[0] - COFFEE.center[0]) < 0.9 && Math.abs(body.pos[2] - (front + 0.6)) < 0.7) {
+    if (Math.hypot(body.pos[0] - serving.x, body.pos[2] - serving.z) < .8) {
       s.ready = t + 12
       game.drinkCoffee(8)
       sfx.sip()
@@ -700,7 +686,8 @@ function CoffeeMachine() {
 
   return (
     <>
-      <group position={COFFEE.center}>
+      <group matrix={placement} matrixAutoUpdate={false}>
+      <CityModel name="coffee_machine" fallback={<group position-y={COFFEE.size[1] / 2}>
         <mesh castShadow receiveShadow>
           <boxGeometry args={COFFEE.size} />
           <meshStandardMaterial color="#20232b" roughness={0.4} metalness={0.7} />
@@ -728,6 +715,7 @@ function CoffeeMachine() {
         >
           {TEXTS.coffeeSign[lang]}
         </Text>
+      </group>} />
       </group>
       <points geometry={burst} material={steam} frustumCulled={false} />
     </>

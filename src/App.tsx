@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import { bindKeyboard } from './game/input'
 import { useGame } from './store'
 import { Overlay } from './ui/Overlay'
+import { CityControls } from './ui/CityControls'
 
 // El motor 3D pesa mucho más que el resto: se pide ya, pero en un paquete
 // aparte, para que la portada (texto y botones) aparezca sin esperarlo.
@@ -26,6 +27,7 @@ export default function App() {
         </Suspense>
       </div>
       <Overlay />
+      <CityControls />
     </>
   )
 }

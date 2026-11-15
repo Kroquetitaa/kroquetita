@@ -1,3 +1,4 @@
+import { BlenderActor } from './BlenderActor'
 import { useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Billboard, Text } from '@react-three/drei'
@@ -18,6 +19,8 @@ import { body } from '../game/state'
 import { currentLang, QUEST_TEXT, useLang } from '../i18n'
 import { useGame } from '../store'
 import { world } from '../world/layout'
+import { cityNavigation } from '../game/cityNavigation'
+import { navigateGround, spawnGroundAgent } from '../game/groundNavigation'
 import { Detail } from './Detail'
 import { introProgress } from './intro'
 import { createNeonMaterial } from './materials/shaders'
@@ -37,8 +40,8 @@ const PAPER = new THREE.MeshStandardMaterial({ color: '#f3f4f7', roughness: 0.6 
 const STEEL = new THREE.MeshStandardMaterial({ color: '#8d95a3', roughness: 0.3, metalness: 0.9 })
 
 /** Radio al que se puede empezar a hablar, y al que se corta la conversación */
-const TALK_RANGE = 2.3
-const LEAVE_RANGE = 3.6
+const TALK_RANGE = 1.6
+const LEAVE_RANGE = 2.8
 
 type Kit = TalkerId | 'intern'
 
@@ -59,15 +62,6 @@ const MATES: Partial<Record<Kit, MateLook>> = {
 /** Distancia de cada personaje al jugador: entre los que están al alcance, se habla con el más cercano */
 const reach: Partial<Record<TalkerId, number>> = {}
 
-/** ¿Hay algún obstáculo a ras de suelo en ese punto? */
-function blocked(x: number, z: number, margin = 0.45) {
-  for (const c of world.colliders) {
-    if (c.min[1] > 0.6) continue
-    if (x > c.min[0] - margin && x < c.max[0] + margin && z > c.min[2] - margin && z < c.max[2] + margin) return true
-  }
-  return false
-}
-
 interface PuppetParts {
   root: React.RefObject<THREE.Group | null>
   head: React.RefObject<THREE.Group | null>
@@ -82,6 +76,8 @@ function Puppet({ kit, color, accent, parts }: { kit: Kit; color: string; accent
   const hair = useMemo(() => (mate ? new THREE.MeshStandardMaterial({ color: mate.hair, roughness: 0.9 }) : null), [mate])
   return (
     <group ref={parts.root}>
+<BlenderActor name={kit} joints={{ Head: parts.head, Arms: parts.arms }} fallback={<>
+
       <mesh position-y={0.5} material={cloth} castShadow>
         <boxGeometry args={[0.42, 0.46, 0.28]} />
       </mesh>
@@ -416,6 +412,8 @@ function Puppet({ kit, color, accent, parts }: { kit: Kit; color: string; accent
           </group>
         )}
       </Detail>
+
+</>} />
     </group>
   )
 }
@@ -626,7 +624,7 @@ function Banner({ accent }: { accent: string }) {
   )
 }
 
-const HOME: [number, number] = [-25.5, 8.4]
+const HOME: [number, number] = [world.props.coffee.center[0] - 1.2, world.props.coffee.center[2] + 1]
 
 /**
  * El becario: si pasas cerca te sigue a todas partes (por el suelo) y va
@@ -638,7 +636,7 @@ function Intern() {
   const head = useRef<THREE.Group>(null)
   const arms = useRef<THREE.Group>(null)
   const holder = useRef<THREE.Group>(null)
-  const state = useRef({ x: HOME[0], z: HOME[1], heading: 0.6, step: 0, nextLine: 0, line: 0, following: false })
+  const state = useRef({ ...spawnGroundAgent(cityNavigation.intern, HOME), step: 0, nextLine: 0, line: 0, following: false })
   const [bubble, setBubble] = useState({ text: '', shownAt: 0 })
 
   useFrame(({ clock }, delta) => {
@@ -646,6 +644,7 @@ function Intern() {
     const t = clock.elapsedTime
     const dt = Math.min(delta, 1 / 20)
     const game = useGame.getState()
+    if (game.place !== 'city') return
     const playing = game.mode === 'play'
     const onFloor = body.pos[1] < 0.6
     const dx = body.pos[0] - s.x
@@ -680,20 +679,8 @@ function Intern() {
     let moving = false
     if (gap > keep && (chasing || !s.following)) {
       const speed = chasing ? Math.min(3.4, 1.6 + gap * 0.5) : 1.4
-      const nx = s.x + (gx / gap) * speed * dt
-      const nz = s.z + (gz / gap) * speed * dt
-      // Si hay algo delante, prueba a deslizarse por cada eje.
-      if (!blocked(nx, nz)) {
-        s.x = nx
-        s.z = nz
-        moving = true
-      } else if (!blocked(nx, s.z)) {
-        s.x = nx
-        moving = true
-      } else if (!blocked(s.x, nz)) {
-        s.z = nz
-        moving = true
-      }
+      s.tx = tx; s.tz = tz
+      moving = navigateGround(cityNavigation.intern, s, speed, dt).moved
     }
     const face = Math.atan2(chasing || moving ? gx : dx, chasing || moving ? gz : dz)
     let turn = face - s.heading
@@ -763,22 +750,22 @@ function TeamSign() {
   return (
     <group ref={holder} position={[teamSpot[0], 0.03, teamSpot[1]]}>
       <Detail>
-        {[-0.62, 0.62].map((z) => (
+        {[-0.23, 0.23].map((z) => (
           <mesh key={z} position={[0, 0, z]} rotation-x={-Math.PI / 2} material={neon}>
-            <planeGeometry args={[6.4, 0.05]} />
+            <planeGeometry args={[4.2, 0.025]} />
           </mesh>
         ))}
         <Text
           rotation-x={-Math.PI / 2}
           font={fontBold}
-          fontSize={0.72}
+          fontSize={0.28}
           letterSpacing={0.14}
           color="#bdfde6"
           anchorX="center"
           anchorY="middle"
           material-toneMapped={false}
         >
-          {lang === 'es' ? 'EL EQUIPO' : 'THE TEAM'}
+          {lang === 'es' ? 'PUNTO DE ENCUENTRO' : 'MEETING POINT'}
         </Text>
       </Detail>
     </group>

@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "assets:city": "node scripts/prepare-city-assets.mjs",
+    "check:city": "node --experimental-strip-types scripts/check-city-integration.mjs"
   },
   "dependencies": {
     "@fontsource/poppins": "^5.3.0",

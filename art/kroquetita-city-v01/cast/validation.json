@@ -1,0 +1,255 @@
+[
+  {
+    "id": "recruiter",
+    "size": [
+      0.751,
+      1.24,
+      0.498
+    ],
+    "joints": 8,
+    "triangles": 4280,
+    "bytes": 218152
+  },
+  {
+    "id": "guide",
+    "size": [
+      0.697,
+      1.285,
+      0.61
+    ],
+    "joints": 8,
+    "triangles": 4104,
+    "bytes": 207036
+  },
+  {
+    "id": "qa",
+    "size": [
+      0.751,
+      1.323,
+      0.507
+    ],
+    "joints": 8,
+    "triangles": 4980,
+    "bytes": 254216
+  },
+  {
+    "id": "sysadmin",
+    "size": [
+      0.751,
+      1.24,
+      0.508
+    ],
+    "joints": 8,
+    "triangles": 4540,
+    "bytes": 226148
+  },
+  {
+    "id": "intern",
+    "size": [
+      0.697,
+      1.325,
+      0.616
+    ],
+    "joints": 8,
+    "triangles": 4492,
+    "bytes": 220796
+  },
+  {
+    "id": "librarian",
+    "size": [
+      0.719,
+      1.255,
+      0.596
+    ],
+    "joints": 8,
+    "triangles": 4520,
+    "bytes": 234220
+  },
+  {
+    "id": "joseba",
+    "size": [
+      0.697,
+      1.24,
+      0.532
+    ],
+    "joints": 8,
+    "triangles": 4828,
+    "bytes": 247016
+  },
+  {
+    "id": "pochita",
+    "size": [
+      0.81,
+      1.25,
+      0.498
+    ],
+    "joints": 8,
+    "triangles": 4136,
+    "bytes": 210936
+  },
+  {
+    "id": "alex",
+    "size": [
+      0.697,
+      1.325,
+      0.498
+    ],
+    "joints": 8,
+    "triangles": 4076,
+    "bytes": 198728
+  },
+  {
+    "id": "josete",
+    "size": [
+      0.697,
+      1.325,
+      0.522
+    ],
+    "joints": 8,
+    "triangles": 4868,
+    "bytes": 244876
+  },
+  {
+    "id": "cristian",
+    "size": [
+      0.751,
+      1.24,
+      0.507
+    ],
+    "joints": 8,
+    "triangles": 4852,
+    "bytes": 251420
+  },
+  {
+    "id": "pablo",
+    "size": [
+      0.751,
+      1.285,
+      0.61
+    ],
+    "joints": 8,
+    "triangles": 4432,
+    "bytes": 222264
+  },
+  {
+    "id": "manager",
+    "size": [
+      0.751,
+      1.24,
+      0.507
+    ],
+    "joints": 8,
+    "triangles": 4984,
+    "bytes": 259528
+  },
+  {
+    "id": "Claude",
+    "size": [
+      0.759,
+      1.18,
+      0.455
+    ],
+    "joints": 8,
+    "triangles": 3884,
+    "bytes": 192960
+  },
+  {
+    "id": "ChatGPT",
+    "size": [
+      0.71,
+      1.243,
+      0.518
+    ],
+    "joints": 8,
+    "triangles": 4212,
+    "bytes": 205048
+  },
+  {
+    "id": "Gemini",
+    "size": [
+      0.71,
+      1.45,
+      0.537
+    ],
+    "joints": 8,
+    "triangles": 3836,
+    "bytes": 193732
+  },
+  {
+    "id": "Qwen3",
+    "size": [
+      0.71,
+      1.26,
+      0.585
+    ],
+    "joints": 8,
+    "triangles": 3928,
+    "bytes": 194340
+  },
+  {
+    "id": "Mistral",
+    "size": [
+      0.71,
+      1.311,
+      0.479
+    ],
+    "joints": 8,
+    "triangles": 3904,
+    "bytes": 191352
+  },
+  {
+    "id": "cat",
+    "size": [
+      0.4,
+      0.62,
+      0.728
+    ],
+    "joints": 3,
+    "triangles": 2972,
+    "bytes": 134620
+  },
+  {
+    "id": "duck",
+    "size": [
+      0.908,
+      0.945,
+      1.367
+    ],
+    "joints": 0,
+    "triangles": 1920,
+    "bytes": 97140
+  },
+  {
+    "id": "bug",
+    "size": [
+      0.655,
+      0.298,
+      0.567
+    ],
+    "joints": 3,
+    "triangles": 2984,
+    "bytes": 137328
+  },
+  {
+    "id": "boss",
+    "size": [
+      3.93,
+      1.785,
+      3.402
+    ],
+    "joints": 3,
+    "triangles": 3204,
+    "bytes": 150300
+  },
+  {
+    "id": "roomba",
+    "size": [
+      0.9,
+      0.201,
+      0.916
+    ],
+    "joints": 1,
+    "triangles": 2296,
+    "bytes": 109072
+  }
+]

@@ -1,16 +1,13 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, type ComponentRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { MeshReflectorMaterial } from '@react-three/drei'
 import * as THREE from 'three'
 import { body } from '../game/state'
 import { useGame } from '../store'
 import { world } from '../world/layout'
-import { Arcade } from './Arcade'
-import { Blocks } from './Blocks'
-import { Campus } from './Campus'
-import { City } from './City'
-import { Detail } from './Detail'
-import { introProgress } from './intro'
+import { blenderAssembly } from '../world/blenderAssembly'
+import { GameplayPlatforms } from './Blocks'
+import { Roomba } from './City'
 import {
   createBeamMaterial,
   createDustMaterial,
@@ -20,19 +17,29 @@ import {
 } from './materials/shaders'
 import { NPCs } from './NPCs'
 import { Props } from './Props'
-import { Scenery } from './Scenery'
+import { PetDrone } from './Scenery'
 import { Sky } from './Sky'
-import { TechPark } from './TechPark'
-import { Timeline } from './Timeline'
-import { Workstation } from './Workstation'
+import { Keys } from './TechPark'
+import { BlenderMap } from './BlenderMap'
+import { atmosphere } from './atmosphere'
 
 const FLAT = -Math.PI / 2
+const WATER = blenderAssembly.water
 
-/** Suelo de estudio: reflectante, con una rejilla tenue que reacciona. */
-function Floor() {
+/** The lagoon replaces only Blender's opaque water; native streets remain above it. */
+function Floor({ low }: { low: boolean }) {
+  const surface = useRef<ComponentRef<typeof MeshReflectorMaterial>>(null)
+  const night = useMemo(() => new THREE.Color('#171c31'), [])
+  const day = useMemo(() => new THREE.Color('#596776'), [])
   const grid = useMemo(() => createGridMaterial('#3aa0ff'), [])
   const scratch = useMemo(() => new THREE.Vector2(), [])
   useFrame((state) => {
+    if (surface.current) {
+      surface.current.color.copy(night).lerp(day, atmosphere.day)
+      surface.current.roughness = 0.48 - atmosphere.wet * 0.16
+      surface.current.mixStrength = 5 + (1 - atmosphere.day) * 9 + atmosphere.wet * 7
+      surface.current.mixBlur = 0.72 - atmosphere.wet * 0.24
+    }
     // Las ondas de la rejilla nacen bajo el jugador; en la portada, bajo el ratón.
     const center = grid.uniforms.uCenter.value as THREE.Vector2
     if (useGame.getState().mode === 'play') {
@@ -48,24 +55,25 @@ function Floor() {
   })
   return (
     <>
-      <mesh rotation-x={FLAT} receiveShadow>
-        <planeGeometry args={[260, 260]} />
+      <mesh rotation-x={FLAT} position={[WATER.center[0], WATER.max[1] + .001, WATER.center[2]]} receiveShadow>
+        <planeGeometry args={[WATER.size[0], WATER.size[2]]} />
         <MeshReflectorMaterial
-          resolution={1024}
-          blur={[420, 140]}
-          mixBlur={0.9}
-          mixStrength={60}
-          mirror={0.75}
-          roughness={0.7}
+          ref={surface}
+          resolution={low ? 256 : 768}
+          blur={low ? [80, 32] : [220, 80]}
+          mixBlur={0.72}
+          mixStrength={12}
+          mirror={0.45}
+          roughness={0.48}
           depthScale={0.9}
           minDepthThreshold={0.2}
           maxDepthThreshold={1.4}
-          color="#0e0e11"
-          metalness={0.55}
+          color="#171c31"
+          metalness={0.38}
         />
       </mesh>
-      <mesh rotation-x={FLAT} position-y={0.012} material={grid}>
-        <planeGeometry args={[140, 140]} />
+      <mesh rotation-x={FLAT} position={[WATER.center[0], WATER.max[1] + .002, WATER.center[2]]} material={grid}>
+        <planeGeometry args={[WATER.size[0], WATER.size[2]]} />
       </mesh>
     </>
   )
@@ -82,9 +90,9 @@ function Dust({ count = 320 }: { count?: number }) {
       return seed / 2147483647
     }
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (rand() - 0.5) * 80
+      positions[i * 3] = (rand() - 0.5) * 54
       positions[i * 3 + 1] = 0.5 + rand() * (world.top + 8)
-      positions[i * 3 + 2] = (rand() - 0.4) * 44
+      positions[i * 3 + 2] = (rand() - 0.5) * 52 - 3
       seeds[i] = rand()
     }
     const g = new THREE.BufferGeometry()
@@ -121,31 +129,6 @@ function Pads() {
   )
 }
 
-/** En la portada, una luz sigue al ratón por delante de los bloques, como una linterna. */
-function PointerLight() {
-  const light = useRef<THREE.PointLight>(null)
-  const plane = useMemo(
-    () => new THREE.Plane(new THREE.Vector3(0, 0, 1), -8.5),
-    [],
-  )
-  const target = useMemo(() => new THREE.Vector3(), [])
-
-  useFrame((state, delta) => {
-    const l = light.current
-    if (!l) return
-    const intro = useGame.getState().mode === 'intro'
-    state.raycaster.setFromCamera(state.pointer, state.camera)
-    if (state.raycaster.ray.intersectPlane(plane, target)) {
-      target.y = Math.max(0.8, target.y)
-      l.position.lerp(target, 1 - Math.exp(-8 * delta))
-    }
-    const goal = intro ? 55 * introProgress(3, 1.5) : 0
-    l.intensity += (goal - l.intensity) * (1 - Math.exp(-4 * delta))
-  })
-
-  return <pointLight ref={light} color="#dfe8ff" intensity={0} distance={14} decay={2} />
-}
-
 function SpawnPortal() {
   const material = useMemo(() => createPortalMaterial('#19e6ff'), [])
   const [x, , z] = world.spawn
@@ -159,27 +142,9 @@ function SpawnPortal() {
   )
 }
 
-export function World() {
-  return (
-    <>
-      <Floor />
-      <Sky />
-      <Blocks />
-      <Detail>
-        <Timeline />
-        <Workstation />
-      </Detail>
-      <Scenery />
-      <Props />
-      <TechPark />
-      <City />
-      <Campus />
-      <Arcade />
-      <NPCs />
-      <Pads />
-      <PointerLight />
-      <SpawnPortal />
-      <Dust />
-    </>
-  )
+export function World({ low = false }: { low?: boolean }) {
+  return <><Floor low={low} /><Sky architecture={false} /><BlenderMap />
+    <GameplayPlatforms /><Props /><NPCs /><Pads /><SpawnPortal /><Dust />
+    <PetDrone /><Roomba /><Keys />
+  </>
 }

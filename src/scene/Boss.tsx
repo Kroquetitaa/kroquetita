@@ -1,15 +1,16 @@
+import { BlenderActor } from './BlenderActor'
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import type { Localized } from '../data/career'
-import { talkers } from '../data/folk'
 import { sfx } from '../game/audio'
 import { playerSay } from '../game/events'
 import { body, shake } from '../game/state'
 import { tr } from '../i18n'
 import { BOSS_HP, useGame } from '../store'
-import { world } from '../world/layout'
+import { cityNavigation } from '../game/cityNavigation'
+import { navigateGround, spawnGroundAgent } from '../game/groundNavigation'
 import { Detail } from './Detail'
 import { createNeonMaterial } from './materials/shaders'
 import { Bubble } from './Player'
@@ -27,12 +28,10 @@ import { Bubble } from './Player'
 
 type Vec3 = [number, number, number]
 
-const PLAZA = world.plaza
+const PLAZA = cityNavigation.boss.area
 /** Por dónde puede andar: la plaza, sin acercarse a los extremos del escenario */
-const MIN_X = Math.max(PLAZA.minX, -27)
-const MAX_X = Math.min(PLAZA.maxX, 28)
-/** Donde aterriza (x, z) y alrededor de donde pasea mientras no bajes */
-const HOME: [number, number] = [9, 12.5]
+const MIN_X = PLAZA.minX
+const MAX_X = PLAZA.maxX
 const DROP_FROM = 32
 const DROP_GRAVITY = 42
 /** Segundos entre el aterrizaje y el comienzo de la pelea */
@@ -48,9 +47,8 @@ const SPEED = 2
 /** Lo que acelera por cada vida perdida */
 const RAGE = 0.7
 const PACE_SPEED = 1.3
-const PACE = 3
+const PACE = 1.2
 /** Margen que guarda con los obstáculos: más o menos, medio bicho */
-const GIRTH = 1.1
 
 const DYING = 1.4
 const DEBRIS = 40
@@ -222,166 +220,13 @@ const LEGS = [
   { side: -1, z: -1, spread: -0.45, tripod: 1 },
 ]
 
-// ---------------------------------------------------------------- Por dónde puede andar
-
-/**
- * Sitios que rodea aunque no colisionen (x, z y radio): los taburetes de la
- * mesa de las IA y la gente con la que se habla.
- */
-const KEEP_OUT: Vec3[] = [
-  [world.props.table.center[0], world.props.table.center[2], 3],
-  ...talkers.map((talker): Vec3 => [talker.position[0], talker.position[1], 1.2]),
-]
-
-const inside = (x: number, z: number) => x >= MIN_X && x <= MAX_X && z >= PLAZA.minZ && z <= PLAZA.maxZ
-
-/** ¿Hay algo a ras de suelo en ese punto? (con el margen del bicho) */
-function obstructed(x: number, z: number) {
-  for (const c of world.colliders) {
-    if (c.min[1] > 0.6) continue
-    if (x > c.min[0] - GIRTH && x < c.max[0] + GIRTH && z > c.min[2] - GIRTH && z < c.max[2] + GIRTH) return true
-  }
-  for (const [ox, oz, radius] of KEEP_OUT) {
-    if (Math.hypot(x - ox, z - oz) < radius) return true
-  }
-  return false
-}
-
-/** ¿Cabe el bicho en ese punto? Dentro de la plaza y sin nada delante. */
-const free = (x: number, z: number) => inside(x, z) && !obstructed(x, z)
-
-interface Mover {
-  x: number
-  z: number
-  heading: number
-  /** Lado por el que prefiere rodear los obstáculos (1 o -1) */
-  steer: number
-  /** Rodeando algo: 0 si va de frente; si no, el lado hacia el que se desvió, el rumbo que lleva y cuánto tiempo */
-  follow: number
-  course: number
-  followTime: number
-  /** Ya ha dado media vuelta rodeando esto (para no ir y venir sin fin) */
-  turned: boolean
-  /** Rumbo suavizado: al rodear algo los pasos zigzaguean, y la cabeza no debe */
-  courseX: number
-  courseZ: number
-}
-
-/** Desvíos que prueba al chocar con algo, del más suave al más cerrado */
-const DETOURS = [0.5, 1, 1.57, 2.1, 2.6]
-/** Como mucho, este rato seguido rodeando lo mismo: después prueba por el otro lado */
-const FOLLOW_MAX = 8
-/** Trecho que tiene que ver despejado hacia el destino para dejar de rodear */
-const SIGHT = 3
-
-/**
- * Da un paso hacia el destino girando con suavidad. Si hay algo delante lo
- * rodea pegado a él hasta que vuelve a tener el camino despejado; si el propio
- * destino está ocupado, se acerca lo que puede. Devuelve si se ha movido.
- */
+// ---------------------------------------------------------------- Navigation across the open southern forecourt
+const HOME_AGENT = spawnGroundAgent(cityNavigation.boss, [0, 22.4])
+const HOME: [number, number] = [HOME_AGENT.x, HOME_AGENT.z]
+interface Mover { x: number; z: number; heading: number; tx?: number; tz?: number }
 function advance(s: Mover, tx: number, tz: number, speed: number, dt: number) {
-  // Destino ocupado (el jugador subido a la mesa, pegado a alguien…): vale el
-  // punto libre más cercano, buscando en anillos y empezando por el lado del bicho.
-  if (!free(tx, tz)) {
-    const toward = Math.atan2(s.x - tx, s.z - tz)
-    search: for (let radius = 0.25; radius <= 4; radius += 0.25) {
-      for (let i = 0; i < 16; i++) {
-        // 0, +1, -1, +2, -2… dieciseisavos de vuelta a partir de la dirección del bicho.
-        const angle = toward + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * (Math.PI / 8)
-        const x = tx + Math.sin(angle) * radius
-        const z = tz + Math.cos(angle) * radius
-        if (!free(x, z)) continue
-        tx = x
-        tz = z
-        break search
-      }
-    }
-  }
-  const dx = tx - s.x
-  const dz = tz - s.z
-  const gap = Math.hypot(dx, dz)
-  if (gap < 0.3) {
-    s.follow = 0
-    return false
-  }
-  const aim = Math.atan2(dx, dz)
-  const ax = dx / gap
-  const az = dz / gap
-  // Si por lo que sea ya está metido en algo, sale de frente y sin miramientos.
-  const stuck = !free(s.x, s.z)
-  // De espaldas a donde va avanza despacio: primero se encara.
-  const stride = (angle: number) =>
-    Math.min(gap, speed * (0.4 + 0.6 * Math.max(0, Math.cos(angle - s.heading))) * dt)
-  const clear = (angle: number) => {
-    const step = stride(angle)
-    return free(s.x + Math.sin(angle) * step, s.z + Math.cos(angle) * step)
-  }
-
-  if (s.follow !== 0) {
-    s.followTime += dt
-    // Deja de rodear en cuanto tiene un buen trecho despejado hacia el destino.
-    let open = clear(aim)
-    for (let ahead = 0.25; open && ahead <= Math.min(gap, SIGHT); ahead += 0.25) {
-      open = free(s.x + ax * ahead, s.z + az * ahead)
-    }
-    if (stuck || open) s.follow = 0
-    else if (s.followTime > FOLLOW_MAX) {
-      s.follow = 0
-      s.steer = -s.steer
-    }
-  }
-
-  let angle = aim
-  if (s.follow === 0 && !stuck && !clear(aim)) {
-    // Algo delante: se desvía lo justo, por su lado preferido si da igual.
-    search: for (const turn of DETOURS) {
-      for (const side of [s.steer, -s.steer]) {
-        if (!clear(aim + side * turn)) continue
-        s.follow = side
-        s.steer = side
-        s.course = aim + side * turn
-        s.followTime = 0
-        s.turned = false
-        break search
-      }
-    }
-    if (s.follow === 0) return false
-  }
-  if (s.follow !== 0) {
-    // Pegado al obstáculo: prueba primero girando hacia él y, si no cabe, se va abriendo.
-    let found = false
-    let edge = false
-    for (let k = -4; k <= 12 && !found; k++) {
-      angle = s.course + s.follow * k * 0.3
-      const step = stride(angle)
-      const nx = s.x + Math.sin(angle) * step
-      const nz = s.z + Math.cos(angle) * step
-      if (obstructed(nx, nz)) continue
-      // Por ahí seguiría, pero se acaba la plaza.
-      if (inside(nx, nz)) found = true
-      else edge = true
-    }
-    if (edge && !s.turned) {
-      // Callejón sin salida contra el borde de la plaza: media vuelta y a rodearlo por el otro lado.
-      s.turned = true
-      s.follow = -s.follow
-      s.steer = s.follow
-      s.course += Math.PI
-      s.followTime = 0
-      return true
-    }
-    if (!found) return false
-    s.course = angle
-  }
-
-  const step = stride(angle)
-  s.x += Math.sin(angle) * step
-  s.z += Math.cos(angle) * step
-  const k = 1 - Math.exp(-8 * dt)
-  s.courseX += (Math.sin(angle) - s.courseX) * k
-  s.courseZ += (Math.cos(angle) - s.courseZ) * k
-  s.heading += wrap(Math.atan2(s.courseX, s.courseZ) - s.heading) * (1 - Math.exp(-6 * dt))
-  return true
+  s.tx = tx; s.tz = tz
+  return navigateGround(cityNavigation.boss, s as Required<Mover>, speed, dt).moved
 }
 
 // ---------------------------------------------------------------- El bicho
@@ -513,6 +358,7 @@ function Giant({ onGone }: { onGone: () => void }) {
     const t = clock.elapsedTime
     const now = performance.now()
     const game = useGame.getState()
+    if (game.place !== 'city') return
     const { m, p, q, e, v, s: scale } = scratch
 
     // Vencido (lo pille como lo pille): deja lo que esté haciendo y empieza a hincharse.
@@ -772,6 +618,8 @@ function Giant({ onGone }: { onGone: () => void }) {
     <>
       <group ref={root} position={[HOME[0], DROP_FROM, HOME[1]]}>
         <group ref={squash}>
+<BlenderActor name="boss" joints={{ Eyes: eyes }} fallback={<>
+
           <mesh geometry={SHELL_GEOMETRY} material={SHELL} castShadow />
           <mesh geometry={BODY_GEOMETRY} material={HIDE} castShadow />
           <Detail>
@@ -801,6 +649,8 @@ function Giant({ onGone }: { onGone: () => void }) {
             {/* Las patas se mueven dentro de su malla: sin recorte, que son seis cajitas */}
             <instancedMesh ref={legs} args={[LEG_GEOMETRY, HIDE, LEGS.length]} frustumCulled={false} />
           </Detail>
+
+</>} />
         </group>
       </group>
 

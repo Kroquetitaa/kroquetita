@@ -4,6 +4,8 @@ import { Billboard, Stars, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import fontBold from '@fontsource/poppins/files/poppins-latin-600-normal.woff?url'
 import { profile } from '../data/career'
+import { useGame } from '../store'
+import { isWorldClick } from '../game/worldClick'
 import { BRAIN_SCALE, world } from '../world/layout'
 import { introProgress } from './intro'
 import { createAuroraMaterial, createNodeMaterial, createStreakMaterial, uParty } from './materials/shaders'
@@ -248,7 +250,11 @@ function Brain() {
   })
 
   return (
-    <group ref={group} position={CORE}>
+    <group ref={group} position={CORE} onClick={event => { if (!isWorldClick(event)) return; event.stopPropagation(); useGame.getState().enterBrain() }}>
+      <mesh>
+        <sphereGeometry args={[2.25, 12, 8]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
+      </mesh>
       <lineSegments geometry={lines} frustumCulled={false}>
         <lineBasicMaterial
           vertexColors
@@ -388,14 +394,14 @@ function ShootingStars() {
 }
 
 /** Todo lo que hay por encima y por detrás de los bloques. */
-export function Sky() {
+export function Sky({ architecture = true }: { architecture?: boolean }) {
   return (
     <>
       <Aurora />
       <Stars radius={110} depth={50} count={1800} factor={3.2} saturation={0.4} fade speed={0.7} />
       <ShootingStars />
-      <Brain />
-      <Synapses />
+      {architecture && <Brain />}
+      {architecture && <Synapses />}
     </>
   )
 }

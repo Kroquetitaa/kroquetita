@@ -1,0 +1,1376 @@
+{
+  "zones": [
+    {
+      "id": "plaza",
+      "name": {
+        "es": "Plaza",
+        "en": "Plaza"
+      },
+      "hint": {
+        "es": "La salida: personajes, café y la mesa de las IA",
+        "en": "The start: characters, coffee and the AI table"
+      },
+      "area": {
+        "minX": -29,
+        "maxX": 30,
+        "minZ": 7.4,
+        "maxZ": 17.2
+      },
+      "arrive": [
+        -21.2,
+        9.4
+      ],
+      "color": "#ffd60a"
+    },
+    {
+      "id": "career",
+      "name": {
+        "es": "Trayectoria",
+        "en": "Career"
+      },
+      "hint": {
+        "es": "Once cajas, una por etapa, hasta la cima",
+        "en": "Eleven boxes, one per stage, up to the summit"
+      },
+      "area": {
+        "minX": -17.4,
+        "maxX": 17.4,
+        "minZ": -6.6,
+        "maxZ": 9
+      },
+      "arrive": [
+        0,
+        8.6
+      ],
+      "color": "#ff6a2b"
+    },
+    {
+      "id": "library",
+      "name": {
+        "es": "Biblioteca",
+        "en": "Library"
+      },
+      "hint": {
+        "es": "La formación: ocho libros que se abren",
+        "en": "Education: eight books that open up"
+      },
+      "area": {
+        "minX": -56,
+        "maxX": -33.5,
+        "minZ": -9,
+        "maxZ": 15
+      },
+      "arrive": [
+        -34.4,
+        8.4
+      ],
+      "color": "#c9a063"
+    },
+    {
+      "id": "arcade",
+      "name": {
+        "es": "Sala de romper",
+        "en": "Break room"
+      },
+      "hint": {
+        "es": "Once cosas que se pueden romper",
+        "en": "Eleven things you can break"
+      },
+      "area": {
+        "minX": 34.5,
+        "maxX": 68,
+        "minZ": -9,
+        "maxZ": 13
+      },
+      "arrive": [
+        36.4,
+        6.2
+      ],
+      "color": "#ef4444"
+    },
+    {
+      "id": "lab",
+      "name": {
+        "es": "Sala de conceptos",
+        "en": "Concepts room"
+      },
+      "hint": {
+        "es": "Doce ideas de IA para pisar y entender",
+        "en": "Twelve AI ideas to step on and understand"
+      },
+      "area": {
+        "minX": -21,
+        "maxX": 21,
+        "minZ": 17.2,
+        "maxZ": 56
+      },
+      "arrive": [
+        0,
+        20.6
+      ],
+      "color": "#19e6ff"
+    },
+    {
+      "id": "factory",
+      "name": {
+        "es": "Fábrica de IA",
+        "en": "AI factory"
+      },
+      "hint": {
+        "es": "Entra una pregunta y sale hecha croqueta",
+        "en": "A question goes in, a croquette comes out"
+      },
+      "area": {
+        "minX": 27,
+        "maxX": 67,
+        "minZ": 22,
+        "maxZ": 56
+      },
+      "arrive": [
+        47,
+        20.2
+      ],
+      "color": "#ffb347"
+    },
+    {
+      "id": "hangar",
+      "name": {
+        "es": "Hangar de proyectos",
+        "en": "Project hangar"
+      },
+      "hint": {
+        "es": "Máquinas que se abren y se ponen en marcha",
+        "en": "Machines you can open and switch on"
+      },
+      "area": {
+        "minX": -62,
+        "maxX": -27,
+        "minZ": 22,
+        "maxZ": 56
+      },
+      "arrive": [
+        -44.5,
+        20.2
+      ],
+      "color": "#7dd3fc"
+    },
+    {
+      "id": "team",
+      "name": {
+        "es": "El equipo",
+        "en": "The team"
+      },
+      "hint": {
+        "es": "La gente con la que trabajo",
+        "en": "The people I work with"
+      },
+      "area": {
+        "minX": 15,
+        "maxX": 29.5,
+        "minZ": 17.2,
+        "maxZ": 21.6
+      },
+      "arrive": [
+        21.6,
+        20.3
+      ],
+      "color": "#3df2b0"
+    },
+    {
+      "id": "gym",
+      "name": {
+        "es": "Entrena tu modelo",
+        "en": "Train your model"
+      },
+      "hint": {
+        "es": "Un minijuego de hiperparámetros",
+        "en": "A hyperparameter minigame"
+      },
+      "area": {
+        "minX": -15.5,
+        "maxX": -6.5,
+        "minZ": 17.2,
+        "maxZ": 21.6
+      },
+      "arrive": [
+        -9.5,
+        20.6
+      ],
+      "color": "#a78bfa"
+    }
+  ],
+  "stages": [
+    {
+      "title": "Plexus Tech",
+      "role": "FullStack Developer",
+      "start": "2021-03",
+      "end": "2021-06",
+      "color": "#19e6ff",
+      "part": {
+        "es": "EL ARRANQUE",
+        "en": "THE START"
+      },
+      "discipline": "fullstack",
+      "stack": [
+        "JavaScript",
+        "TypeScript",
+        "React",
+        "Node.js",
+        "Express",
+        "PostgreSQL",
+        "REST",
+        "Docker",
+        "Git",
+        "Jest",
+        "Jira",
+        "Scrum"
+      ],
+      "summary": {
+        "es": "Mis primeros pasos en consultoría: desarrollo full stack en un equipo ágil, del componente de React al endpoint en Node.",
+        "en": "My first steps in consulting: full-stack development in an agile team, from the React component to the Node endpoint."
+      },
+      "highlights": {
+        "es": [
+          "Componentes de React y APIs REST para aplicaciones de cliente",
+          "Pruebas unitarias y revisión de código desde el primer día",
+          "Trabajo en Scrum, con entregas cada dos semanas"
+        ],
+        "en": [
+          "React components and REST APIs for client applications",
+          "Unit tests and code review from day one",
+          "Scrum, shipping every two weeks"
+        ]
+      },
+      "logo": "/logos/plexus.png"
+    },
+    {
+      "title": "Dedeeit",
+      "role": "Frontend Developer",
+      "start": "2021-06",
+      "end": "2022-01",
+      "color": "#3df2b0",
+      "part": {
+        "es": "LAS BASES",
+        "en": "THE FOUNDATIONS"
+      },
+      "discipline": "frontend",
+      "stack": [
+        "React",
+        "Next.js",
+        "TypeScript",
+        "Redux Toolkit",
+        "Tailwind CSS",
+        "Sass",
+        "Storybook",
+        "Figma",
+        "Webpack",
+        "Jest",
+        "Testing Library",
+        "Cypress"
+      ],
+      "summary": {
+        "es": "Frontend a tiempo completo: interfaces rápidas y accesibles con React y Next.js, de la maqueta de Figma a producción.",
+        "en": "Full-time frontend: fast, accessible interfaces with React and Next.js, from the Figma mock-up to production."
+      },
+      "highlights": {
+        "es": [
+          "Sistema de diseño documentado en Storybook",
+          "Renderizado en servidor y mejora de las Core Web Vitals",
+          "Pruebas de extremo a extremo con Cypress"
+        ],
+        "en": [
+          "Design system documented in Storybook",
+          "Server-side rendering and better Core Web Vitals",
+          "End-to-end tests with Cypress"
+        ]
+      },
+      "logo": "/logos/dedeeit.jpg",
+      "logoCrop": [
+        0,
+        0.14,
+        1,
+        0.55
+      ]
+    },
+    {
+      "title": "Emiral",
+      "role": "FullStack Developer",
+      "start": "2022-01",
+      "end": "2022-07",
+      "color": "#ffd60a",
+      "part": {
+        "es": "COGIENDO RITMO",
+        "en": "PICKING UP PACE"
+      },
+      "discipline": "fullstack",
+      "stack": [
+        "TypeScript",
+        "React",
+        "Node.js",
+        "NestJS",
+        "GraphQL",
+        "MongoDB",
+        "Redis",
+        "Docker",
+        "AWS",
+        "GitHub Actions",
+        "Swagger",
+        "Jest"
+      ],
+      "summary": {
+        "es": "Producto de punta a punta: API, base de datos y frontend, con el despliegue automatizado.",
+        "en": "Product end to end: API, database and frontend, with automated deployment."
+      },
+      "highlights": {
+        "es": [
+          "API en GraphQL con NestJS y MongoDB",
+          "Integración y despliegue continuos con GitHub Actions y Docker",
+          "Caché con Redis para acelerar las consultas más pesadas"
+        ],
+        "en": [
+          "GraphQL API with NestJS and MongoDB",
+          "Continuous integration and delivery with GitHub Actions and Docker",
+          "Redis caching to speed up the heaviest queries"
+        ]
+      },
+      "logo": "/logos/emiral.png"
+    },
+    {
+      "title": "Sectorea IT",
+      "role": "Mobile Software Engineer",
+      "start": "2022-10",
+      "end": "2023-05",
+      "color": "#2f7bff",
+      "part": {
+        "es": "APPS MÓVILES",
+        "en": "MOBILE APPS"
+      },
+      "discipline": "mobile",
+      "stack": [
+        "React Native",
+        "TypeScript",
+        "Expo",
+        "Swift",
+        "Kotlin",
+        "Redux Toolkit",
+        "React Query",
+        "Firebase",
+        "Fastlane",
+        "Detox",
+        "App Store Connect",
+        "Google Play"
+      ],
+      "summary": {
+        "es": "Apps móviles multiplataforma con React Native, con módulos nativos cuando hacía falta.",
+        "en": "Cross-platform mobile apps with React Native, with native modules whenever they were needed."
+      },
+      "highlights": {
+        "es": [
+          "Publicación en App Store y Google Play",
+          "Notificaciones push y modo sin conexión",
+          "Módulos nativos en Swift y Kotlin"
+        ],
+        "en": [
+          "Releases on the App Store and Google Play",
+          "Push notifications and offline mode",
+          "Native modules in Swift and Kotlin"
+        ]
+      },
+      "logo": "/logos/sectorea.png"
+    },
+    {
+      "title": "Pepper Spain",
+      "role": "Mobile Software Engineer",
+      "start": "2022-10",
+      "end": "2023-09",
+      "color": "#ff4d6d",
+      "part": {
+        "es": "APPS MÓVILES",
+        "en": "MOBILE APPS"
+      },
+      "discipline": "mobile",
+      "stack": [
+        "React Native",
+        "TypeScript",
+        "Swift",
+        "SwiftUI",
+        "Kotlin",
+        "GraphQL",
+        "Apollo Client",
+        "Reanimated",
+        "Firebase",
+        "Sentry",
+        "Bitrise",
+        "Jest"
+      ],
+      "summary": {
+        "es": "App de consumo: rendimiento, animaciones fluidas y versiones nuevas cada poco tiempo.",
+        "en": "A consumer app: performance, smooth animations and frequent releases."
+      },
+      "highlights": {
+        "es": [
+          "Optimización del arranque y de las listas largas",
+          "Animaciones a 60 fps con Reanimated",
+          "Monitorización con Sentry y entregas automáticas con Bitrise"
+        ],
+        "en": [
+          "Faster start-up and long lists",
+          "60 fps animations with Reanimated",
+          "Monitoring with Sentry and automated releases with Bitrise"
+        ]
+      },
+      "logo": "/logos/pepper.svg"
+    },
+    {
+      "title": "Packar",
+      "role": "Tech Lead",
+      "start": "2022-09",
+      "end": "2024-04",
+      "color": "#ff9f1c",
+      "part": {
+        "es": "PRIMER EQUIPO A CARGO",
+        "en": "FIRST TEAM TO LEAD"
+      },
+      "discipline": "lead",
+      "stack": [
+        "React Native",
+        "TypeScript",
+        "Node.js",
+        "NestJS",
+        "PostgreSQL",
+        "Prisma",
+        "AWS",
+        "Docker",
+        "Terraform",
+        "GitHub Actions",
+        "Stripe",
+        "Sentry"
+      ],
+      "summary": {
+        "es": "Mi primer equipo a cargo: arquitectura, hoja de ruta técnica y entrega de la app y de su backend.",
+        "en": "My first team to lead: architecture, technical roadmap and delivery of the app and its backend."
+      },
+      "highlights": {
+        "es": [
+          "Definición de la arquitectura y de los estándares de código",
+          "Backend e infraestructura como código en AWS",
+          "Mentoría, revisión de código y selección del equipo"
+        ],
+        "en": [
+          "Defined the architecture and the code standards",
+          "Backend and infrastructure as code on AWS",
+          "Mentoring, code review and hiring"
+        ]
+      },
+      "logo": "/logos/packar.png",
+      "logoCrop": [
+        0.06,
+        0.34,
+        0.36,
+        0.67
+      ]
+    },
+    {
+      "title": "Tyris Software",
+      "role": "Frontend Developer & Mobile Software Engineer",
+      "start": "2024-04",
+      "end": "2026-04",
+      "color": "#8b5cf6",
+      "part": {
+        "es": "FRONTEND Y MÓVIL",
+        "en": "FRONTEND AND MOBILE"
+      },
+      "discipline": "frontend",
+      "stack": [
+        "React",
+        "Next.js",
+        "TypeScript",
+        "React Native",
+        "Expo",
+        "Three.js",
+        "React Three Fiber",
+        "Tailwind CSS",
+        "Zustand",
+        "TanStack Query",
+        "Vite",
+        "Playwright",
+        "Storybook"
+      ],
+      "summary": {
+        "es": "Web y móvil a la vez: productos con React y Next.js, apps con React Native y experiencias 3D en el navegador.",
+        "en": "Web and mobile at once: products with React and Next.js, apps with React Native and 3D experiences in the browser."
+      },
+      "highlights": {
+        "es": [
+          "Librería de componentes compartida entre web y móvil",
+          "Experiencias interactivas en 3D con Three.js",
+          "Pruebas de extremo a extremo con Playwright"
+        ],
+        "en": [
+          "Component library shared between web and mobile",
+          "Interactive 3D experiences with Three.js",
+          "End-to-end tests with Playwright"
+        ]
+      },
+      "logo": "/logos/tyris.png"
+    },
+    {
+      "title": "Sportian",
+      "role": "Tech Lead",
+      "start": "2024-04",
+      "end": "2026-04",
+      "color": "#22d3ee",
+      "part": {
+        "es": "LIDERAZGO",
+        "en": "LEADERSHIP"
+      },
+      "discipline": "lead",
+      "stack": [
+        "TypeScript",
+        "React",
+        "Next.js",
+        "Node.js",
+        "NestJS",
+        "Kafka",
+        "PostgreSQL",
+        "Redis",
+        "Kubernetes",
+        "AWS",
+        "Terraform",
+        "Datadog",
+        "GitHub Actions"
+      ],
+      "summary": {
+        "es": "Liderazgo técnico en producto digital para el deporte: equipos, arquitectura y plataformas preparadas para picos de tráfico.",
+        "en": "Technical leadership in digital products for sport: teams, architecture and platforms ready for traffic peaks."
+      },
+      "highlights": {
+        "es": [
+          "Microservicios y arquitectura orientada a eventos con Kafka",
+          "Observabilidad y objetivos de nivel de servicio",
+          "Hoja de ruta técnica y mentoría del equipo"
+        ],
+        "en": [
+          "Microservices and event-driven architecture with Kafka",
+          "Observability and service level objectives",
+          "Technical roadmap and team mentoring"
+        ]
+      },
+      "logo": "/logos/sportian.webp"
+    },
+    {
+      "title": "Izertis",
+      "role": "Blockchain and AI Engineer",
+      "start": "2024-01",
+      "end": "2026-01",
+      "yearOnly": true,
+      "color": "#e8454f",
+      "part": {
+        "es": "BLOCKCHAIN E IA",
+        "en": "BLOCKCHAIN AND AI"
+      },
+      "discipline": "blockchain",
+      "stack": [
+        "Solidity",
+        "Hardhat",
+        "Ethers.js",
+        "Hyperledger Fabric",
+        "IPFS",
+        "Python",
+        "FastAPI",
+        "LangChain",
+        "OpenAI API",
+        "Hugging Face",
+        "PyTorch",
+        "Docker",
+        "Azure"
+      ],
+      "summary": {
+        "es": "Donde se cruzan blockchain e IA: contratos inteligentes, identidad digital y los primeros sistemas con LLM.",
+        "en": "Where blockchain meets AI: smart contracts, digital identity and the first LLM-based systems."
+      },
+      "highlights": {
+        "es": [
+          "Contratos inteligentes en Solidity, con sus pruebas y auditorías",
+          "Trazabilidad e identidad digital sobre redes permisionadas",
+          "Prototipos de RAG y asistentes con modelos de lenguaje"
+        ],
+        "en": [
+          "Smart contracts in Solidity, with their tests and audits",
+          "Traceability and digital identity on permissioned networks",
+          "RAG prototypes and assistants built on language models"
+        ]
+      },
+      "logo": "/logos/izertis.jpg"
+    },
+    {
+      "title": "Santander",
+      "role": "Data Solutions AI Architecture Senior Associate",
+      "start": "2026-01",
+      "end": "2026-06",
+      "yearOnly": true,
+      "color": "#ec0000",
+      "part": {
+        "es": "DATOS E IA A ESCALA",
+        "en": "DATA AND AI AT SCALE"
+      },
+      "discipline": "data",
+      "stack": [
+        "Python",
+        "SQL",
+        "Apache Spark",
+        "Databricks",
+        "Delta Lake",
+        "Kafka",
+        "Airflow",
+        "dbt",
+        "Snowflake",
+        "AWS",
+        "Terraform",
+        "MLflow",
+        "Power BI"
+      ],
+      "summary": {
+        "es": "Arquitectura de datos e IA a escala bancaria: plataformas, gobierno del dato y pipelines fiables que alimentan los modelos.",
+        "en": "Data and AI architecture at banking scale: platforms, data governance and reliable pipelines that feed the models."
+      },
+      "highlights": {
+        "es": [
+          "Diseño de arquitecturas lakehouse preparadas para IA",
+          "Pipelines por lotes y en tiempo real",
+          "Gobierno, calidad y linaje del dato"
+        ],
+        "en": [
+          "Lakehouse architectures designed to be AI-ready",
+          "Batch and real-time pipelines",
+          "Data governance, quality and lineage"
+        ]
+      },
+      "logo": "/logos/santander.png"
+    },
+    {
+      "title": "TheAIBusiness",
+      "role": "Tech Lead AI Engineer",
+      "start": "2026-06",
+      "yearOnly": true,
+      "color": "#ff6a2b",
+      "part": {
+        "es": "INTELIGENCIA ARTIFICIAL",
+        "en": "ARTIFICIAL INTELLIGENCE"
+      },
+      "discipline": "ai",
+      "stack": [
+        "Python",
+        "PyTorch",
+        "LangChain",
+        "LangGraph",
+        "Claude API",
+        "OpenAI API",
+        "MCP",
+        "RAG",
+        "pgvector",
+        "FastAPI",
+        "Hugging Face",
+        "vLLM",
+        "Docker",
+        "Kubernetes"
+      ],
+      "summary": {
+        "es": "Lidero el equipo que lleva la IA a producción: agentes, RAG y evaluación de modelos.",
+        "en": "I lead the team that takes AI to production: agents, RAG and model evaluation."
+      },
+      "highlights": {
+        "es": [
+          "Sistemas multiagente con herramientas propias (MCP)",
+          "RAG con evaluación continua y barreras de seguridad",
+          "Ajuste fino y despliegue de modelos abiertos"
+        ],
+        "en": [
+          "Multi-agent systems with their own tools (MCP)",
+          "RAG with continuous evaluation and guardrails",
+          "Fine-tuning and serving of open models"
+        ]
+      },
+      "logo": "/logos/theaibusiness.png"
+    }
+  ],
+  "profile": {
+    "brand": "Kroquetita",
+    "name": "Sergio Fuentes",
+    "headline": [
+      "Head of AI /",
+      "VP of AI and Software Engineering"
+    ],
+    "intro": {
+      "es": [
+        "Más de 5 años construyendo producto: ",
+        {
+          "strong": "frontend"
+        },
+        ", ",
+        {
+          "strong": "aplicaciones móviles"
+        },
+        ", ",
+        {
+          "strong": "backend"
+        },
+        ", ",
+        {
+          "strong": "arquitectura de datos"
+        },
+        ", ",
+        {
+          "strong": "blockchain"
+        },
+        " e ",
+        {
+          "strong": "ingeniería de IA"
+        },
+        "."
+      ],
+      "en": [
+        "Over 5 years building product: ",
+        {
+          "strong": "frontend"
+        },
+        ", ",
+        {
+          "strong": "mobile apps"
+        },
+        ", ",
+        {
+          "strong": "backend"
+        },
+        ", ",
+        {
+          "strong": "data architecture"
+        },
+        ", ",
+        {
+          "strong": "blockchain"
+        },
+        " and ",
+        {
+          "strong": "AI engineering"
+        },
+        "."
+      ]
+    },
+    "links": [
+      {
+        "label": "LinkedIn",
+        "href": "https://www.linkedin.com/in/sergiofuentes566/"
+      }
+    ],
+    "skills": [
+      "IA",
+      "LLM",
+      "NLP",
+      "Data Science",
+      "Python",
+      "Node",
+      "React",
+      "React Native",
+      "Next.js",
+      "Three.js",
+      "Blockchain",
+      "Swift"
+    ],
+    "coinImage": "/avatar.png"
+  },
+  "skills": [
+    "IA",
+    "LLM",
+    "NLP",
+    "Data Science",
+    "Python",
+    "Node",
+    "React",
+    "React Native",
+    "Next.js",
+    "Three.js",
+    "Blockchain",
+    "Swift"
+  ],
+  "education": [
+    {
+      "school": "INGLAN",
+      "title": {
+        "es": "Formación profesional en electrónica y equipos eléctricos",
+        "en": "Vocational training in electronics and electrical equipment"
+      },
+      "period": {
+        "es": "Jul 2015 — Ene 2016",
+        "en": "Jul 2015 — Jan 2016"
+      },
+      "kind": {
+        "es": "FORMACIÓN PROFESIONAL",
+        "en": "VOCATIONAL TRAINING"
+      },
+      "learned": {
+        "es": [
+          "Electrónica analógica y digital",
+          "Montaje y reparación de equipos",
+          "Medir antes de tocar"
+        ],
+        "en": [
+          "Analog and digital electronics",
+          "Assembling and repairing equipment",
+          "Measure before you touch"
+        ]
+      },
+      "appliedAt": "Plexus Tech",
+      "color": "#ff9f1c"
+    },
+    {
+      "school": "Andel Formación Profesional",
+      "title": {
+        "es": "Grado Medio en Microrredes Informáticas",
+        "en": "Intermediate degree in Computer Micro-networks"
+      },
+      "period": {
+        "es": "2017 — 2019",
+        "en": "2017 — 2019"
+      },
+      "kind": {
+        "es": "CICLO DE GRADO MEDIO",
+        "en": "INTERMEDIATE VOCATIONAL DEGREE"
+      },
+      "learned": {
+        "es": [
+          "Redes locales y cableado",
+          "Montaje y mantenimiento de equipos",
+          "Sistemas operativos y servidores"
+        ],
+        "en": [
+          "Local networks and cabling",
+          "Building and maintaining computers",
+          "Operating systems and servers"
+        ]
+      },
+      "appliedAt": "Plexus Tech",
+      "color": "#2f7bff"
+    },
+    {
+      "school": "Entelgy",
+      "title": {
+        "es": "Certificado en Redes WAN (CEX)",
+        "en": "WAN Networks Certificate (CEX)"
+      },
+      "period": {
+        "es": "Jun 2019 — Jul 2019",
+        "en": "Jun 2019 — Jul 2019"
+      },
+      "kind": {
+        "es": "CERTIFICADO",
+        "en": "CERTIFICATE"
+      },
+      "learned": {
+        "es": [
+          "Redes WAN y enrutamiento",
+          "Configuración de routers",
+          "Diagnóstico de incidencias de red"
+        ],
+        "en": [
+          "WAN networks and routing",
+          "Router configuration",
+          "Troubleshooting network incidents"
+        ]
+      },
+      "appliedAt": "Plexus Tech",
+      "color": "#22d3ee"
+    },
+    {
+      "school": "Colegio Retamar",
+      "title": {
+        "es": "Grado Superior en Desarrollo de Aplicaciones Multiplataforma",
+        "en": "Higher degree in Cross-Platform Application Development"
+      },
+      "period": {
+        "es": "2019 — 2021",
+        "en": "2019 — 2021"
+      },
+      "kind": {
+        "es": "CICLO DE GRADO SUPERIOR",
+        "en": "HIGHER VOCATIONAL DEGREE"
+      },
+      "learned": {
+        "es": [
+          "Java con Android Studio y JavaFX",
+          "Angular, PHP y bases de datos",
+          "Python"
+        ],
+        "en": [
+          "Java with Android Studio and JavaFX",
+          "Angular, PHP and databases",
+          "Python"
+        ]
+      },
+      "appliedAt": "Plexus Tech",
+      "color": "#3df2b0"
+    },
+    {
+      "school": "CES Juan Pablo II",
+      "title": {
+        "es": "Grado Superior en Gestión Web y Multimedia",
+        "en": "Higher degree in Web and Multimedia Management"
+      },
+      "period": {
+        "es": "2021 — 2022",
+        "en": "2021 — 2022"
+      },
+      "kind": {
+        "es": "FP DE GRADO SUPERIOR",
+        "en": "HIGHER VOCATIONAL DEGREE"
+      },
+      "learned": {
+        "es": [
+          "Desarrollo y gestión de sitios web",
+          "Contenido multimedia",
+          "Publicación y mantenimiento web"
+        ],
+        "en": [
+          "Building and managing websites",
+          "Multimedia content",
+          "Publishing and maintaining the web"
+        ]
+      },
+      "appliedAt": "Dedeeit",
+      "color": "#ffd60a"
+    },
+    {
+      "school": "Campus Emiral",
+      "title": {
+        "es": "Campus de desarrollo con Sage X3",
+        "en": "Sage X3 development campus"
+      },
+      "period": {
+        "es": "Ene 2022 — Feb 2022",
+        "en": "Jan 2022 — Feb 2022"
+      },
+      "kind": {
+        "es": "CAMPUS",
+        "en": "CAMPUS"
+      },
+      "learned": {
+        "es": [
+          "Desarrollo de aplicaciones con Sage X3",
+          "Procesos de negocio en un ERP",
+          "Trabajo con profesionales del sector"
+        ],
+        "en": [
+          "Application development with Sage X3",
+          "Business processes in an ERP",
+          "Working with industry professionals"
+        ]
+      },
+      "appliedAt": "Emiral",
+      "color": "#ff4d6d"
+    },
+    {
+      "school": "NEOLAND",
+      "title": {
+        "es": "Bootcamp Full Stack Developer",
+        "en": "Full Stack Developer bootcamp"
+      },
+      "period": {
+        "es": "Jun 2022 — Actualidad",
+        "en": "Jun 2022 — Present"
+      },
+      "kind": {
+        "es": "BOOTCAMP",
+        "en": "BOOTCAMP"
+      },
+      "learned": {
+        "es": [
+          "JavaScript de punta a punta",
+          "Frontend y backend en un mismo proyecto",
+          "Trabajo en equipo con Git"
+        ],
+        "en": [
+          "JavaScript end to end",
+          "Frontend and backend in one project",
+          "Team work with Git"
+        ]
+      },
+      "appliedAt": "Sectorea IT",
+      "color": "#8b5cf6"
+    },
+    {
+      "school": "Universidad Europea",
+      "title": {
+        "es": "Ingeniería en Inteligencia Artificial (Computer Science)",
+        "en": "Engineering degree in Artificial Intelligence (Computer Science)"
+      },
+      "period": {
+        "es": "Sep 2025 — Jul 2029",
+        "en": "Sep 2025 — Jul 2029"
+      },
+      "kind": {
+        "es": "GRADO UNIVERSITARIO · EN CURSO",
+        "en": "UNIVERSITY DEGREE · IN PROGRESS"
+      },
+      "learned": {
+        "es": [
+          "Fundamentos de inteligencia artificial",
+          "Matemáticas y algoritmia",
+          "Aprendizaje automático"
+        ],
+        "en": [
+          "Foundations of artificial intelligence",
+          "Mathematics and algorithms",
+          "Machine learning"
+        ]
+      },
+      "appliedAt": "TheAIBusiness",
+      "color": "#ff6a2b",
+      "ongoing": true
+    }
+  ],
+  "concepts": [
+    {
+      "id": "neural",
+      "title": {
+        "es": "Red neuronal",
+        "en": "Neural network"
+      },
+      "tag": {
+        "es": "APRENDIZAJE PROFUNDO",
+        "en": "DEEP LEARNING"
+      },
+      "explain": {
+        "es": "Capas de neuronas que se pasan señales: cada conexión tiene un peso, y aprender es ajustar esos pesos hasta acertar.",
+        "en": "Layers of neurons passing signals along: every connection has a weight, and learning means tuning those weights until it gets things right."
+      },
+      "action": {
+        "es": "Písala y verás una entrada cruzar la red hasta dar una respuesta.",
+        "en": "Step on it and watch an input travel through the network to an answer."
+      },
+      "color": "#19e6ff"
+    },
+    {
+      "id": "graph",
+      "title": {
+        "es": "Grafo de conocimiento",
+        "en": "Knowledge graph"
+      },
+      "tag": {
+        "es": "DATOS CONECTADOS",
+        "en": "CONNECTED DATA"
+      },
+      "explain": {
+        "es": "Hechos guardados como nodos y relaciones: «Sergio — trabaja en → IA». Permite responder preguntas siguiendo caminos, no solo buscando palabras.",
+        "en": "Facts stored as nodes and relations: \"Sergio — works on → AI\". It answers questions by following paths, not just matching words."
+      },
+      "action": {
+        "es": "Písala y la consulta recorre el grafo de nodo en nodo.",
+        "en": "Step on it and the query hops across the graph, node by node."
+      },
+      "color": "#3df2b0"
+    },
+    {
+      "id": "vectors",
+      "title": {
+        "es": "Base de datos vectorial",
+        "en": "Vector database"
+      },
+      "tag": {
+        "es": "BÚSQUEDA POR SIGNIFICADO",
+        "en": "SEARCH BY MEANING"
+      },
+      "explain": {
+        "es": "Cada texto se convierte en un punto del espacio: los que significan algo parecido quedan cerca. Buscar es encontrar los vecinos más próximos.",
+        "en": "Every text becomes a point in space: things that mean something similar end up close. Searching is finding the nearest neighbours."
+      },
+      "action": {
+        "es": "Muévete por la plataforma: tú eres la consulta y se iluminan tus vecinos.",
+        "en": "Walk around the pad: you are the query, and your nearest neighbours light up."
+      },
+      "color": "#8b5cf6"
+    },
+    {
+      "id": "attention",
+      "title": {
+        "es": "Atención (Transformers)",
+        "en": "Attention (Transformers)"
+      },
+      "tag": {
+        "es": "EL MOTOR DE LOS LLM",
+        "en": "THE ENGINE OF LLMS"
+      },
+      "explain": {
+        "es": "Para entender una palabra, el modelo mira a todas las demás y decide cuáles importan. Ese «a qué presto atención» es lo que hizo posibles los LLM.",
+        "en": "To understand one word, the model looks at all the others and decides which ones matter. That \"what do I attend to\" is what made LLMs possible."
+      },
+      "action": {
+        "es": "Camina a lo largo de la frase: la palabra que tienes delante reparte su atención.",
+        "en": "Walk along the sentence: the word in front of you spreads its attention."
+      },
+      "color": "#ff4d8d"
+    },
+    {
+      "id": "rag",
+      "title": {
+        "es": "RAG",
+        "en": "RAG"
+      },
+      "tag": {
+        "es": "GENERACIÓN CON RECUPERACIÓN",
+        "en": "RETRIEVAL-AUGMENTED GENERATION"
+      },
+      "explain": {
+        "es": "Antes de responder, el modelo busca documentos relevantes y contesta apoyándose en ellos. Menos inventar y más citar.",
+        "en": "Before answering, the model looks up relevant documents and answers based on them. Less making things up, more citing."
+      },
+      "action": {
+        "es": "Písala y sigue la pregunta: buscador, documentos, modelo y respuesta.",
+        "en": "Step on it and follow the question: retriever, documents, model and answer."
+      },
+      "color": "#ffd60a"
+    },
+    {
+      "id": "agents",
+      "title": {
+        "es": "Agentes con LangGraph",
+        "en": "Agents with LangGraph"
+      },
+      "tag": {
+        "es": "IA QUE ACTÚA",
+        "en": "AI THAT ACTS"
+      },
+      "explain": {
+        "es": "Un agente es un modelo dentro de un bucle: planifica, usa una herramienta, mira el resultado y decide el siguiente paso. LangGraph dibuja ese bucle como un grafo de estados.",
+        "en": "An agent is a model inside a loop: it plans, uses a tool, looks at the result and decides the next step. LangGraph draws that loop as a state graph."
+      },
+      "action": {
+        "es": "Písala y lanza una ejecución: verás al agente dar vueltas hasta terminar.",
+        "en": "Step on it to start a run: watch the agent loop until it is done."
+      },
+      "color": "#ff9f1c"
+    },
+    {
+      "id": "descent",
+      "title": {
+        "es": "Descenso del gradiente",
+        "en": "Gradient descent"
+      },
+      "tag": {
+        "es": "CÓMO APRENDE UN MODELO",
+        "en": "HOW A MODEL LEARNS"
+      },
+      "explain": {
+        "es": "El error del modelo es un paisaje con montañas y valles. Entrenar es bajar cuesta abajo, paso a paso, hasta el valle más profundo que se encuentre.",
+        "en": "A model's error is a landscape of hills and valleys. Training means walking downhill, step by step, to the deepest valley it can find."
+      },
+      "action": {
+        "es": "Písala y suelta una bola: rodará ladera abajo hasta un mínimo.",
+        "en": "Step on it and drop a ball: it rolls downhill to a minimum."
+      },
+      "color": "#2f7bff"
+    },
+    {
+      "id": "diffusion",
+      "title": {
+        "es": "Modelos de difusión",
+        "en": "Diffusion models"
+      },
+      "tag": {
+        "es": "DEL RUIDO A LA IMAGEN",
+        "en": "FROM NOISE TO IMAGE"
+      },
+      "explain": {
+        "es": "Se entrena a un modelo para quitar ruido poco a poco. Empezando por ruido puro y limpiando paso a paso, acaba apareciendo una imagen nueva.",
+        "en": "A model is trained to remove noise a little at a time. Start from pure noise, clean it step by step, and a brand-new image appears."
+      },
+      "action": {
+        "es": "Písala y verás el ruido ordenarse hasta formar un dibujo.",
+        "en": "Step on it and watch the noise settle into a picture."
+      },
+      "color": "#e879f9"
+    },
+    {
+      "id": "mcp",
+      "title": {
+        "es": "MCP",
+        "en": "MCP"
+      },
+      "tag": {
+        "es": "EL ENCHUFE DE LA IA",
+        "en": "THE PLUG FOR AI"
+      },
+      "explain": {
+        "es": "Model Context Protocol: un estándar para conectar un modelo con herramientas y datos (ficheros, bases de datos, APIs) sin escribir una integración distinta para cada uno.",
+        "en": "Model Context Protocol: a standard for connecting a model to tools and data (files, databases, APIs) without writing a different integration for each one."
+      },
+      "action": {
+        "es": "Písala y las herramientas se enchufan al modelo una a una.",
+        "en": "Step on it and the tools plug into the model one by one."
+      },
+      "color": "#a3e635"
+    },
+    {
+      "id": "multiagent",
+      "title": {
+        "es": "Sistemas multiagente",
+        "en": "Multi-agent systems"
+      },
+      "tag": {
+        "es": "UN EQUIPO DE IAS",
+        "en": "A TEAM OF AIS"
+      },
+      "explain": {
+        "es": "Un orquestador reparte el trabajo entre agentes especializados, que trabajan en paralelo y devuelven su parte. Como un equipo, pero sin reuniones.",
+        "en": "An orchestrator splits the work between specialised agents, which work in parallel and hand back their part. Like a team, minus the meetings."
+      },
+      "action": {
+        "es": "Písala y el orquestador reparte una tarea entre sus agentes.",
+        "en": "Step on it and the orchestrator hands a task out to its agents."
+      },
+      "color": "#ff6a2b"
+    },
+    {
+      "id": "rl",
+      "title": {
+        "es": "Aprendizaje por refuerzo",
+        "en": "Reinforcement learning"
+      },
+      "tag": {
+        "es": "APRENDER A BASE DE PREMIOS",
+        "en": "LEARNING FROM REWARDS"
+      },
+      "explain": {
+        "es": "Un agente prueba acciones, recibe premios o castigos y se va quedando con lo que funciona. Así se aprende a jugar, a conducir o a mover un robot.",
+        "en": "An agent tries actions, gets rewards or penalties and keeps what works. That is how machines learn to play, to drive or to move a robot."
+      },
+      "action": {
+        "es": "Písala y el agente explora el tablero: cada intento encuentra un camino mejor.",
+        "en": "Step on it and the agent explores the board: every attempt finds a better path."
+      },
+      "color": "#ef4444"
+    },
+    {
+      "id": "lora",
+      "title": {
+        "es": "Fine-tuning con LoRA",
+        "en": "Fine-tuning with LoRA"
+      },
+      "tag": {
+        "es": "ESPECIALIZAR UN MODELO",
+        "en": "SPECIALISING A MODEL"
+      },
+      "explain": {
+        "es": "En vez de reentrenar un modelo entero, se le añaden unas piezas pequeñas que se entrenan aparte. El modelo grande queda congelado y aprende una tarea nueva por muy poco.",
+        "en": "Rather than retraining a whole model, you add a few small pieces and train only those. The big model stays frozen and learns a new task for very little."
+      },
+      "action": {
+        "es": "Písala y verás encajar los adaptadores en el modelo congelado.",
+        "en": "Step on it and watch the adapters slot into the frozen model."
+      },
+      "color": "#93c5fd"
+    }
+  ],
+  "demos": [
+    {
+      "id": "load",
+      "title": {
+        "es": "Arquitectura bajo carga",
+        "en": "Architecture under load"
+      },
+      "tag": {
+        "es": "BACKEND QUE AGUANTA",
+        "en": "A BACKEND THAT HOLDS"
+      },
+      "summary": {
+        "es": "Sube el tráfico y mira qué pasa con las colas, los tiempos de respuesta y los errores.",
+        "en": "Turn the traffic up and watch what happens to queues, response times and errors."
+      },
+      "before": {
+        "es": "Un solo servidor, sin caché",
+        "en": "One server, no cache"
+      },
+      "after": {
+        "es": "Caché, cola y autoescalado",
+        "en": "Cache, queue and autoscaling"
+      },
+      "skills": [
+        "Node.js",
+        "AWS",
+        "Docker",
+        "PostgreSQL",
+        "Redis"
+      ],
+      "concepts": [],
+      "color": "#38bdf8"
+    },
+    {
+      "id": "agents",
+      "title": {
+        "es": "Equipo de agentes",
+        "en": "A team of agents"
+      },
+      "tag": {
+        "es": "IA QUE SE REPARTE EL TRABAJO",
+        "en": "AI THAT SHARES THE WORK"
+      },
+      "summary": {
+        "es": "La misma tarea hecha por un agente solo o por un orquestador con especialistas y un revisor.",
+        "en": "The same task done by a single agent or by an orchestrator with specialists and a reviewer."
+      },
+      "before": {
+        "es": "Un agente lo hace todo en serie",
+        "en": "One agent does it all in sequence"
+      },
+      "after": {
+        "es": "Orquestador, especialistas en paralelo y revisor",
+        "en": "Orchestrator, parallel specialists and a reviewer"
+      },
+      "skills": [
+        "LangGraph",
+        "LangChain",
+        "Python",
+        "LLM"
+      ],
+      "concepts": [
+        "agents",
+        "multiagent",
+        "mcp"
+      ],
+      "color": "#ff6a2b"
+    },
+    {
+      "id": "data",
+      "title": {
+        "es": "Datos con contrato",
+        "en": "Data with a contract"
+      },
+      "tag": {
+        "es": "DATOS DE LOS QUE FIARSE",
+        "en": "DATA YOU CAN TRUST"
+      },
+      "summary": {
+        "es": "Un flujo de datos con registros defectuosos: sin control llegan al final; con validación y trazabilidad, no.",
+        "en": "A data pipeline with faulty records: unchecked they reach the end; with validation and lineage they do not."
+      },
+      "before": {
+        "es": "Sin validar: lo que entra, sale",
+        "en": "Unchecked: what goes in comes out"
+      },
+      "after": {
+        "es": "Contratos de datos, cuarentena y linaje",
+        "en": "Data contracts, quarantine and lineage"
+      },
+      "skills": [
+        "Python",
+        "SQL",
+        "ETL",
+        "Blockchain"
+      ],
+      "concepts": [
+        "graph",
+        "vectors"
+      ],
+      "color": "#a3e635"
+    }
+  ]
+}

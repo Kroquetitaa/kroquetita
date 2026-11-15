@@ -2,11 +2,12 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { sfx } from '../game/audio'
-import { shake } from '../game/state'
+import { body, shake } from '../game/state'
 import { useGame } from '../store'
 import { world } from '../world/layout'
 import { introProgress } from './intro'
 import { uTime } from './materials/shaders'
+import { atmosphere } from './atmosphere'
 
 /**
  * Cielo vivo: un ciclo de noche y amanecer (sale un sol de neón tras las
@@ -15,14 +16,15 @@ import { uTime } from './materials/shaders'
  */
 
 /** Duración del ciclo completo, en segundos */
-const CYCLE = 150
+const CYCLE = 240
 /** El ciclo arranca poco antes del amanecer, para que se vea pronto */
-const START = 0.36
+const START = 0.26
 const RAIN_HEIGHT = 34
 const STREAKS = 900
 
-const NIGHT = new THREE.Color('#020203')
-const DAWN = new THREE.Color('#150a1c')
+const NIGHT = new THREE.Color('#152239')
+const DAY = new THREE.Color('#829eb5')
+const DAWN = new THREE.Color('#704a66')
 const STORM = new THREE.Color('#0d0406')
 const scratch = new THREE.Color()
 
@@ -63,15 +65,15 @@ function createSkyMaterial() {
         // Sol: sube con el día; rayas horizontales que se ensanchan hacia abajo.
         vec2 c = vec2(-0.03, mix(-0.2, 0.09, uDay));
         float d = length(p - c);
-        float disc = smoothstep(0.13, 0.126, d);
-        float y = (p.y - c.y) / 0.13;
+        float disc = smoothstep(0.045, 0.043, d);
+        float y = (p.y - c.y) / 0.045;
         float gap = clamp(0.15 - y * 0.5, 0.0, 0.7);
         float stripes = step(gap, fract(y * 6.0 - uTime * 0.1));
         float cut = mix(1.0, stripes, step(y, 0.2));
         vec3 sun = mix(vec3(1.0, 0.16, 0.45), vec3(1.0, 0.62, 0.12), clamp(y * 0.5 + 0.5, 0.0, 1.0));
         col += sun * disc * cut * step(0.0, p.y) * uDay * 0.62;
         // Halo alrededor del sol.
-        col += vec3(1.0, 0.45, 0.3) * exp(-d * 7.0) * 0.3 * uDay * step(-0.02, p.y);
+        col += vec3(1.0, 0.45, 0.3) * exp(-d * 16.0) * 0.3 * uDay * step(-0.02, p.y);
 
         // Con tormenta el cielo se apaga y se enrojece un poco.
         col = mix(col, vec3(0.25, 0.02, 0.02) * band, uStorm * 0.8);
@@ -174,7 +176,7 @@ export function Weather() {
   const flash = useRef<THREE.AmbientLight>(null)
   const bolt = useRef<THREE.Line>(null)
   const rainMesh = useRef<THREE.LineSegments>(null)
-  const state = useRef({ day: 0, rain: 0, storm: 0, flash: 0, nextBolt: 0 })
+  const state = useRef({ day: 0, golden: 0, rain: 0, storm: 0, flash: 0, nextBolt: 0 })
   const line = useMemo(() => new THREE.Line(boltGeometry, boltMaterial), [boltGeometry, boltMaterial])
 
   useFrame(({ clock, scene }, delta) => {
@@ -184,35 +186,46 @@ export function Weather() {
     const phase = (t / CYCLE + START) % 1
     const k = 1 - Math.exp(-0.9 * delta)
 
-    // Hora: de noche casi todo el ciclo, con un amanecer largo en medio.
-    const autoDay = smooth(0.42, 0.56, phase) * (1 - smooth(0.74, 0.9, phase))
+    const autoDay = smooth(0.14, 0.35, phase) * (1 - smooth(0.62, 0.84, phase))
+    const autoGolden = Math.sin(autoDay * Math.PI) ** 2
     const stormy = game.weather === 'storm' || (game.weather === 'auto' && game.crash !== null)
-    const day = game.daytime === 'dawn' ? 1 : game.daytime === 'night' ? 0 : autoDay
+    const golden = game.daytime === 'dawn' || game.daytime === 'sunset'
+    const day = golden ? 0.52 : game.daytime === 'day' ? 1 : game.daytime === 'night' ? 0 : autoDay
+    const warmth = golden ? 1 : game.daytime === 'auto' ? autoGolden : 0
     // Lluvia: un chaparrón de noche en cada ciclo, o la que mande el terminal.
     const autoRain = smooth(0.02, 0.08, phase) * (1 - smooth(0.22, 0.3, phase))
     const raining = stormy ? 1 : game.weather === 'rain' ? 1 : game.weather === 'clear' ? 0 : autoRain
 
     const appear = introProgress(3.5, 2)
     s.day += (day * (stormy ? 0.25 : 1) * appear - s.day) * k
+    s.golden += (warmth * appear - s.golden) * k
     s.rain += (raining * appear - s.rain) * (1 - Math.exp(-1.6 * delta))
     s.storm += ((stormy ? 1 : 0) - s.storm) * (1 - Math.exp(-2.5 * delta))
 
-    sky.uniforms.uDay.value = s.day
+    sky.uniforms.uDay.value = s.golden * 0.9 + s.day * 0.1
     uDay.value = s.day
+    atmosphere.day = s.day
+    atmosphere.golden = s.golden
+    atmosphere.wet = s.rain
     sky.uniforms.uStorm.value = s.storm
     rain.material.uniforms.uRain.value = s.rain
     rain.material.uniforms.uStorm.value = s.storm
-    if (rainMesh.current) rainMesh.current.visible = s.rain > 0.01
+    if (rainMesh.current) {
+      rainMesh.current.visible = s.rain > 0.01
+      rainMesh.current.position.set(game.mode === 'play' ? body.pos[0] : 0, 0, game.mode === 'play' ? body.pos[2] - 8 : 0)
+    }
 
     // El fondo y la niebla se tiñen con la hora (sin dejar de ser oscuros: manda el neón).
-    scratch.copy(NIGHT).lerp(DAWN, s.day).lerp(STORM, s.storm * 0.8)
+    scratch.copy(NIGHT).lerp(DAY, s.day).lerp(DAWN, s.golden * 0.72).lerp(STORM, s.storm * 0.8)
+    if (game.place === 'brain') scratch.set('#080d22')
     if (scene.background instanceof THREE.Color) scene.background.copy(scratch)
     if (scene.fog) scene.fog.color.copy(scratch)
-    if (dawn.current) dawn.current.intensity = s.day * 1.1
+    if (dawn.current) dawn.current.intensity = s.golden * 0.3
+    scene.environmentIntensity = 0.65 + s.day * 0.55
 
     // Rayos: un fogonazo, el trazo en zigzag y el trueno un instante después.
     s.flash *= Math.exp(-7 * delta)
-    if (s.storm > 0.6 && t > s.nextBolt) {
+    if (s.storm > 0.6 && t > s.nextBolt && !atmosphere.reducedMotion) {
       s.nextBolt = t + 1.1 + Math.random() * 2.6
       s.flash = 1
       shake.value = Math.max(shake.value, 0.12)
@@ -236,12 +249,12 @@ export function Weather() {
     if (flash.current) flash.current.intensity = s.flash * 1.6
     boltMaterial.opacity = Math.min(1, s.flash * 1.6)
     if (bolt.current) bolt.current.visible = s.flash > 0.08
-  })
+  }, -2)
 
   return (
     <>
-      <mesh position={[-6, 34, -96]} material={sky} frustumCulled={false}>
-        <planeGeometry args={[340, 130]} />
+      <mesh position={[0, 300, -200]} material={sky} frustumCulled={false}>
+        <planeGeometry args={[2000, 1200]} />
       </mesh>
       <lineSegments ref={rainMesh} geometry={rain.geometry} material={rain.material} frustumCulled={false} visible={false} />
       <primitive ref={bolt} object={line} frustumCulled={false} visible={false} />

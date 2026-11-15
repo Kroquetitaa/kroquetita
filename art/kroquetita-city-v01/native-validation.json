@@ -1,0 +1,96 @@
+{
+  "reference": "art/kroquetita-city-v01/kroquetita-city.blend",
+  "restFrame": 150,
+  "sameCamera": true,
+  "bridge": {
+    "name": "Brain_bridge",
+    "width": 1.9,
+    "start": [
+      0,
+      0,
+      -12.0000004
+    ],
+    "end": [
+      0,
+      4.5000002,
+      -19
+    ],
+    "min": [
+      -0.95,
+      -0.1659033,
+      -19.0998105
+    ],
+    "max": [
+      0.95,
+      4.4808442,
+      -12.0191566
+    ],
+    "center": [
+      0,
+      2.1574705,
+      -15.5594835
+    ],
+    "size": [
+      1.9,
+      4.6467475,
+      7.0806539
+    ]
+  },
+  "core": {
+    "lift": 2.7,
+    "focus": [
+      0,
+      10.72,
+      -11.15
+    ],
+    "deckY": 8.73,
+    "plaqueY": 9.35
+  },
+  "districts": {
+    "transport": {
+      "sameStaticGeometry": true,
+      "sameAssembly": true,
+      "exportBoundsError": 0.003817
+    },
+    "plaza": {
+      "sameStaticGeometry": true,
+      "sameAssembly": true,
+      "exportBoundsError": 3e-7
+    },
+    "career": {
+      "sameStaticGeometry": true,
+      "sameAssembly": true,
+      "exportBoundsError": 5e-7
+    },
+    "library": {
+      "sameStaticGeometry": true,
+      "sameAssembly": true,
+      "exportBoundsError": 5e-7
+    },
+    "bugs": {
+      "sameStaticGeometry": true,
+      "sameAssembly": true,
+      "exportBoundsError": 5e-7
+    },
+    "hangar": {
+      "sameStaticGeometry": true,
+      "sameAssembly": true,
+      "exportBoundsError": 0.0023339
+    },
+    "lab": {
+      "sameStaticGeometry": true,
+      "sameAssembly": true,
+      "exportBoundsError": 5e-7
+    },
+    "factory": {
+      "sameStaticGeometry": true,
+      "sameAssembly": true,
+      "exportBoundsError": 5e-7
+    },
+    "brain_inside": {
+      "sameStaticGeometry": true,
+      "sameAssembly": true,
+      "exportBoundsError": 5e-7
+    }
+  }
+}

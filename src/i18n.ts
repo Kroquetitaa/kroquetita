@@ -93,7 +93,14 @@ const UI = {
     menuInstall: 'Instalar como aplicación',
     menuQuality: 'Calidad gráfica',
     qualityNames: { auto: 'automática', high: 'alta', low: 'baja' },
-    trainPrompt: 'Entrenar un modelo',
+    stationPrompt: {
+      train: 'Entrenar un modelo',
+      factory: 'Fabricar una croqueta',
+      brain: 'Entrar en el cerebro',
+      'hangar-0': 'Poner en marcha la máquina',
+      'hangar-1': 'Poner en marcha la máquina',
+      'hangar-2': 'Poner en marcha la máquina',
+    },
     retroOn: 'Modo 8 bits. Escribe retro otra vez para volver',
     retroOff: 'Modo 8 bits desactivado',
   },
@@ -174,7 +181,14 @@ const UI = {
     menuInstall: 'Install as an app',
     menuQuality: 'Graphics quality',
     qualityNames: { auto: 'automatic', high: 'high', low: 'low' },
-    trainPrompt: 'Train a model',
+    stationPrompt: {
+      train: 'Train a model',
+      factory: 'Make a croquette',
+      brain: 'Step inside the brain',
+      'hangar-0': 'Switch the machine on',
+      'hangar-1': 'Switch the machine on',
+      'hangar-2': 'Switch the machine on',
+    },
     retroOn: '8-bit mode. Type retro again to go back',
     retroOff: '8-bit mode off',
   },
@@ -279,6 +293,26 @@ export const MEDALS: Record<Achievement, { title: Localized; hint: Localized }> 
   retro: {
     title: { es: 'Ocho bits', en: 'Eight bits' },
     hint: { es: 'Hay una palabra que lo pixela todo…', en: 'There is a word that pixelates everything…' },
+  },
+  insider: {
+    title: { es: 'Dentro de su cabeza', en: 'Inside the mind' },
+    hint: { es: 'Entra en el cerebro y recorre doce neuronas', en: 'Step inside the brain and visit twelve neurons' },
+  },
+  chef: {
+    title: { es: 'Maestro croquetero', en: 'Croquette master' },
+    hint: { es: 'Fabrica una croqueta en la fábrica de IA', en: 'Make a croquette in the AI factory' },
+  },
+  pilot: {
+    title: { es: 'Jefe de hangar', en: 'Hangar chief' },
+    hint: { es: 'Pon en marcha las tres máquinas del hangar, antes y después', en: 'Run all three hangar machines, before and after' },
+  },
+  timelord: {
+    title: { es: 'Señor del tiempo', en: 'Time lord' },
+    hint: { es: 'Mira construirse la ciudad de 2021 a hoy', en: 'Watch the city build itself from 2021 to today' },
+  },
+  restorer: {
+    title: { es: 'Luz de nuevo', en: 'Lights back on' },
+    hint: { es: 'Devuelve la energía a la ciudad', en: 'Bring the power back to the city' },
   },
   hired: {
     title: { es: 'Contratado', en: 'Hired' },

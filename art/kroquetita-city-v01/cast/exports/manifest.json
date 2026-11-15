@@ -1,0 +1,163 @@
+[
+  {
+    "id": "recruiter",
+    "file": "recruiter.glb",
+    "bytes": 218152,
+    "triangles": 4280,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\recruiter.blend"
+  },
+  {
+    "id": "guide",
+    "file": "guide.glb",
+    "bytes": 207036,
+    "triangles": 4104,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\guide.blend"
+  },
+  {
+    "id": "qa",
+    "file": "qa.glb",
+    "bytes": 254216,
+    "triangles": 4980,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\qa.blend"
+  },
+  {
+    "id": "sysadmin",
+    "file": "sysadmin.glb",
+    "bytes": 226148,
+    "triangles": 4540,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\sysadmin.blend"
+  },
+  {
+    "id": "intern",
+    "file": "intern.glb",
+    "bytes": 220796,
+    "triangles": 4492,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\intern.blend"
+  },
+  {
+    "id": "librarian",
+    "file": "librarian.glb",
+    "bytes": 234220,
+    "triangles": 4520,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\librarian.blend"
+  },
+  {
+    "id": "joseba",
+    "file": "joseba.glb",
+    "bytes": 247016,
+    "triangles": 4828,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\joseba.blend"
+  },
+  {
+    "id": "pochita",
+    "file": "pochita.glb",
+    "bytes": 210936,
+    "triangles": 4136,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\pochita.blend"
+  },
+  {
+    "id": "alex",
+    "file": "alex.glb",
+    "bytes": 198728,
+    "triangles": 4076,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\alex.blend"
+  },
+  {
+    "id": "josete",
+    "file": "josete.glb",
+    "bytes": 244876,
+    "triangles": 4868,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\josete.blend"
+  },
+  {
+    "id": "cristian",
+    "file": "cristian.glb",
+    "bytes": 251420,
+    "triangles": 4852,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\cristian.blend"
+  },
+  {
+    "id": "pablo",
+    "file": "pablo.glb",
+    "bytes": 222264,
+    "triangles": 4432,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\pablo.blend"
+  },
+  {
+    "id": "manager",
+    "file": "manager.glb",
+    "bytes": 259528,
+    "triangles": 4984,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\manager.blend"
+  },
+  {
+    "id": "Claude",
+    "file": "Claude.glb",
+    "bytes": 192960,
+    "triangles": 3884,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\Claude.blend"
+  },
+  {
+    "id": "ChatGPT",
+    "file": "ChatGPT.glb",
+    "bytes": 205048,
+    "triangles": 4212,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\ChatGPT.blend"
+  },
+  {
+    "id": "Gemini",
+    "file": "Gemini.glb",
+    "bytes": 193732,
+    "triangles": 3836,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\Gemini.blend"
+  },
+  {
+    "id": "Qwen3",
+    "file": "Qwen3.glb",
+    "bytes": 194340,
+    "triangles": 3928,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\Qwen3.blend"
+  },
+  {
+    "id": "Mistral",
+    "file": "Mistral.glb",
+    "bytes": 191352,
+    "triangles": 3904,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\Mistral.blend"
+  },
+  {
+    "id": "cat",
+    "file": "cat.glb",
+    "bytes": 134620,
+    "triangles": 2972,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\cat.blend"
+  },
+  {
+    "id": "duck",
+    "file": "duck.glb",
+    "bytes": 97140,
+    "triangles": 1920,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\duck.blend"
+  },
+  {
+    "id": "bug",
+    "file": "bug.glb",
+    "bytes": 137328,
+    "triangles": 2984,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\bug.blend"
+  },
+  {
+    "id": "boss",
+    "file": "boss.glb",
+    "bytes": 150300,
+    "triangles": 3204,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\boss.blend"
+  },
+  {
+    "id": "roomba",
+    "file": "roomba.glb",
+    "bytes": 109072,
+    "triangles": 2296,
+    "source": "C:\\Users\\kroquetita\\Desktop\\kroquetita\\art\\kroquetita-city-v01\\cast\\roomba.blend"
+  }
+]

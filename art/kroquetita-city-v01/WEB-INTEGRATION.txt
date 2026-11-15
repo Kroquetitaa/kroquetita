@@ -1,0 +1,105 @@
+KROQUETITA — INTEGRACIÓN NATIVA DE BLENDER
+Revisión: 15 de noviembre de 2026
+
+VER EN LOCAL
+http://127.0.0.1:5173/
+npm run dev -- --host 127.0.0.1
+La portada muestra el mapa completo. Entrar y explorar inicia el juego.
+C alterna cámara cercana, isométrica, aérea y libre; también hay selector.
+En libre, arrastrar gira y la rueda acerca. M abre el mapa y E usa estaciones.
+
+RESULTADO ACTUAL
+Nueve distritos mantienen la distribución de Blender a escala 1:1: plaza,
+trayectoria, biblioteca, bugs, laboratorio, fábrica, hangar, transporte
+y observatorio elevado. El puente llega al borde del observatorio.
+Los once logos pertenecen a sus edificios. El conjunto THE CORE se eleva
+2,70 m para despejarlos: plataforma z=8,73, placa z=9,35 y foco del cerebro
+z=10,72, en Blender local. Los tirantes conservan sus anclajes inferiores.
+El cerebro tiene hemisferios coral/lavanda, pliegues suaves y expresión;
+los flujos se dirigen a Hook_Career_CoreFocus.
+
+Los 23 modelos del reparto y el avatar están pulidos en Blender: 13 humanos,
+cinco asistentes de IA, gato, pato, bug, jefe y Roomba, además del avatar.
+Este conserva máscara expresiva y portátil, con ropa, manos y zapatillas
+detalladas. Se mantienen controladores de movimiento, diálogos, misiones,
+café, persecuciones y reacciones. El dron procede del transporte.
+
+La carga permanece al menos 3,6 segundos y muestra cinco asistentes de IA
+persiguiendo a un pato. Sus hojas de marcha se renderizan desde Blender;
+ocho fotogramas por actor, PNG/WebP en public/images/loading/.
+La carga real puede durar más según el dispositivo.
+
+MOVIMIENTO Y ACABADO
+Los agentes comprueban por barrido el trayecto completo y usan A* para
+rodear obstáculos. La navegación aérea añade 95 volúmenes elevados de los
+GLB fuente. Las huellas se contrastan con la geometría real del reparto.
+Se mantienen saltos, doble salto, viaje rápido e interacciones originales.
+
+Día, atardecer, noche, lluvia, sombras, reflejo planar y materiales satinados
+se coordinan en Three.js. Los GLB exportan geometría y materiales PBR;
+las luces y reflejos de Cycles se reconstruyen en el navegador. El render
+Blender y el web no son idénticos: la distribución se conserva y el acabado
+se ajusta al motor web y a la calidad del equipo.
+
+FUENTES Y CONTRATOS
+Ciudad: art/kroquetita-city-v01/kroquetita-city.blend
+Ciclo: kroquetita-city-cycle.blend, guardado en el fotograma 660.
+Reparto: kroquetita-cast.blend y cast/*.blend
+Avatar: districts/avatar.blend; generador build_player.py
+CORE: district_career_brain.py (CORE_LIFT=2.70) y polish_core_brain.py
+Fuentes GLB: exports/ y exports/manifest.json
+Montaje: exports/native-assembly.json y native-assembly-cycle.json
+Kit final: public/models/city/ y su manifest.json
+Contratos: src/world/blenderAssembly.ts y blenderGeometry.ts
+Volúmenes elevados: src/game/airObstacles.ts
+
+El kit GLB completo comprobado ocupa 11,88 MB decimales, por debajo de 12 MB.
+El manifiesto web contiene los tamaños por archivo. La preparación agrupa
+mallas por material y conserva jerarquías, pivotes y UV de FaceScreen.
+Avatar y cafetera se montan una vez: se eliminan sus duplicados estáticos.
+brain_exterior es el observatorio del mapa; brain_inside, el interior local.
+
+REGENERACIÓN
+Guardar una copia de las ediciones manuales. Usar Blender 5.3 con
+--background --factory-startup --threads 4 --python para cada script.
+Los scripts de arte están en art/kroquetita-city-v01/.
+
+Ciudad completa: build_city.py -> refine_city.py -> repair_native_bridge.py
+-> export_city.py.
+CORE y sus seis .blend: polish_core_brain.py; añadir -- no-render para
+omitir la imagen de inspección. Mantiene las posiciones de los edificios.
+Después de exportar ciudad: build_player.py y build_cast.py.
+Hojas de marcha del loader: render_cast_walk.py; informe cast/walk-report.json
+y revisión visual cast-walk-contact.png.
+Montaje: extract_web_assembly.py; repetir con -- cycle-reference.
+
+Desde la raíz del proyecto, en este orden:
+npm run assets:city
+node --experimental-strip-types scripts/prepare-air-obstacles.mjs
+npm run check:city
+node --experimental-strip-types scripts/check-city-movement.mjs
+npm run build
+
+prepare-air-obstacles consume el contrato actualizado por assets:city.
+Una interacción web no exige reconstruir Blender. Tras cambiar GLB,
+recargar el navegador para renovar la caché de la sesión.
+
+VALIDACIÓN
+check:city comprueba contenido, llegadas, accesos, saltos, libros, etapas,
+articulaciones y presupuesto. check-city-movement verifica paredes finas,
+desvíos A*, espacios ocupados, huellas GLB y 35 minutos simulados en tierra
+más dos de vuelo, incluida la reaparición segura tras viaje rápido.
+native-validation.json compara geometría, matrices y cámara de main/cycle.
+build comprueba tipos y genera producción. La revisión en navegador cubre
+cámaras, actores, interacciones, luz, reflejos y tamaños de pantalla.
+El rendimiento depende del equipo. El proyecto sigue disponible en local.
+
+REVISIÓN FINAL DE INTERFAZ
+El selector de cámaras usa cuatro tarjetas con iconos, foco visible y cierre
+con Escape o clic exterior; se comprobó en escritorio y a 390x844.
+Los arrastres de más de 5 píxeles no ejecutan interacciones del mundo.
+Verificado en navegador: girar sobre el laboratorio conserva la posición;
+un clic breve abre Red neuronal; el cerebro abre su experiencia interior.
+Las seis hojas WebP de marcha pesan 189.990 bytes y se precargan desde HTML.
+Capturas actuales en previews/: web-camera-selector.jpg, web-core-raised.jpg,
+web-loading-walk.jpg y web-loading-mobile.jpg.

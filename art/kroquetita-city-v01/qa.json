@@ -1,0 +1,179 @@
+{
+  "native": {
+    "transport": {
+      "scene": "KROQUETITA / transport",
+      "mesh_objects": 115,
+      "opened": true
+    },
+    "plaza": {
+      "scene": "KROQUETITA / plaza",
+      "mesh_objects": 200,
+      "opened": true
+    },
+    "career": {
+      "scene": "KROQUETITA / career",
+      "mesh_objects": 244,
+      "opened": true
+    },
+    "library": {
+      "scene": "KROQUETITA / library",
+      "mesh_objects": 143,
+      "opened": true
+    },
+    "bugs": {
+      "scene": "KROQUETITA / bugs",
+      "mesh_objects": 200,
+      "opened": true
+    },
+    "hangar": {
+      "scene": "KROQUETITA / hangar",
+      "mesh_objects": 124,
+      "opened": true
+    },
+    "lab": {
+      "scene": "KROQUETITA / lab",
+      "mesh_objects": 247,
+      "opened": true
+    },
+    "factory": {
+      "scene": "KROQUETITA / factory",
+      "mesh_objects": 147,
+      "opened": true
+    },
+    "brain_inside": {
+      "scene": "KROQUETITA / brain_inside",
+      "mesh_objects": 105,
+      "opened": true
+    },
+    "coffee_machine": {
+      "scene": "KROQUETITA / coffee_machine",
+      "mesh_objects": 47,
+      "opened": true
+    },
+    "avatar": {
+      "scene": "KROQUETITA / avatar",
+      "mesh_objects": 54,
+      "opened": true
+    }
+  },
+  "glb": {
+    "transport": {
+      "imported": true,
+      "mesh_objects": 115,
+      "bounds_blender_xyz": [
+        59.0,
+        61.54,
+        6.6057
+      ]
+    },
+    "plaza": {
+      "imported": true,
+      "mesh_objects": 200,
+      "bounds_blender_xyz": [
+        12.14,
+        8.14,
+        3.5542
+      ]
+    },
+    "career": {
+      "imported": true,
+      "mesh_objects": 244,
+      "bounds_blender_xyz": [
+        18.14,
+        8.14,
+        9.555
+      ]
+    },
+    "library": {
+      "imported": true,
+      "mesh_objects": 143,
+      "bounds_blender_xyz": [
+        12.14,
+        12.14,
+        5.91
+      ]
+    },
+    "bugs": {
+      "imported": true,
+      "mesh_objects": 200,
+      "bounds_blender_xyz": [
+        12.14,
+        12.14,
+        4.542
+      ]
+    },
+    "hangar": {
+      "imported": true,
+      "mesh_objects": 124,
+      "bounds_blender_xyz": [
+        13.14,
+        12.14,
+        5.7357
+      ]
+    },
+    "lab": {
+      "imported": true,
+      "mesh_objects": 247,
+      "bounds_blender_xyz": [
+        14.14,
+        12.14,
+        4.16
+      ]
+    },
+    "factory": {
+      "imported": true,
+      "mesh_objects": 147,
+      "bounds_blender_xyz": [
+        13.14,
+        12.14,
+        5.26
+      ]
+    },
+    "brain_inside": {
+      "imported": true,
+      "mesh_objects": 105,
+      "bounds_blender_xyz": [
+        10.14,
+        10.14,
+        3.255
+      ]
+    },
+    "coffee_machine": {
+      "imported": true,
+      "mesh_objects": 47,
+      "bounds_blender_xyz": [
+        1.514,
+        1.285,
+        2.2
+      ]
+    },
+    "avatar": {
+      "imported": true,
+      "mesh_objects": 54,
+      "bounds_blender_xyz": [
+        0.5725,
+        0.426,
+        1.05
+      ]
+    }
+  },
+  "lighting_cycle": {
+    "300": {
+      "sun_energy": 2.200000047683716,
+      "background_strength": 0.6499999761581421
+    },
+    "660": {
+      "sun_energy": 2.4000000953674316,
+      "background_strength": 0.4000000059604645
+    },
+    "1020": {
+      "sun_energy": 0.11999999731779099,
+      "background_strength": 0.30000001192092896
+    },
+    "1740": {
+      "sun_energy": 2.200000047683716,
+      "background_strength": 0.6499999761581421
+    }
+  },
+  "status": "passed"
+}
