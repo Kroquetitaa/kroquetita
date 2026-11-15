@@ -10,6 +10,7 @@ import { unlockAudio } from '../game/audio'
 import { zones } from '../world/zones'
 import './city.css'
 import { usePortalLaunch } from '../portal/launch'
+import { useDimensionLaunch } from '../dimensions/launch'
 
 function Workshop({ title, eyebrow, children }: { title: string; eyebrow: string; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -136,6 +137,7 @@ function CityWelcome() {
     <div className="city-welcome-actions">
       <button className="city-welcome-enter" onClick={enter}>{es ? 'Entrar y explorar' : 'Step inside & explore'} <span aria-hidden="true">↗</span></button>
       <button className="city-portal-enter" onClick={() => usePortalLaunch.getState().launch()}>{es ? 'El pato y los portales' : 'The duck and the portals'} <span aria-hidden="true">✦</span></button>
+      <button className="city-portal-enter city-reverse-enter" onClick={() => useDimensionLaunch.getState().reveal()}>{es ? 'El reverso de la ciudad' : 'The other side of the city'} <span aria-hidden="true">◈</span></button>
     </div>
   </section>
 }

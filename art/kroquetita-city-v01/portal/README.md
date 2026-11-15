@@ -11,7 +11,7 @@ Una persecución entre dos ventanas: el pato roba una neurona de THE CORE, cinco
 
 Las dos ventanas deben pertenecer al mismo navegador, perfil y origen web —protocolo, dominio y puerto—. Por ejemplo, `localhost:5173` y `127.0.0.1:5173` son orígenes distintos. El botón de lanzamiento genera ambas direcciones correctamente y comparte un identificador de sesión criptográfico. No hay servidor de sincronización ni comunicación entre dispositivos.
 
-En pantallas de hasta 760 píxeles, dispositivos con puntero táctil o cuando el navegador bloquea la ventana emergente, se muestran los dos mundos dentro de una pantalla. También se puede elegir **Jugar en una pantalla**. La unión central permite separar y reconectar los portales de este modo. La disponibilidad del modo móvil está implementada; su revisión visual debe registrarse por separado de las pruebas de escritorio.
+En pantallas de hasta 760 píxeles, dispositivos con puntero táctil o cuando el navegador bloquea la ventana emergente, se muestran los dos mundos dentro de una pantalla. También se puede elegir **Jugar en una pantalla**. La unión central permite separar y reconectar los portales de este modo. La revisión visual de **390 × 844** confirmó la apertura automática de los dos lienzos, el cruce elevado y la pausa/reanudación; el registro está más abajo.
 
 ## Secuencia y conexión
 
@@ -57,10 +57,11 @@ npm run typecheck
 npm run build
 ```
 
-`check:portals` ejecuta dos comprobaciones deterministas:
+`check:portals` ejecuta tres comprobaciones deterministas:
 
 - `scripts/check-portals.mjs`: cuatro bordes y anclajes compartidos; límites 120/100 px; monitores con coordenadas negativas; puertas temporales; dos controladores con carga, autoridad, separación, reconexión y cierre; invitado duplicado; mensajes antiguos; timeout; limpieza de StrictMode; secuencia integrada de 32 s; transporte localStorage y bloqueo de popup.
 - `scripts/check-portal-launch.mjs`: enfocar una invitada sana sin reiniciarla; recuperar la misma ventana después de navegar a la ciudad o a otro origen; cerrar una ventana creada por la app y volver a la ciudad desde una pestaña independiente.
+- `scripts/check-portal-story.mjs`: 553.392 poses de los seis actores sobre el suelo, proyección de los cuatro bordes con distintos tamaños y anclajes, posiciones idénticas en la unión, continuidad en 4/14/18/28 s y formaciones con el pato delante. Los cruces verticales despegan antes de avanzar y aterrizan después de llegar, evitando atravesar el suelo y los accesorios.
 
 Estas pruebas no renderizan WebGL ni mueven ventanas reales. Para QA visual:
 
@@ -71,7 +72,9 @@ Estas pruebas no renderizan WebGL ni mueven ventanas reales. Para QA visual:
 5. Dejar terminar hasta 32 s y revisar el desenlace en la cafetera. Probar el modo integrado, su unión, Escape, movimiento reducido y carga fallida/reintento.
 6. Revisar móvil por separado: controles, orientación, legibilidad, dos escenas y rendimiento en dispositivo real o emulación claramente identificada.
 
-**QA observado el 15/11/2026:** dos ventanas Chrome adyacentes mostraron conexión y el mismo progreso en 15 s; separarlas en 20 s mantuvo ambos lados detenidos en 20 s durante más de diez segundos; reconectarlas reanudó la historia. Ambas completaron los 32 s y mostraron **CONTEXTO RECUPERADO**, sin errores en los registros de Chrome. La vista de 390 × 844 cargó automáticamente el modo integrado; su pausa y reanudación estaban pendientes de comprobación al escribir este registro. La vista estrecha no sustituye una revisión en dispositivo móvil físico.
+**QA de escritorio observado el 15/11/2026:** dos ventanas Chrome adyacentes mostraron conexión y el mismo progreso en 15 s; separarlas en 20 s mantuvo ambos lados detenidos durante más de diez segundos; reconectarlas reanudó la historia. Ambas completaron los 32 s y mostraron **CONTEXTO RECUPERADO**, sin errores en los registros de Chrome.
+
+**QA móvil de 390 × 844 completado:** se abrió automáticamente el modo de dos lienzos. Los actores volaron por encima del suelo hasta la unión vertical. Separar los portales en **23 s** mantuvo la aventura pausada en ese punto; reconectarlos permitió terminar en **32 s**. Se comprobó también el regreso a la ciudad y el lanzamiento desde el botón de **THE CORE**. La captura de esta revisión está en [web-portals-mobile.jpg](../previews/web-portals-mobile.jpg). Esta vista estrecha no sustituye una revisión en un dispositivo móvil físico.
 
 ## Límites de posicionamiento
 

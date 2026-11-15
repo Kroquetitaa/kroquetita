@@ -1,0 +1,243 @@
+{
+  "source": "art/kroquetita-city-v01/dimensions/underworld.blend",
+  "assemblySource": "art/kroquetita-city-v01/kroquetita-city.blend",
+  "space": "native world / metres / Y-up",
+  "layer": "lens-only",
+  "file": "/models/dimensions/underworld.glb",
+  "bytes": 1204668,
+  "triangles": 41275,
+  "meshes": 49,
+  "districts": {
+    "career": {
+      "position": [
+        0,
+        -3.35,
+        -9
+      ],
+      "size": [
+        17.2,
+        0.28,
+        7.2
+      ],
+      "source": [
+        0,
+        -4e-07,
+        -9
+      ]
+    },
+    "library": {
+      "position": [
+        -17,
+        -3.35,
+        -8
+      ],
+      "size": [
+        11.2,
+        0.28,
+        11.2
+      ],
+      "source": [
+        -17,
+        -3e-07,
+        -8
+      ]
+    },
+    "plaza": {
+      "position": [
+        0,
+        -3.15,
+        1
+      ],
+      "size": [
+        11.2,
+        0.28,
+        7.2
+      ],
+      "source": [
+        0,
+        0,
+        1
+      ]
+    },
+    "hangar": {
+      "position": [
+        -17,
+        -3.35,
+        9
+      ],
+      "size": [
+        12.2,
+        0.28,
+        11.2
+      ],
+      "source": [
+        -17,
+        4e-07,
+        9
+      ]
+    },
+    "factory": {
+      "position": [
+        17,
+        -3.35,
+        9
+      ],
+      "size": [
+        12.2,
+        0.28,
+        11.2
+      ],
+      "source": [
+        17,
+        4e-07,
+        9
+      ]
+    },
+    "lab": {
+      "position": [
+        0,
+        -3.35,
+        12
+      ],
+      "size": [
+        13.2,
+        0.28,
+        11.2
+      ],
+      "source": [
+        0,
+        5e-07,
+        12
+      ]
+    },
+    "bugs": {
+      "position": [
+        17,
+        -3.35,
+        -8
+      ],
+      "size": [
+        11.2,
+        0.28,
+        11.2
+      ],
+      "source": [
+        17,
+        -3e-07,
+        -8
+      ]
+    },
+    "brain_inside": {
+      "position": [
+        0,
+        -3.35,
+        -24
+      ],
+      "size": [
+        9.2,
+        0.28,
+        9.2
+      ],
+      "source": [
+        0,
+        4.499999,
+        -24
+      ]
+    }
+  },
+  "hooks": {
+    "Hook_Secret_Core": [
+      0,
+      -1.3,
+      -11.1500001
+    ],
+    "Hook_Secret_Factory": [
+      17,
+      -1.5,
+      9
+    ],
+    "Hook_Secret_Duck": [
+      0,
+      -0.4,
+      1.8
+    ],
+    "Hook_Secret_Rocket": [
+      -17,
+      -1.4,
+      9
+    ],
+    "Hook_Secret_Memory": [
+      -17,
+      -2,
+      -8
+    ],
+    "Hook_Actor_Core": [
+      3,
+      -3.3,
+      -7.8
+    ],
+    "Hook_Actor_Factory_A": [
+      13.5,
+      -3.3,
+      12.5
+    ],
+    "Hook_Actor_Factory_B": [
+      19.2,
+      -3.3,
+      12.5
+    ],
+    "Hook_Actor_Memory": [
+      -17,
+      -3.3,
+      -11.2
+    ],
+    "Hook_Actor_Hangar": [
+      -20,
+      -3.3,
+      12
+    ],
+    "Hook_Actor_Duck": [
+      2.7,
+      -3.1,
+      4.1
+    ]
+  },
+  "pivots": {
+    "NeuralCore": [
+      0,
+      -1.3,
+      -11.1500001
+    ],
+    "Ring": {
+      "parent": "NeuralCore",
+      "position": [
+        0,
+        -0.35,
+        0
+      ]
+    },
+    "Conveyor": [
+      17,
+      -2.25,
+      9.9
+    ],
+    "BobDuck": [
+      0,
+      -2.25,
+      1
+    ]
+  },
+  "conveyor": {
+    "items": [
+      "Item_01",
+      "Item_02",
+      "Item_03",
+      "Item_04",
+      "Item_05",
+      "Item_06"
+    ],
+    "minX": -4.2,
+    "maxX": 4.2,
+    "axis": "local x"
+  }
+}

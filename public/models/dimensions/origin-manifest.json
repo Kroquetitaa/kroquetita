@@ -1,0 +1,82 @@
+{
+  "file": "/models/dimensions/origin.glb",
+  "source": "art/kroquetita-city-v01/dimensions/origin.blend",
+  "assemblySource": "art/kroquetita-city-v01/kroquetita-city.blend",
+  "space": "native world / metres / Y-up",
+  "layer": "lens-level-2",
+  "bytes": 812720,
+  "triangles": 28889,
+  "meshes": 32,
+  "hooks": {
+    "Hook_Origin_Core": [
+      0,
+      1,
+      -11.1500001
+    ],
+    "Hook_Origin_Oracle": [
+      0,
+      0.1,
+      1
+    ],
+    "Hook_Origin_Infinite": [
+      17,
+      -0.4,
+      9
+    ],
+    "Hook_Origin_Memory": [
+      -17,
+      0.3,
+      -8
+    ],
+    "Hook_Origin_Thought": [
+      -17,
+      -0.15,
+      9
+    ],
+    "Hook_Origin_Actor_A": [
+      -19.5,
+      -3.02,
+      10.5
+    ],
+    "Hook_Origin_Actor_B": [
+      14.8,
+      -3.02,
+      10.8
+    ],
+    "Hook_Origin_Actor_C": [
+      -14.5,
+      -3.02,
+      -6.6
+    ]
+  },
+  "pivots": {
+    "OriginSeed": [
+      0,
+      0,
+      -11.1500001
+    ],
+    "OriginRing": {
+      "parent": "OriginSeed",
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    "OracleEgg": [
+      0,
+      -2.7,
+      1
+    ],
+    "CroquetteOrbit": [
+      17,
+      -0.3,
+      9
+    ],
+    "ThoughtShip": [
+      -17,
+      -0.15,
+      9
+    ]
+  }
+}

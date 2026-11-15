@@ -21,6 +21,8 @@ La carga dura un mínimo de **3,6 segundos** y muestra cinco asistentes de IA pe
 
 **El pato y los portales** amplía esa persecución a dos ventanas. Se abre desde la portada o con **Abrir otra dimensión** junto a THE CORE. Sus 32 segundos de historia se pausan al separar las ventanas durante los cruces; los portales admiten los cuatro bordes, hasta 120 px de separación y un solape perpendicular mínimo de 100 px. Hay alternativa en una pantalla para móvil, popup bloqueado o elección del visitante. Las ventanas deben compartir navegador, perfil y origen web. El diorama Blender específico pesa **545.992 bytes (aprox. 546 kB)**, más los seis personajes reutilizados. Fuente editable, protocolo, límites de DPI y procedimiento de QA en [portal/README.md](portal/README.md).
 
+La ampliación **Tres capas** descubre ventanas de la misma URL: ciudad, lente del Subsuelo y lente del Origen, esta última limitada al solape común de las tres. Incluye fuentes Blender separadas, sincronización de cámara y temblor visual acotado. Protocolo, regeneración, pruebas y límites de posicionamiento en [dimensions/README.md](dimensions/README.md). Su QA visual se registra por separado de las pruebas deterministas.
+
 La navegación combina comprobación del trayecto por barrido y rutas A* para evitar atravesar obstáculos. El dron usa también **95 volúmenes elevados**, extraídos de los GLB fuente. `check-city-movement.mjs` comprueba paredes finas, desvíos, espacios ocupados, huellas reales del reparto y recorridos terrestres y aéreos.
 
 ## Contrato entre Blender y Three.js
