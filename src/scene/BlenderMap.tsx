@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { Text } from '@react-three/drei'
+import { Html, Text } from '@react-three/drei'
 import font from '@fontsource/poppins/files/poppins-latin-600-normal.woff?url'
 import { CityModel } from './CityModel'
 import { Zone } from './Zone'
@@ -17,10 +17,13 @@ import { useCityLife } from '../game/cityLife'
 import { CityLifeEffects } from './CityLifeEffects'
 import { CareerBranding } from './CareerBranding'
 import { CoreSignals } from './CoreSignals'
+import { usePortalLaunch } from '../portal/launch'
 
 /** The complete Blender assembly, exported in its original world coordinates. */
 export function BlenderMap() {
   const lang = useLang()
+  const showPortal = useCityLife(s => s.introDistrict === 'career')
+  const playing = useGame(s => s.mode === 'play' && s.place === 'city' && !s.panel)
   useFrame(() => {
     const game = useGame.getState()
     if (game.mode !== 'play' || game.place !== 'city' || game.panel) return
@@ -53,6 +56,9 @@ export function BlenderMap() {
     <CityModel name="career" />
     <CareerBranding />
     <CoreSignals />
+    {(showPortal || playing) && <Html center position={[world.core[0] + 2, world.core[1] - 1.25, world.core[2]]} distanceFactor={16}>
+      <button className="core-portal-button" onClick={() => usePortalLaunch.getState().launch()}>✦ {lang === 'es' ? 'Abrir otra dimensión' : 'Open another dimension'}</button>
+    </Html>}
     <CityModel name="plaza" />
     <Zone area={areaOf('library')}><CityModel name="library" /></Zone>
     <Zone area={areaOf('arcade')}><CityModel name="bugs" /></Zone>

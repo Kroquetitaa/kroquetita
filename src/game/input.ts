@@ -54,6 +54,7 @@ export function bindKeyboard(isPlaying: () => boolean) {
   window.addEventListener('keyup', onUp)
   window.addEventListener('blur', onBlur)
   return () => {
+    onBlur()
     window.removeEventListener('keydown', onDown)
     window.removeEventListener('keyup', onUp)
     window.removeEventListener('blur', onBlur)

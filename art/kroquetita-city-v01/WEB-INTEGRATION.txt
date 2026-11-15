@@ -8,6 +8,28 @@ La portada muestra el mapa completo. Entrar y explorar inicia el juego.
 C alterna cámara cercana, isométrica, aérea y libre; también hay selector.
 En libre, arrastrar gira y la rueda acerca. M abre el mapa y E usa estaciones.
 
+EL PATO Y LOS PORTALES
+La portada ofrece El pato y los portales; junto a THE CORE está Abrir otra
+dimensión. El clic abre una segunda ventana: ambas deben compartir navegador,
+perfil y origen (protocolo, dominio y puerto). Hay alternativa en una pantalla
+para móvil, popup bloqueado o el botón Jugar en una pantalla.
+
+La historia usa 32 segundos activos, además de carga y pausas. El pato roba
+la neurona, cinco IA lo persiguen a la noche y regresan a la cafetera.
+El host sincroniza a 10 Hz. Los modelos deben estar listos antes de avanzar;
+separar las ventanas durante ida/regreso congela la acción. Cuatro bordes
+posibles: hasta 120 px de separación y al menos 100 px de solape perpendicular.
+El canal es BroadcastChannel con alternativa localStorage y timeout de 3 s.
+Ver otra ventana recupera la invitada; Otra vez reinicia y Escape sale.
+
+Fuente editable: portal/portal-outpost.blend. Generador: portal/build_outpost.py.
+El export public/models/portal/outpost.glb ocupa 545.992 bytes (aprox. 546 kB),
+además de los seis personajes reutilizados del kit. Su carga no monta el mapa
+completo. Detalles de implementación, regeneración y QA: portal/README.md.
+screenX/Y y el origen del contenido son aproximados: zoom, marcos y escalas
+DPI distintas entre monitores pueden desalinear los bordes. El modo integrado
+evita esa dependencia. El efecto permanece dentro de los lienzos de la web.
+
 RESULTADO ACTUAL
 Nueve distritos mantienen la distribución de Blender a escala 1:1: plaza,
 trayectoria, biblioteca, bugs, laboratorio, fábrica, hangar, transporte
@@ -78,6 +100,7 @@ npm run assets:city
 node --experimental-strip-types scripts/prepare-air-obstacles.mjs
 npm run check:city
 node --experimental-strip-types scripts/check-city-movement.mjs
+npm run check:portals
 npm run build
 
 prepare-air-obstacles consume el contrato actualizado por assets:city.
@@ -93,6 +116,18 @@ native-validation.json compara geometría, matrices y cámara de main/cycle.
 build comprueba tipos y genera producción. La revisión en navegador cubre
 cámaras, actores, interacciones, luz, reflejos y tamaños de pantalla.
 El rendimiento depende del equipo. El proyecto sigue disponible en local.
+
+PORTALES: VALIDACIÓN REGISTRADA
+check:portals ejecuta check-portals.mjs y check-portal-launch.mjs: topología,
+anclajes, puertas temporales, disponibilidad de modelos, autoridad del host,
+separación/reconexión, cierre, mensajes antiguos, StrictMode, modo integrado,
+localStorage, popup bloqueado y recuperación de la ventana invitada.
+QA real de escritorio 15/11/2026: Chrome conectó las ventanas lado a lado con
+progreso 15 s en ambas; separarlas en 20 s mantuvo ambos lados en 20 s durante
+más de diez segundos; acercarlas reanudó la historia. Ambas completaron 32 s
+y mostraron CONTEXTO RECUPERADO, sin errores en los registros de Chrome.
+La vista 390x844 cargó el modo integrado automáticamente. Su pausa/reanudación
+seguía pendiente de comprobación en este registro; no sustituye QA en móvil físico.
 
 REVISIÓN FINAL DE INTERFAZ
 El selector de cámaras usa cuatro tarjetas con iconos, foco visible y cierre
